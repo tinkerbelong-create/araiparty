@@ -127,6 +127,8 @@ input.txt{
 .rrow{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e2d5b8;border-radius:10px;padding:8px 12px;margin-top:8px}
 .rrow .medal{font-size:26px;width:36px;text-align:center}
 .rrow .rnm{font-weight:900;flex:1}
+.sakechip{display:inline-block;background:var(--wood);color:var(--beer-gold);border-radius:8px;
+  padding:0 8px;font-size:12px;font-weight:900;vertical-align:middle}
 .rrow .delta{font-weight:900;font-size:14px;text-align:right}
 .rrow .delta .plus{color:#1e7d33}.rrow .delta .minus{color:#c0392b}
 .rrow.me{outline:3px solid var(--beer-gold)}
@@ -379,6 +381,30 @@ bgmBtn.onclick = () => setBgm(!bgmOn);
 bgmVol.oninput = () => { applyVol(); if (bgmOn && bgm.paused) bgm.play().catch(()=>{});
   try { localStorage.setItem('shuzomas_bgm_vol', bgmVol.value); } catch (e) {} };
 setBgm(bgmOn);
+/* ── 効果音(SE): WebAudioで軽量に合成 ── */
+let AC = null;
+function se(freq, dur = 0.07, type = 'square', vol = 0.2, slide = 0) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, AC.currentTime + dur);
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const seClick  = () => se(600, 0.05, 'square', 0.12);
+const sePick   = () => se(880, 0.08, 'triangle', 0.22);
+const seUnpick = () => se(440, 0.06, 'triangle', 0.15);
+const seSubmit = () => { se(523, 0.08, 'triangle', 0.22); setTimeout(() => se(784, 0.12, 'triangle', 0.22), 90); };
+const seReveal = () => { se(659, 0.1, 'triangle', 0.2); setTimeout(() => se(880, 0.15, 'triangle', 0.2), 110); };
+const seWin    = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.2, 'triangle', 0.25), i * 130));
+document.addEventListener('click', e => {
+  if (e.target.closest && e.target.closest('.btn, .mbtn')) seClick();
+});
 const bgmKick = () => { if (bgmOn && bgm.paused) bgm.play().catch(()=>{});
   document.removeEventListener('pointerdown', bgmKick); document.removeEventListener('keydown', bgmKick); };
 document.addEventListener('pointerdown', bgmKick);
@@ -527,7 +553,8 @@ function renderGame() {
       open = `<div class="open">🔍 マイ食材 No.${s.openMyId}=${dosStr(s.openMyDos)}` +
         (s.openSakeDos !== null ? ` / 直近のお酒 ${dosStr(s.openSakeDos)}` : '') + `</div>`;
     }
-    const rank = s.lastRank ? `<span class="rankchip">前回 ${s.lastRank}位</span>` : '';
+    const rank = s.lastRank ? `<span class="rankchip">前回 ${s.lastRank}位${s.lastLabel ? '・' + s.lastLabel : ''}</span>` :
+      (s.lastLabel ? `<span class="rankchip">前回 ${s.lastLabel}</span>` : '');
     const sub = s.submitted ? `<span class="subchip">✔ 提出済み</span>` : '';
     d.innerHTML = `${rank}${sub}<div class="nm">${esc(s.name)}${s.isCpu ? ' 🤖' : ''}${!s.connected ? ' ⚠' : ''}</div>
       <div class="stats"><span>💰 $${s.money}</span><span>⭐ ${s.eval}</span></div>${open}`;
@@ -559,8 +586,8 @@ function renderGame() {
 
 function togglePick(id) {
   const cnt = picks.filter(x => x === id).length;
-  if (picks.length < 3 && cnt < 2) picks.push(id);
-  else if (cnt > 0) picks.splice(picks.indexOf(id), 1);
+  if (picks.length < 3 && cnt < 2) { picks.push(id); sePick(); }
+  else if (cnt > 0) { picks.splice(picks.indexOf(id), 1); seUnpick(); }
   renderGame();
 }
 
@@ -613,6 +640,7 @@ function submitBrew() {
   socket.emit('submit', { type: 'brew', picks: [...picks] }, r => {
     if (!r.ok) return toast(r.error);
     picks = [];
+    seSubmit();
   });
 }
 function submitRest() {
@@ -640,11 +668,13 @@ socket.on('reveal', (rv) => {
     if (res.type === 'rest') { medal = '😴'; note = '休憩'; }
     else if (res.winner) { medal = '🏆'; note = 'ちょうど3.0%!!'; }
     else if (res.failed) { medal = '💥'; note = '失敗(3.1%以上)'; }
-    else { medal = medals[res.rank] || `${res.rank}位`; }
+    else if (res.rank) { medal = medals[res.rank] || `${res.rank}位`; }
+    else { medal = '🍺'; } // 優勝者が出たラウンドの他プレイヤー(順位なし)
     const md = res.moneyDelta, ed = res.evalDelta;
+    const labelTxt = res.label ? `<span class="sakechip">${res.label}</span>` : '';
     const openTxt = res.openDos !== null ? ` <small>🔍度数公開: ${dosStr(res.openDos)}</small>` : '';
     d.innerHTML = `<div class="medal">${medal}</div>
-      <div class="rnm" style="color:${PCOLORS[i]}">${esc(seats[i].name)} <small>${note}</small>${openTxt}</div>
+      <div class="rnm" style="color:${PCOLORS[i]}">${esc(seats[i].name)} ${labelTxt} <small>${note}</small>${openTxt}</div>
       <div class="delta">
         <span class="${md >= 0 ? 'plus' : 'minus'}">${md >= 0 ? '+' : '−'}$${Math.abs(md)}</span>
         ${ed !== 0 ? `<span class="${ed > 0 ? 'plus' : 'minus'}"> ⭐${ed > 0 ? '+' : ''}${ed}</span>` : ''}
@@ -658,13 +688,14 @@ socket.on('reveal', (rv) => {
   if (rv.mine.type === 'brew') {
     ms.innerHTML = `あなたのお酒(あなただけに見える): <b>${rv.mine.label} ${dosStr(rv.mine.dos)}</b>`;
     logLine(`R${rv.roundNo}: あなたは ${rv.mine.picks.map(id => 'No.' + id).join('・')} で ${rv.mine.label}(${dosStr(rv.mine.dos)}) → ` +
-      (rv.mine.winner ? '🏆優勝!' : rv.mine.failed ? '💥失敗' : `${rv.mine.rank}位`));
+      (rv.mine.winner ? '🏆優勝!' : rv.mine.failed ? '💥失敗' : rv.mine.rank ? `${rv.mine.rank}位` : '─'));
   } else {
     ms.innerHTML = `あなたは休憩しました (+$5 / 評価−1)`;
     logLine(`R${rv.roundNo}: あなたは休憩 (+$5 / 評価−1)`);
   }
   document.getElementById('ov-next').textContent = rv.ended ? '結果を見る 🏆' : 'つぎのラウンドへ ▶';
   document.getElementById('overlay').classList.add('show');
+  if (rv.results.some(x => x.winner)) seWin(); else seReveal();
 });
 
 function closeOverlay() {

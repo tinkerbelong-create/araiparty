@@ -65,6 +65,7 @@ function publicState(room) {
         chosen: !!s.myId, submitted: !!s.sub,
         money: p ? p.money : 10, eval: p ? p.eval : 3,
         lastRank: p ? p.lastRank : null,
+        lastLabel: s.lastLabel || null,
         revealed: p ? p.revealed : false,
         // 評価0のプレイヤーのみ度数を公開(永続)
         openMyId: p && p.revealed ? p.myIngredientId : null,
@@ -107,7 +108,7 @@ function startGame(room) {
   room.reveal = null;
   room.endInfo = null;
   room.seats.forEach((s, i) => {
-    s.myId = null; s.chosen = false; s.sub = null;
+    s.myId = null; s.chosen = false; s.sub = null; s.lastLabel = null;
     if (s.isCpu) s.brain = new S.CpuBrain(i, S.mulberry32((Date.now() ^ (i * 7919)) & 0xffffffff));
   });
   checkMySelectDone(room); // 全員CPUなら即進行(通常は待ち)
@@ -180,10 +181,12 @@ function checkRoundDone(room) {
     rank: res.rank ?? null,
     failed: !!res.failed,
     winner: !!res.winner,
+    label: res.type === 'brew' ? res.label : null, // 完成酒の種類は公開
     moneyDelta: res.moneyDelta ?? 0,
     evalDelta: res.evalDelta ?? 0,
     openDos: (E.players[i].revealed && res.type === 'brew') ? res.dos : null, // 評価0のみ公開
   }));
+  room.seats.forEach((s, i) => { s.lastLabel = r.results[i].type === 'brew' ? r.results[i].label : null; });
   room.reveal = { roundNo: r.roundNo, results: pubResults, ended: r.ended };
   if (r.ended) {
     room.phase = 'ended';
