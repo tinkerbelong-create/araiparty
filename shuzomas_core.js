@@ -29,7 +29,8 @@ function dealIngredients(rng) {
   for (let d = 0; d <= 28; d++) pool.push(d, d);
   shuffle(pool, rng);
   const dosList = pool.slice(0, 24);
-  const attrs = shuffle(['A','B','C','D'].flatMap(a => [a,a,a,a,a,a]), rng);
+  // 属性は固定: No.1-6=薫(A), 7-12=爽(B), 13-18=醇(C), 19-24=熟(D)
+  const attrs = ['A','B','C','D'].flatMap(a => [a,a,a,a,a,a]);
   return dosList.map((dos, i) => ({ id: i + 1, dos, attr: attrs[i] }));
 }
 

@@ -57,7 +57,8 @@ function publicState(room) {
     round: E ? E.round : 0,
     stars: E ? E.stars : null,
     starName: E ? S.STAR_NAMES[E.stars] : null,
-    ingredients: E ? E.ingredients.map(g => ({ id: g.id, attr: g.attr })) : null, // 度数は送らない!
+    ingredients: E ? E.ingredients.map(g => ({ id: g.id, attr: g.attr })) : null, // 個別の度数は送らない!
+    dosSet: E ? E.ingredients.map(g => g.dos).sort((a, b) => a - b) : null, // 内訳セットのみ公開(昇順)
     seats: room.seats.map((s, i) => {
       const p = E ? E.players[i] : null;
       return {
