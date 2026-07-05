@@ -171,6 +171,29 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
   writing-mode:vertical-rl;
 }
 #memo-tab:hover{background:var(--wood-l)}
+/* ── 属性グループ見出し ── */
+.attrhead{grid-column:1/-1;color:#fff;border-radius:8px;padding:3px 12px;font-weight:900;font-size:13px;margin-top:4px}
+/* ── 完成酒早見表(左パネル) ── */
+#cheat{
+  position:fixed;top:50%;left:0;transform:translate(-100%,-50%);z-index:45;
+  width:260px;background:var(--cream);border:3px solid var(--wood);border-left:none;
+  border-radius:0 14px 14px 0;box-shadow:6px 6px 18px rgba(0,0,0,.25);
+  transition:transform .22s ease;padding:12px;
+}
+#cheat.open{transform:translate(0,-50%)}
+#cheat-tab{
+  position:absolute;right:-44px;top:14px;
+  font-family:inherit;font-weight:900;font-size:14px;line-height:1.25;cursor:pointer;
+  background:var(--wood);color:var(--beer-foam);border:3px solid var(--wood-d);border-left:none;
+  border-radius:0 12px 12px 0;padding:14px 9px;box-shadow:3px 3px 8px rgba(0,0,0,.25);
+  writing-mode:vertical-rl;
+}
+#cheat-tab:hover{background:var(--wood-l)}
+#cheat h4{font-size:14px;color:var(--wood-d)}
+#cheat .csec{font-size:11px;font-weight:700;color:#8a7a5c;margin-top:10px;border-top:1px dashed #d9c9a8;padding-top:8px}
+.crow{display:flex;align-items:center;gap:4px;margin-top:6px;font-weight:700;font-size:12px}
+.abadge{width:22px;height:22px;border-radius:50%;color:#fff;font-size:12px;font-weight:900;line-height:22px;text-align:center;display:inline-block;flex:none}
+.cname{margin-left:auto;background:var(--wood);color:var(--beer-gold);border-radius:8px;padding:1px 10px;font-weight:900;font-size:13px}
 @media (max-width:640px){
   #scr-title h1{font-size:34px}
   .slot{width:60px;height:60px;font-size:28px}
@@ -297,6 +320,22 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
   </div>
 </div>
 
+<!-- 完成酒早見表 -->
+<div id="cheat">
+  <button id="cheat-tab" title="早見表を開く/しまう">🍶 早見表</button>
+  <h4>🍶 完成酒 早見表</h4>
+  <div class="csec" style="border-top:none;padding-top:2px">同じ属性が2つ以上 → その属性のお酒</div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-A">薫</span><span>＋なんでも</span><span class="cname">薫酒</span></div>
+  <div class="crow"><span class="abadge a-B">爽</span><span class="abadge a-B">爽</span><span>＋なんでも</span><span class="cname">爽酒</span></div>
+  <div class="crow"><span class="abadge a-C">醇</span><span class="abadge a-C">醇</span><span>＋なんでも</span><span class="cname">醇酒</span></div>
+  <div class="crow"><span class="abadge a-D">熟</span><span class="abadge a-D">熟</span><span>＋なんでも</span><span class="cname">熟酒</span></div>
+  <div class="csec">3つともバラバラ → 特別酒「花鳥風月」</div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-B">爽</span><span class="abadge a-C">醇</span><span class="cname">花</span></div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-B">爽</span><span class="abadge a-D">熟</span><span class="cname">鳥</span></div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-C">醇</span><span class="abadge a-D">熟</span><span class="cname">風</span></div>
+  <div class="crow"><span class="abadge a-B">爽</span><span class="abadge a-C">醇</span><span class="abadge a-D">熟</span><span class="cname">月</span></div>
+</div>
+
 <!-- 計算スペース -->
 <div id="memo">
   <button id="memo-tab" title="計算スペースを開く/しまう">📝 メモ</button>
@@ -350,6 +389,17 @@ function isValidPicks(picks) {
   if (!picks || picks.length !== 3) return false;
   const cnt = {}; picks.forEach(id => cnt[id] = (cnt[id] || 0) + 1);
   return Math.max(...Object.values(cnt)) <= 2;
+}
+const ATTR_ORDER = ['A','B','C','D'];
+function sortByAttr(list) {
+  return [...list].sort((a, b) =>
+    ATTR_ORDER.indexOf(a.attr) - ATTR_ORDER.indexOf(b.attr) || a.id - b.id);
+}
+function attrHead(attr) {
+  const h = document.createElement('div');
+  h.className = 'attrhead a-' + attr;
+  h.textContent = ATTR_NAME[attr];
+  return h;
 }
 function fruitHTML(id) {
   return `<img class="fruit" src="${FRUIT_DIR}${id}.png" alt="No.${id}" loading="lazy"
@@ -513,7 +563,9 @@ function renderMySelect() {
   const g = document.getElementById('ms-grid');
   g.innerHTML = '';
   const chosenMine = !!priv.myId;
-  pub.ingredients.forEach(ing => {
+  let msCur = null;
+  sortByAttr(pub.ingredients).forEach(ing => {
+    if (ing.attr !== msCur) { msCur = ing.attr; g.appendChild(attrHead(ing.attr)); }
     const d = document.createElement('div');
     const taken = pub.takenMyIds.includes(ing.id);
     d.className = 'ing' + (taken ? ' dim' : '') + (priv.myId === ing.id ? ' sel2' : '');
@@ -564,7 +616,9 @@ function renderGame() {
   const me = pub.seats[priv.myIdx];
   const g = document.getElementById('grid');
   g.innerHTML = '';
-  pub.ingredients.forEach(ing => {
+  let gCur = null;
+  sortByAttr(pub.ingredients).forEach(ing => {
+    if (ing.attr !== gCur) { gCur = ing.attr; g.appendChild(attrHead(ing.attr)); }
     const cntInPicks = picks.filter(x => x === ing.id).length;
     const d = document.createElement('div');
     d.className = 'ing' + (cntInPicks === 1 ? ' sel' : cntInPicks === 2 ? ' sel2' : '');
@@ -742,6 +796,16 @@ function logLine(t) {
   d.textContent = t;
   lg.prepend(d);
 }
+
+/* ── 完成酒早見表の開閉 ── */
+(() => {
+  const panel = document.getElementById('cheat');
+  const tab = document.getElementById('cheat-tab');
+  const setTab = () => { tab.textContent = panel.classList.contains('open') ? '◀ しまう' : '🍶 早見表'; };
+  tab.onclick = () => { panel.classList.toggle('open'); setTab(); };
+  if (window.innerWidth >= 1500) panel.classList.add('open');
+  setTab();
+})();
 
 /* ── 計算スペース(手書きメモ) ── */
 (() => {
