@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>シュゾマス オンライン — お酒の採点会</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bavaria-blue:#1a6bb5; --bavaria-blue-d:#0e4d87;
+  --beer-amber:#e8a020; --beer-gold:#f5c542; --beer-foam:#fdf6e3;
+  --wood:#6b4423; --wood-d:#4a2f18; --wood-l:#8a5c33;
+  --cream:#fff8ea; --ink:#3a2410;
+  --p-green:#3d9e4f; --p-red:#d24a43; --p-blue:#3a7bd5; --p-yellow:#e0b428;
+  --p-purple:#8e5bbf; --p-teal:#2aa8a0; --p-orange:#e07b28; --p-pink:#d16ba5;
+  --attr-kun:#8e5bbf; --attr-sou:#2aa8a0; --attr-jun:#e07b28; --attr-juku:#b04a4a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--ink);min-height:100vh;
+  background:
+    repeating-linear-gradient(45deg, rgba(26,107,181,.10) 0 28px, transparent 28px 56px),
+    repeating-linear-gradient(-45deg, rgba(26,107,181,.10) 0 28px, transparent 28px 56px),
+    linear-gradient(#eaf3fb,#dceaf7);
+}
+#app{max-width:1080px;margin:0 auto;padding:0 12px 40px}
+.bunting{display:flex;justify-content:center;gap:2px;height:26px;overflow:hidden}
+.bunting i{width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:22px solid var(--bavaria-blue)}
+.bunting i:nth-child(2n){border-top-color:var(--beer-gold)}
+.bunting i:nth-child(4n){border-top-color:#fff}
+.panel{
+  background:var(--cream);border:3px solid var(--wood);border-radius:14px;
+  box-shadow:0 4px 0 var(--wood-d), 0 8px 18px rgba(0,0,0,.18);
+  padding:16px;margin-top:14px;
+}
+h1,h2,h3{line-height:1.3}
+.btn{
+  font-family:inherit;font-weight:900;font-size:16px;cursor:pointer;
+  border:3px solid var(--wood-d);border-radius:12px;padding:10px 22px;
+  background:linear-gradient(var(--beer-gold),var(--beer-amber));color:var(--ink);
+  box-shadow:0 4px 0 var(--wood-d);transition:transform .06s;
+}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--wood-d)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.blue{background:linear-gradient(#5b9fe0,var(--bavaria-blue));color:#fff}
+.btn.ghost{background:var(--beer-foam)}
+input.txt{
+  font-family:inherit;font-size:16px;font-weight:700;padding:8px 12px;
+  border:2px solid var(--wood-l);border-radius:8px;
+}
+#bgm-ctrl{
+  position:fixed;top:34px;left:10px;z-index:70;display:flex;align-items:center;gap:8px;
+  background:var(--wood);border:3px solid var(--wood-d);border-radius:999px;
+  padding:4px 12px 4px 4px;box-shadow:0 3px 0 var(--wood-d);
+}
+#bgm-btn{width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;
+  background:var(--wood-l);color:var(--beer-foam);border:2px solid var(--wood-d)}
+#bgm-btn:hover{filter:brightness(1.15)}
+#bgm-vol{width:96px;accent-color:var(--beer-gold);cursor:pointer}
+#scr-title{text-align:center;padding-top:30px}
+#scr-title .logo{
+  display:inline-block;background:var(--wood);color:var(--beer-foam);
+  border:6px solid var(--wood-d);border-radius:18px;padding:26px 46px;
+  box-shadow:0 8px 0 var(--wood-d), 0 14px 30px rgba(0,0,0,.3);
+}
+#scr-title h1{font-size:50px;letter-spacing:.08em;color:var(--beer-gold);text-shadow:2px 3px 0 var(--wood-d)}
+#scr-title .sub{margin-top:6px;font-size:16px;color:var(--beer-foam)}
+.mugs{font-size:44px;margin:18px 0 4px}
+#conn{font-size:12px;font-weight:700;color:#8a7a5c;margin-top:8px}
+/* ロビー */
+.lobbyseat{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e2d5b8;border-radius:10px;padding:10px 14px;margin-top:8px}
+.lobbyseat .dot{width:14px;height:14px;border-radius:50%}
+.codebox{
+  display:inline-block;font-size:30px;font-weight:900;letter-spacing:.25em;
+  background:var(--ink);color:var(--beer-gold);border-radius:12px;padding:8px 18px 8px 24px;
+}
+#hud{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;margin-top:14px}
+.pcard{flex:1;min-width:170px;border-radius:12px;padding:8px 10px;color:#fff;
+  border:3px solid rgba(0,0,0,.25);box-shadow:0 3px 0 rgba(0,0,0,.25);position:relative}
+.pcard .nm{font-weight:900;font-size:15px}
+.pcard .stats{display:flex;gap:10px;margin-top:2px;font-weight:700}
+.pcard .stats span{background:rgba(0,0,0,.22);border-radius:8px;padding:1px 8px;font-size:14px}
+.pcard .open{margin-top:3px;font-size:12px;background:rgba(255,255,255,.92);color:var(--ink);border-radius:8px;padding:2px 6px}
+.pcard.you::after{content:"あなた";position:absolute;top:-10px;right:8px;background:var(--beer-gold);color:var(--ink);font-size:11px;font-weight:900;border-radius:8px;padding:1px 8px;border:2px solid var(--wood-d)}
+.pcard .rankchip{position:absolute;top:-10px;left:8px;background:#fff;color:var(--ink);font-size:11px;font-weight:900;border-radius:8px;padding:1px 8px;border:2px solid rgba(0,0,0,.3)}
+.pcard .subchip{position:absolute;bottom:-10px;right:8px;background:#fff;color:#1e7d33;font-size:11px;font-weight:900;border-radius:8px;padding:1px 8px;border:2px solid rgba(0,0,0,.3)}
+#roundbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  background:var(--wood);color:var(--beer-foam);border-radius:12px;padding:8px 16px;margin-top:14px;
+  border:3px solid var(--wood-d);box-shadow:0 3px 0 var(--wood-d);font-weight:900}
+#roundbar .stars{color:var(--beer-gold);letter-spacing:2px}
+#grid,#ms-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.agroup{min-width:0}
+.agrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}
+@media (max-width:900px){#grid,#ms-grid{grid-template-columns:repeat(2,1fr)}}
+.ing{background:#fff;border:3px solid #d9c9a8;border-radius:12px;padding:6px 4px 8px;
+  text-align:center;cursor:pointer;position:relative;transition:transform .08s, border-color .08s;user-select:none}
+.ing:hover{transform:translateY(-3px)}
+.ing.sel{border-color:var(--bavaria-blue);background:#eaf3ff;box-shadow:0 0 0 2px var(--bavaria-blue)}
+.ing.sel2{border-color:var(--bavaria-blue-d);background:#d5e8ff;box-shadow:0 0 0 3px var(--bavaria-blue-d)}
+.ing.dim{opacity:.45;cursor:not-allowed;transform:none}
+.ing .emo{font-size:24px;line-height:1.15}
+.ing img.fruit{width:52px;height:52px;object-fit:cover;border-radius:8px;display:block;margin:0 auto;border:1px solid #e6dcc4}
+.ing .id{font-size:10px;font-weight:700;color:#8a7a5c}
+.ing .price{font-size:12px;font-weight:900;color:#1e7d33}
+.ing .price.up{color:#c0392b}
+.ing .attr{position:absolute;top:-8px;right:-6px;width:24px;height:24px;border-radius:50%;
+  color:#fff;font-size:13px;font-weight:900;line-height:24px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3);z-index:1}
+.ing .mymark{position:absolute;top:-8px;left:-6px;background:var(--beer-gold);border:2px solid var(--wood-d);
+  border-radius:8px;font-size:10px;font-weight:900;padding:0 5px;z-index:1}
+.ing .knowndos{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  background:var(--ink);color:var(--beer-gold);font-size:11px;font-weight:900;border-radius:8px;padding:0 7px;white-space:nowrap}
+.a-A{background:var(--attr-kun)} .a-B{background:var(--attr-sou)} .a-C{background:var(--attr-jun)} .a-D{background:var(--attr-juku)}
+#bench{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.slot{width:78px;height:78px;border:3px dashed var(--wood-l);border-radius:12px;background:var(--beer-foam);
+  display:flex;align-items:center;justify-content:center;font-size:34px;position:relative}
+.slot.filled{border-style:solid;background:#fff}
+.slot img.fruit{width:66px;height:66px;object-fit:cover;border-radius:9px}
+.slot .x{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:#c0392b;color:#fff;
+  font-size:12px;font-weight:900;line-height:18px;text-align:center;cursor:pointer;border:2px solid #fff;z-index:1}
+#benchinfo{font-weight:900;font-size:15px}
+#benchinfo .cost{color:#1e7d33}
+#benchinfo .cost.over{color:#c0392b}
+#waitmsg{margin-top:10px;font-weight:900;color:var(--bavaria-blue-d)}
+#overlay{position:fixed;inset:0;background:rgba(30,18,6,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+#overlay.show{display:flex}
+#ovbox{background:var(--cream);border:4px solid var(--wood);border-radius:16px;max-width:640px;width:100%;
+  box-shadow:0 10px 0 var(--wood-d), 0 20px 50px rgba(0,0,0,.5);padding:20px;max-height:92vh;overflow:auto}
+#ovbox h2{text-align:center;color:var(--wood-d);margin-bottom:10px}
+.rrow{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e2d5b8;border-radius:10px;padding:8px 12px;margin-top:8px}
+.rrow .medal{font-size:26px;width:36px;text-align:center}
+.rrow.lowrank .medal{font-size:19px;opacity:.7}
+.rrow.lowrank .rnm{font-weight:700;color:#8a7a5c!important}
+#rb-timer{background:rgba(0,0,0,.25);border-radius:8px;padding:1px 10px}
+#rb-timer.hurry{background:#c0392b;color:#fff;animation:blink .5s infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.55}}
+.rrow .rnm{font-weight:900;flex:1}
+.sakechip{display:inline-block;background:var(--wood);color:var(--beer-gold);border-radius:8px;
+  padding:0 8px;font-size:12px;font-weight:900;vertical-align:middle}
+.rrow .delta{font-weight:900;font-size:14px;text-align:right}
+.rrow .delta .plus{color:#1e7d33}.rrow .delta .minus{color:#c0392b}
+.rrow.me{outline:3px solid var(--beer-gold)}
+.mysake{margin-top:12px;background:var(--wood);color:var(--beer-foam);border-radius:12px;padding:10px 14px;font-weight:900;text-align:center}
+.mysake b{color:var(--beer-gold);font-size:22px}
+#log{max-height:160px;overflow:auto;font-size:13px;background:#fff;border:2px solid #e2d5b8;border-radius:10px;padding:8px 12px;margin-top:8px}
+#log div{padding:2px 0;border-bottom:1px dashed #eee}
+#scr-result{text-align:center}
+#scr-result .winline{font-size:34px;font-weight:900;margin:10px 0;color:var(--wood-d)}
+.finrow{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e2d5b8;border-radius:10px;padding:8px 14px;margin-top:8px;text-align:left}
+details.rules{margin-top:12px}
+details.rules summary{cursor:pointer;font-weight:900;color:var(--bavaria-blue-d)}
+details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
+.hidden{display:none!important}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;
+  background:#c0392b;color:#fff;font-weight:900;border-radius:10px;padding:10px 20px;display:none}
+#memo{
+  position:fixed;top:50%;right:0;transform:translate(100%,-50%);z-index:60;
+  width:min(520px,92vw);background:var(--cream);border:3px solid var(--wood);border-right:none;
+  border-radius:14px 0 0 14px;box-shadow:-6px 6px 18px rgba(0,0,0,.25);
+  transition:transform .22s ease;padding:12px;
+}
+#memo.open{transform:translate(0,-50%)}
+#memo-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+#memo-tools b{font-size:14px;color:var(--wood-d);margin-right:auto}
+.mbtn{font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;
+  border:2px solid var(--wood-l);border-radius:8px;padding:5px 12px;background:#fff;color:var(--ink)}
+.mbtn.active{background:var(--bavaria-blue);border-color:var(--bavaria-blue-d);color:#fff}
+.mbtn:hover{filter:brightness(.95)}
+#memo-canvas{display:block;width:100%;height:min(620px,72vh);background:#fff;
+  border:2px solid #e2d5b8;border-radius:10px;touch-action:none;cursor:crosshair}
+#memo-canvas.eraser{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="13" fill="rgba(255,255,255,0.65)" stroke="black" stroke-width="2"/></svg>') 15 15, cell;
+}
+#memo-tab{
+  position:absolute;left:-44px;top:14px;
+  font-family:inherit;font-weight:900;font-size:14px;line-height:1.25;cursor:pointer;
+  background:var(--wood);color:var(--beer-foam);border:3px solid var(--wood-d);border-right:none;
+  border-radius:12px 0 0 12px;padding:14px 9px;box-shadow:-3px 3px 8px rgba(0,0,0,.25);
+  writing-mode:vertical-rl;
+}
+#memo-tab:hover{background:var(--wood-l)}
+/* ── 属性グループ見出し ── */
+.attrhead{color:#fff;border-radius:8px;padding:3px 10px;font-weight:900;font-size:13px;white-space:nowrap}
+/* ── 完成酒早見表(右側の引き出し・メモの下) ── */
+#cheat{
+  position:fixed;top:50%;right:0;transform:translate(100%,-50%);z-index:59;
+  width:260px;background:var(--cream);border:3px solid var(--wood);border-right:none;
+  border-radius:14px 0 0 14px;box-shadow:-6px 6px 18px rgba(0,0,0,.25);
+  transition:transform .22s ease;padding:12px;
+}
+#cheat.open{transform:translate(0,-50%)}
+#cheat-tab{
+  position:absolute;left:-44px;top:130px;
+  font-family:inherit;font-weight:900;font-size:14px;line-height:1.25;cursor:pointer;
+  background:var(--wood);color:var(--beer-foam);border:3px solid var(--wood-d);border-right:none;
+  border-radius:12px 0 0 12px;padding:14px 9px;box-shadow:-3px 3px 8px rgba(0,0,0,.25);
+  writing-mode:vertical-rl;
+}
+#cheat-tab:hover{background:var(--wood-l)}
+/* ── 今回の度数一覧(左・常時表示) ── */
+#dosset{
+  position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:44;
+  width:150px;background:var(--cream);border:3px solid var(--wood);border-left:none;
+  border-radius:0 14px 14px 0;box-shadow:6px 6px 18px rgba(0,0,0,.25);padding:10px;
+}
+#dosset h4{font-size:13px;color:var(--wood-d);line-height:1.4}
+#dosset h4 small{font-size:10px;color:#8a7a5c;font-weight:700}
+#dosset .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
+.dchip{background:#fff;border:1px solid #d9c9a8;border-radius:6px;text-align:center;font-size:11px;font-weight:900;padding:2px 0}
+@media (max-width:1420px){#dosset{display:none}}
+#cheat h4{font-size:14px;color:var(--wood-d)}
+#cheat .csec{font-size:11px;font-weight:700;color:#8a7a5c;margin-top:10px;border-top:1px dashed #d9c9a8;padding-top:8px}
+.crow{display:flex;align-items:center;gap:4px;margin-top:6px;font-weight:700;font-size:12px}
+.abadge{width:22px;height:22px;border-radius:50%;color:#fff;font-size:12px;font-weight:900;line-height:22px;text-align:center;display:inline-block;flex:none}
+.cname{margin-left:auto;background:var(--wood);color:var(--beer-gold);border-radius:8px;padding:1px 10px;font-weight:900;font-size:13px}
+@media (max-width:640px){
+  #scr-title h1{font-size:34px}
+  .slot{width:60px;height:60px;font-size:28px}
+  .slot img.fruit{width:50px;height:50px}
+}
+</style>
+</head>
+<body>
+<div class="bunting" id="bunting"></div>
+<div id="bgm-ctrl">
+  <button id="bgm-btn" title="BGM ON/OFF">🔊</button>
+  <input id="bgm-vol" type="range" min="0" max="100" value="35" title="BGM音量">
+</div>
+<audio id="bgm" src="Swing_Men.mp3" loop preload="auto"></audio>
+<div id="app">
+
+  <!-- タイトル -->
+  <div id="scr-title">
+    <div class="mugs">🍺🥨🍻</div>
+    <div class="logo">
+      <h1>シュゾマス<br><span style="font-size:22px;letter-spacing:.2em">オンライン</span></h1>
+      <div class="sub">— お酒の採点会 —</div>
+    </div>
+    <div class="panel" style="max-width:560px;margin:20px auto 0;text-align:left">
+      <p style="font-weight:700">24種の食材から3つ選んで、合計 <b>ちょうど3.0%</b> のお酒を最初に造った人が優勝!<br>
+      友達と合言葉(招待コード)で集まって対戦しましょう(2〜8人)。足りない席はCPUで埋められます。</p>
+      <div style="margin-top:12px">
+        名前: <input id="inp-name" class="txt" maxlength="10" style="width:150px" placeholder="なまえ">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center">
+        <button class="btn" onclick="createRoom()">🏠 部屋を作る</button>
+        <span style="font-weight:900">or</span>
+        <input id="inp-code" class="txt" maxlength="5" style="width:110px;text-transform:uppercase" placeholder="コード">
+        <button class="btn blue" onclick="joinRoom()">🚪 参加する</button>
+      </div>
+      <div id="conn">サーバーに接続中…</div>
+      <details class="rules">
+        <summary>📜 ルールを読む</summary>
+        <div class="rb">
+          <b>目的:</b> 合計ちょうど3.0%のお酒を最初に造る。<br>
+          <b>準備:</b> 24食材に度数(0.0〜2.8%)がランダムに配られる(非公開)。各自マイ食材を1つ選び、その度数だけ自分に見える。初期値は $10・評価5。<br>
+          <b>毎ラウンド:</b> 食材を3つ選んで醸造(同じ食材は2つまで)。使用料は同じ食材を買うたびに $1→$2→$3…と値上がり(自分だけ)。金欠なら休憩(+$5、評価−1)。<br>
+          <b>時間制限:</b> 1ラウンドの考慮時間は1分。超過すると賞金なし・評価−1。<br>
+          <b>公開:</b> 全員同時公開。見えるのは順位だけ。<br>
+          <b>採点:</b> 3.1%以上は失敗(評価−1・所持金半減)。それ以外は度数の高い順に賞金(1位$10/2位$6/3位$4/4位$3/5位以下$2)。1位は評価+1。失敗者がいないラウンドは最下位が評価−1。<br>
+          <b>評価0:</b> マイ食材とお酒の度数が全員に公開され続ける。<br>
+          <b>終了:</b> 3.0%達成で即勝利。または評価が残った最後の1人が勝利。
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ロビー -->
+  <div id="scr-lobby" class="hidden">
+    <div class="panel" style="max-width:560px;margin:20px auto 0;text-align:center">
+      <h2>🏠 ロビー</h2>
+      <p style="margin-top:8px;font-weight:700">この招待コードを友達に伝えよう</p>
+      <div style="margin-top:6px"><span class="codebox" id="lobby-code">-----</span>
+        <button class="btn ghost" style="padding:6px 14px;font-size:14px;vertical-align:middle;margin-left:6px" onclick="copyCode()">📋 コピー</button></div>
+      <div id="lobby-seats" style="max-width:420px;margin:14px auto 0;text-align:left"></div>
+      <div id="lobby-host" style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn ghost" onclick="addCpu()">🤖 CPUを追加</button>
+        <button class="btn ghost" onclick="removeCpu()">➖ CPUを減らす</button>
+        <button class="btn" id="btn-start" onclick="startGameReq()">🍻 開店する!</button>
+      </div>
+      <p id="lobby-wait" style="margin-top:10px;font-weight:700;color:#8a7a5c">ホストの開始を待っています…</p>
+    </div>
+  </div>
+
+  <!-- マイ食材選択 -->
+  <div id="scr-myselect" class="hidden">
+    <div id="roundbar">
+      <span>🍇 マイ食材をえらぶ</span>
+      <span class="stars" id="ms-stars"></span>
+    </div>
+    <div class="panel">
+      <p style="font-weight:700">好きな食材を1つ選んでください。<b>その食材の度数だけ</b>、あなたにこっそり教えられます。(早い者勝ち・他の人と同じ食材は選べません)</p>
+      <div id="ms-grid"></div>
+      <p id="ms-wait" class="hidden" style="margin-top:10px;font-weight:900;color:var(--bavaria-blue-d)">他のプレイヤーの選択を待っています…</p>
+    </div>
+  </div>
+
+  <!-- メインゲーム -->
+  <div id="scr-game" class="hidden">
+    <div id="roundbar">
+      <span id="rb-round"></span>
+      <span id="rb-timer" title="1ラウンドの考慮時間は1分"></span>
+      <span class="stars" id="rb-stars"></span>
+      <span id="rb-my"></span>
+    </div>
+    <div id="hud"></div>
+    <div class="panel">
+      <h3>🍶 屋台で食材を3つえらぶ <span style="font-size:12px;font-weight:700;color:#8a7a5c">(同じ食材は2つまで / 値札はあなた専用価格)</span></h3>
+      <div id="grid"></div>
+      <div id="bench">
+        <div class="slot" id="slot0">＋</div>
+        <div class="slot" id="slot1">＋</div>
+        <div class="slot" id="slot2">＋</div>
+        <div id="benchinfo"></div>
+        <div style="flex:1"></div>
+        <button class="btn" id="btn-brew" onclick="submitBrew()">🍺 醸造する!</button>
+        <button class="btn ghost" id="btn-rest" onclick="submitRest()">😴 休憩 (+$5 / 評価−1)</button>
+      </div>
+      <p id="waitmsg" class="hidden"></p>
+    </div>
+    <div class="panel">
+      <h3>📋 記録</h3>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div id="scr-result" class="hidden">
+    <div class="panel">
+      <div class="mugs">🏆🍻🎉</div>
+      <div class="winline" id="res-win"></div>
+      <p id="res-reason" style="font-weight:700"></p>
+      <p style="margin-top:10px">今回の正解(3.0%になる組み合わせ)は <b id="res-patterns" style="font-size:20px;color:var(--bavaria-blue-d)"></b> 通りありました
+        <span id="res-starname"></span></p>
+      <div id="res-standings" style="max-width:520px;margin:14px auto 0"></div>
+      <div style="margin-top:18px">
+        <button class="btn" id="btn-again" onclick="backToLobby()">🏠 ロビーへもどる</button>
+      </div>
+      <p id="res-wait" style="margin-top:8px;font-weight:700;color:#8a7a5c">ホストの操作を待っています…</p>
+    </div>
+  </div>
+</div>
+
+<!-- 今回の度数一覧(左・常時表示) -->
+<div id="dosset" class="hidden">
+  <h4>🌡 今回の度数<br><small>24食材の内訳(昇順)<br>どれがどれかは秘密</small></h4>
+  <div class="chips" id="dosset-chips"></div>
+</div>
+
+<!-- 完成酒早見表 -->
+<div id="cheat">
+  <button id="cheat-tab" title="早見表を開く/しまう">🍶 早見表</button>
+  <h4>🍶 完成酒 早見表</h4>
+  <div class="csec" style="border-top:none;padding-top:2px">同じ属性が2つ以上 → その属性のお酒</div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-A">薫</span><span>＋なんでも</span><span class="cname">薫酒</span></div>
+  <div class="crow"><span class="abadge a-B">爽</span><span class="abadge a-B">爽</span><span>＋なんでも</span><span class="cname">爽酒</span></div>
+  <div class="crow"><span class="abadge a-C">醇</span><span class="abadge a-C">醇</span><span>＋なんでも</span><span class="cname">醇酒</span></div>
+  <div class="crow"><span class="abadge a-D">熟</span><span class="abadge a-D">熟</span><span>＋なんでも</span><span class="cname">熟酒</span></div>
+  <div class="csec">3つともバラバラ → 特別酒「花鳥風月」</div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-B">爽</span><span class="abadge a-C">醇</span><span class="cname">花</span></div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-B">爽</span><span class="abadge a-D">熟</span><span class="cname">鳥</span></div>
+  <div class="crow"><span class="abadge a-A">薫</span><span class="abadge a-C">醇</span><span class="abadge a-D">熟</span><span class="cname">風</span></div>
+  <div class="crow"><span class="abadge a-B">爽</span><span class="abadge a-C">醇</span><span class="abadge a-D">熟</span><span class="cname">月</span></div>
+</div>
+
+<!-- 計算スペース -->
+<div id="memo">
+  <button id="memo-tab" title="計算スペースを開く/しまう">📝 メモ</button>
+  <div id="memo-tools">
+    <b>📝 計算スペース</b>
+    <button class="mbtn active" id="mb-pen">✏️ ペン</button>
+    <button class="mbtn" id="mb-eraser">🧽 消しゴム</button>
+    <button class="mbtn" id="mb-clear">🗑 すべて消す</button>
+  </div>
+  <canvas id="memo-canvas"></canvas>
+</div>
+
+<!-- 公開オーバーレイ -->
+<div id="overlay"><div id="ovbox">
+  <h2 id="ov-title"></h2>
+  <div id="ov-rows"></div>
+  <div class="mysake" id="ov-mysake"></div>
+  <div style="text-align:center;margin-top:14px">
+    <button class="btn blue" id="ov-next" onclick="closeOverlay()">つぎのラウンドへ ▶</button>
+  </div>
+</div></div>
+
+<div id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+'use strict';
+/* ════════ 公開情報だけで動くクライアント。度数はサーバーから届く自分の分だけ ════════ */
+const ATTR_NAME = { A: '薫', B: '爽', C: '醇', D: '熟' };
+const SPECIAL_BY_MISSING = { D: '花', C: '鳥', B: '風', A: '月' };
+const STAR_NAMES = { 1: '楽勝', 2: '簡単', 3: '普通', 4: '難しい', 5: '激ムズ' };
+const EMOJI = ['🍇','🍈','🍉','🍊','🍋','🍌','🍍','🥭','🍎','🍏','🍐','🍑','🍒','🍓','🫐','🥝','🍅','🥥','🌰','🫒','🍆','🥕','🌽','🫑'];
+const FRUIT_DIR = '素材　果実/';
+const PCOLORS = ['var(--p-green)','var(--p-red)','var(--p-blue)','var(--p-yellow)',
+  'var(--p-purple)','var(--p-teal)','var(--p-orange)','var(--p-pink)'];
+const dosStr = d => (d / 10).toFixed(1) + '%';
+
+/* 属性から完成酒名(属性は公開情報なのでクライアント計算OK) */
+function sakeLabelFromAttrs(attrs3) {
+  const cnt = { A:0,B:0,C:0,D:0 };
+  attrs3.forEach(a => cnt[a]++);
+  const max = Math.max(cnt.A, cnt.B, cnt.C, cnt.D);
+  if (max === 1) return SPECIAL_BY_MISSING[['A','B','C','D'].find(a => cnt[a] === 0)];
+  return ATTR_NAME[['A','B','C','D'].find(a => cnt[a] === max)] + '酒';
+}
+function pickCost(buyCount, picks) {
+  const tmp = {}; let cost = 0;
+  for (const id of picks) { tmp[id] = (tmp[id] ?? (buyCount[id] || 0)) + 1; cost += tmp[id]; }
+  return cost;
+}
+function isValidPicks(picks) {
+  if (!picks || picks.length !== 3) return false;
+  const cnt = {}; picks.forEach(id => cnt[id] = (cnt[id] || 0) + 1);
+  return Math.max(...Object.values(cnt)) <= 2;
+}
+const ATTR_ORDER = ['A','B','C','D'];
+/* 属性ごとの横並びグループを構築 */
+function buildGroups(g, list, makeCard) {
+  g.innerHTML = '';
+  ATTR_ORDER.forEach(attr => {
+    const ings = list.filter(x => x.attr === attr).sort((a, b) => a.id - b.id);
+    if (!ings.length) return;
+    const grp = document.createElement('div');
+    grp.className = 'agroup';
+    const head = document.createElement('div');
+    head.className = 'attrhead a-' + attr;
+    head.textContent = `${ATTR_NAME[attr]} No.${ings[0].id}〜${ings[ings.length - 1].id}`;
+    grp.appendChild(head);
+    const ag = document.createElement('div');
+    ag.className = 'agrid';
+    ings.forEach(ing => ag.appendChild(makeCard(ing)));
+    grp.appendChild(ag);
+    g.appendChild(grp);
+  });
+}
+/* 今回の度数一覧(公開情報: 内訳セットのみ) */
+function renderDosSet() {
+  const box = document.getElementById('dosset');
+  const set = ST && ST.pub.dosSet;
+  const inGame = ST && ['myselect', 'play', 'ended'].includes(ST.pub.phase);
+  box.classList.toggle('hidden', !set || !inGame);
+  if (!set || !inGame) return;
+  const chips = document.getElementById('dosset-chips');
+  chips.innerHTML = '';
+  set.forEach(d => {
+    const c = document.createElement('div');
+    c.className = 'dchip';
+    c.textContent = dosStr(d);
+    chips.appendChild(c);
+  });
+}
+function fruitHTML(id) {
+  return `<img class="fruit" src="${FRUIT_DIR}${id}.png" alt="No.${id}" loading="lazy"
+    onerror="this.style.display='none';this.nextElementSibling.style.display=''"><div class="emo" style="display:none">${EMOJI[id-1]}</div>`;
+}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function starTxt(n){return '★'.repeat(n)+'☆'.repeat(5-n)+' '+STAR_NAMES[n];}
+
+(() => { const b = document.getElementById('bunting'); for (let i=0;i<60;i++) b.appendChild(document.createElement('i')); })();
+
+/* ── BGM ── */
+const bgm = document.getElementById('bgm');
+const bgmBtn = document.getElementById('bgm-btn');
+const bgmVol = document.getElementById('bgm-vol');
+let bgmOn = true;
+try {
+  const sv = localStorage.getItem('shuzomas_bgm_vol');
+  if (sv !== null) bgmVol.value = sv;
+  if (localStorage.getItem('shuzomas_bgm_on') === '0') bgmOn = false;
+} catch (e) {}
+function applyVol(){ bgm.volume = bgmVol.value / 100; }
+function setBgm(on){
+  bgmOn = on;
+  bgmBtn.textContent = on ? '🔊' : '🔇';
+  if (on) { applyVol(); bgm.play().catch(()=>{}); } else bgm.pause();
+  try { localStorage.setItem('shuzomas_bgm_on', on ? '1' : '0'); } catch (e) {}
+}
+bgmBtn.onclick = () => setBgm(!bgmOn);
+bgmVol.oninput = () => { applyVol(); if (bgmOn && bgm.paused) bgm.play().catch(()=>{});
+  try { localStorage.setItem('shuzomas_bgm_vol', bgmVol.value); } catch (e) {} };
+setBgm(bgmOn);
+/* ── 効果音(SE): WebAudioで軽量に合成 ── */
+let AC = null;
+function se(freq, dur = 0.07, type = 'square', vol = 0.2, slide = 0) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, AC.currentTime + dur);
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const seClick  = () => se(600, 0.05, 'square', 0.12);
+const sePick   = () => se(880, 0.08, 'triangle', 0.22);
+const seUnpick = () => se(440, 0.06, 'triangle', 0.15);
+const seSubmit = () => { se(523, 0.08, 'triangle', 0.22); setTimeout(() => se(784, 0.12, 'triangle', 0.22), 90); };
+const seReveal = () => { se(659, 0.1, 'triangle', 0.2); setTimeout(() => se(880, 0.15, 'triangle', 0.2), 110); };
+const seWin    = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.2, 'triangle', 0.25), i * 130));
+document.addEventListener('click', e => {
+  if (e.target.closest && e.target.closest('.btn, .mbtn')) seClick();
+});
+const bgmKick = () => { if (bgmOn && bgm.paused) bgm.play().catch(()=>{});
+  document.removeEventListener('pointerdown', bgmKick); document.removeEventListener('keydown', bgmKick); };
+document.addEventListener('pointerdown', bgmKick);
+document.addEventListener('keydown', bgmKick);
+
+/* ── 通信 ── */
+const socket = io();
+let ST = null;      // {pub, priv} 最新状態
+let picks = [];
+let overlayOpen = false;
+let pendingEnd = null; // reveal.ended時のendInfo
+
+const connEl = document.getElementById('conn');
+socket.on('connect', () => { connEl.textContent = '✅ サーバー接続OK'; });
+socket.on('disconnect', () => { connEl.textContent = '⚠ サーバーから切断されました。再読み込みしてください'; toast('サーバーから切断されました'); });
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+function show(id) {
+  ['scr-title','scr-lobby','scr-myselect','scr-game','scr-result'].forEach(s =>
+    document.getElementById(s).classList.toggle('hidden', s !== id));
+}
+function myName() {
+  const v = document.getElementById('inp-name').value.trim();
+  try { if (v) localStorage.setItem('shuzomas_name', v); } catch (e) {}
+  return v;
+}
+try { const n = localStorage.getItem('shuzomas_name'); if (n) document.getElementById('inp-name').value = n; } catch (e) {}
+
+function createRoom() {
+  socket.emit('createRoom', { name: myName() }, res => {
+    if (!res.ok) return toast(res.error || 'エラー');
+  });
+}
+function joinRoom() {
+  const code = document.getElementById('inp-code').value.trim().toUpperCase();
+  if (code.length !== 5) return toast('5文字の招待コードを入れてください');
+  socket.emit('joinRoom', { code, name: myName() }, res => {
+    if (!res.ok) return toast(res.error || 'エラー');
+  });
+}
+function copyCode() {
+  const code = ST?.pub?.code || '';
+  (navigator.clipboard ? navigator.clipboard.writeText(code) : Promise.reject())
+    .then(() => toast('コピーしました: ' + code))
+    .catch(() => toast('コード: ' + code));
+}
+function addCpu() { socket.emit('addCpu', {}, r => { if (!r.ok) toast(r.error); }); }
+function removeCpu() { socket.emit('removeCpu', {}, () => {}); }
+function startGameReq() { socket.emit('startGame', {}, r => { if (!r.ok) toast(r.error); }); }
+function backToLobby() { socket.emit('backToLobby', {}, () => {}); }
+
+/* ── 残り時間表示 ── */
+setInterval(() => {
+  const el = document.getElementById('rb-timer');
+  if (!ST || ST.pub.phase !== 'play' || !ST.pub.deadline) { el.textContent = ''; el.className = ''; return; }
+  if (ST.priv.submitted) { el.textContent = '✔ 提出済み'; el.className = ''; return; }
+  const remain = Math.max(0, Math.ceil((ST.pub.deadline - Date.now()) / 1000));
+  el.textContent = `⏱ ${remain}秒`;
+  el.className = remain <= 10 ? 'hurry' : '';
+}, 300);
+
+/* ── 状態受信 → 画面振り分け ── */
+let lastPhase = null;
+socket.on('state', (st) => {
+  ST = st;
+  if (st.pub.phase === 'myselect' && lastPhase !== 'myselect' && st.pub.round === 0) {
+    document.getElementById('log').innerHTML = ''; // 新しい試合開始でログをリセット
+  }
+  lastPhase = st.pub.phase;
+  if (overlayOpen) return; // 公開演出中は裏で更新だけ
+  render();
+});
+
+function render() {
+  if (!ST) return;
+  const { pub, priv } = ST;
+  renderDosSet();
+  if (pub.phase === 'lobby') renderLobby();
+  else if (pub.phase === 'myselect') renderMySelect();
+  else if (pub.phase === 'play') renderGame();
+  else if (pub.phase === 'ended') renderResult();
+}
+
+/* ── ロビー ── */
+function renderLobby() {
+  const { pub, priv } = ST;
+  show('scr-lobby');
+  picks = [];
+  document.getElementById('lobby-code').textContent = pub.code;
+  const box = document.getElementById('lobby-seats');
+  box.innerHTML = '';
+  pub.seats.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'lobbyseat';
+    d.innerHTML = `<span class="dot" style="background:${PCOLORS[i]}"></span>
+      <b style="flex:1">${esc(s.name)}${i === priv.myIdx ? ' (あなた)' : ''}</b>
+      <span>${s.isCpu ? '🤖 CPU' : '🧑 プレイヤー'}${i === 0 ? ' / ホスト' : ''}</span>`;
+    box.appendChild(d);
+  });
+  if (pub.seats.length < 8) {
+    const d = document.createElement('div');
+    d.className = 'lobbyseat';
+    d.innerHTML = `<span class="dot" style="background:#ccc"></span>
+      <span style="color:#aaa;flex:1">空席 — あと${8 - pub.seats.length}人参加できます (2〜8人で開始可)</span>`;
+    box.appendChild(d);
+  }
+  const isHost = priv.myIdx === 0;
+  document.getElementById('lobby-host').style.display = isHost ? '' : 'none';
+  document.getElementById('lobby-wait').style.display = isHost ? 'none' : '';
+  document.getElementById('btn-start').disabled = pub.seats.length < 2;
+}
+
+/* ── マイ食材選択 ── */
+function renderMySelect() {
+  const { pub, priv } = ST;
+  show('scr-myselect');
+  document.getElementById('ms-stars').textContent = '難易度 ' + starTxt(pub.stars);
+  const chosenMine = !!priv.myId;
+  buildGroups(document.getElementById('ms-grid'), pub.ingredients, ing => {
+    const d = document.createElement('div');
+    const taken = pub.takenMyIds.includes(ing.id);
+    d.className = 'ing' + (taken ? ' dim' : '') + (priv.myId === ing.id ? ' sel2' : '');
+    d.innerHTML = `<span class="attr a-${ing.attr}">${ATTR_NAME[ing.attr]}</span>
+      ${fruitHTML(ing.id)}<div class="id">No.${ing.id}</div>` +
+      (priv.myId === ing.id ? `<span class="knowndos">${dosStr(priv.myDos)}</span>` : '');
+    if (!taken && !chosenMine) d.onclick = () => socket.emit('chooseMy', { ingId: ing.id }, r => { if (!r.ok) toast(r.error); });
+    return d;
+  });
+  document.getElementById('ms-wait').classList.toggle('hidden', !chosenMine);
+}
+
+/* ── 人間に見える度数(自分のマイ食材 + 評価0の人のマイ食材) ── */
+function knownDos(id) {
+  const { pub, priv } = ST;
+  if (priv.myId === id) return priv.myDos;
+  for (const s of pub.seats) if (s.openMyId === id) return s.openMyDos;
+  return null;
+}
+
+/* ── メインゲーム ── */
+function renderGame() {
+  const { pub, priv } = ST;
+  show('scr-game');
+  document.getElementById('rb-round').textContent = `第 ${pub.round + 1} ラウンド`;
+  document.getElementById('rb-stars').textContent = starTxt(pub.stars);
+  document.getElementById('rb-my').textContent = `マイ食材 No.${priv.myId} = ${dosStr(priv.myDos)}`;
+
+  const hud = document.getElementById('hud');
+  hud.innerHTML = '';
+  pub.seats.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'pcard' + (i === priv.myIdx ? ' you' : '');
+    d.style.background = PCOLORS[i];
+    let open = '';
+    if (s.revealed) {
+      open = `<div class="open">🔍 マイ食材 No.${s.openMyId}=${dosStr(s.openMyDos)}` +
+        (s.openSakeDos !== null ? ` / 直近のお酒 ${dosStr(s.openSakeDos)}` : '') + `</div>`;
+    }
+    const rank = s.lastRank ? `<span class="rankchip">前回 ${s.lastRank}位${s.lastLabel ? '・' + s.lastLabel : ''}</span>` :
+      (s.lastLabel ? `<span class="rankchip">前回 ${s.lastLabel}</span>` : '');
+    const sub = s.submitted ? `<span class="subchip">✔ 提出済み</span>` : '';
+    d.innerHTML = `${rank}${sub}<div class="nm">${esc(s.name)}${s.isCpu ? ' 🤖' : ''}${!s.connected ? ' ⚠' : ''}</div>
+      <div class="stats"><span>💰 $${s.money}</span><span>⭐ ${s.eval}</span></div>${open}`;
+    hud.appendChild(d);
+  });
+
+  const me = pub.seats[priv.myIdx];
+  buildGroups(document.getElementById('grid'), pub.ingredients, ing => {
+    const cntInPicks = picks.filter(x => x === ing.id).length;
+    const d = document.createElement('div');
+    d.className = 'ing' + (cntInPicks === 1 ? ' sel' : cntInPicks === 2 ? ' sel2' : '');
+    const nextPrice = (priv.buyCount[ing.id] || 0) + cntInPicks + 1;
+    const kd = knownDos(ing.id);
+    d.innerHTML =
+      `<span class="attr a-${ing.attr}">${ATTR_NAME[ing.attr]}</span>` +
+      (priv.myId === ing.id ? `<span class="mymark">マイ</span>` : '') +
+      `${fruitHTML(ing.id)}<div class="id">No.${ing.id}</div>` +
+      `<div class="price${nextPrice > 1 ? ' up' : ''}">$${nextPrice}</div>` +
+      (kd !== null ? `<span class="knowndos">${dosStr(kd)}</span>` : '');
+    if (cntInPicks >= 2 && picks.length < 3) d.classList.add('dim');
+    if (!priv.submitted) d.onclick = () => togglePick(ing.id);
+    return d;
+  });
+
+  renderBench();
+}
+
+function togglePick(id) {
+  const cnt = picks.filter(x => x === id).length;
+  if (picks.length < 3 && cnt < 2) { picks.push(id); sePick(); }
+  else if (cnt > 0) { picks.splice(picks.indexOf(id), 1); seUnpick(); }
+  renderGame();
+}
+
+function renderBench() {
+  const { pub, priv } = ST;
+  for (let s = 0; s < 3; s++) {
+    const el = document.getElementById('slot' + s);
+    const id = picks[s];
+    if (id) {
+      el.className = 'slot filled';
+      el.innerHTML = `${fruitHTML(id)}<span class="x">✕</span>`;
+      el.querySelector('.x').onclick = (ev) => { ev.stopPropagation(); picks.splice(s, 1); renderGame(); };
+    } else {
+      el.className = 'slot';
+      el.textContent = '＋';
+    }
+  }
+  const info = document.getElementById('benchinfo');
+  const brewBtn = document.getElementById('btn-brew');
+  const restBtn = document.getElementById('btn-rest');
+  const wait = document.getElementById('waitmsg');
+  const money = pub.seats[priv.myIdx].money;
+  if (priv.submitted) {
+    info.textContent = '';
+    brewBtn.disabled = true;
+    restBtn.disabled = true;
+    const waiting = pub.seats.filter(s => !s.isCpu && !s.submitted).map(s => s.name);
+    wait.textContent = '✔ 提出しました。他のプレイヤーを待っています… ' + (waiting.length ? `(待ち: ${waiting.join('・')})` : '');
+    wait.classList.remove('hidden');
+    return;
+  }
+  wait.classList.add('hidden');
+  if (picks.length === 3) {
+    const cost = pickCost(priv.buyCount, picks);
+    const ok = isValidPicks(picks) && cost <= money;
+    const attrs = picks.map(id => pubAttr(id));
+    info.innerHTML = `使用料 <span class="cost${cost > money ? ' over' : ''}">$${cost}</span> / 所持金 $${money}` +
+      ` <span style="color:#8a7a5c">→ ${sakeLabelFromAttrs(attrs)}</span>`;
+    brewBtn.disabled = !ok;
+  } else {
+    info.innerHTML = picks.length === 0 ? '食材をタップして選ぼう' : `あと${3 - picks.length}つ`;
+    brewBtn.disabled = true;
+  }
+  restBtn.disabled = !priv.canRest;
+  restBtn.title = restBtn.disabled ? '休憩できるのは、最小コストのお酒すら買えないときだけ' : '';
+}
+function pubAttr(id) { return ST.pub.ingredients.find(g => g.id === id).attr; }
+
+function submitBrew() {
+  socket.emit('submit', { type: 'brew', picks: [...picks] }, r => {
+    if (!r.ok) return toast(r.error);
+    picks = [];
+    seSubmit();
+  });
+}
+function submitRest() {
+  socket.emit('submit', { type: 'rest' }, r => { if (!r.ok) toast(r.error); });
+}
+
+/* ── 公開演出 ── */
+socket.on('reveal', (rv) => {
+  overlayOpen = true;
+  pendingEnd = rv.ended ? rv.endInfo : null;
+  picks = [];
+  document.getElementById('ov-title').textContent = `🍻 第${rv.roundNo}ラウンド 同時公開!`;
+  const rows = document.getElementById('ov-rows');
+  rows.innerHTML = '';
+  const seats = ST.pub.seats;
+  const myIdx = ST.priv.myIdx;
+  const order = [...rv.results].sort((a, b) =>
+    (a.rank ?? 9) - (b.rank ?? 9) || (a.failed ? 1 : 0) - (b.failed ? 1 : 0));
+  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const NUM_EMOJI = ['', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
+  order.forEach(res => {
+    const i = res.idx;
+    const d = document.createElement('div');
+    const low = res.rank && res.rank >= 4;
+    d.className = 'rrow' + (i === myIdx ? ' me' : '') + (low ? ' lowrank' : '');
+    let medal, note = '';
+    if (res.type === 'rest') { medal = '😴'; note = '休憩'; }
+    else if (res.type === 'timeout') { medal = '⏰'; note = '時間切れ…'; }
+    else if (res.winner) { medal = '🏆'; note = 'ちょうど3.0%!!'; }
+    else if (res.failed) { medal = '💥'; note = '失敗(3.1%以上)'; }
+    else if (res.rank) { medal = medals[res.rank] || NUM_EMOJI[res.rank] || `${res.rank}位`; }
+    else { medal = '🍺'; } // 優勝者が出たラウンドの他プレイヤー(順位なし)
+    const ed = res.evalDelta;
+    // お金の表記: 収支ではなく「もらった賞金」を表示(失敗のみ損失を表示)
+    let moneyTxt;
+    if (res.winner) moneyTxt = '';
+    else if (res.type === 'rest') moneyTxt = `<span class="plus">+$5</span>`;
+    else if (res.type === 'timeout') moneyTxt = `<span class="minus">賞金なし</span>`;
+    else if (res.failed) moneyTxt = `<span class="minus">−$${Math.abs(res.moneyDelta)}</span>`;
+    else moneyTxt = `<span class="plus">賞金 +$${res.pay || 0}</span>`;
+    const labelTxt = res.label ? `<span class="sakechip">${res.label}</span>` : '';
+    const openTxt = res.openDos !== null ? ` <small>🔍度数公開: ${dosStr(res.openDos)}</small>` : '';
+    d.innerHTML = `<div class="medal">${medal}</div>
+      <div class="rnm" style="color:${PCOLORS[i]}">${esc(seats[i].name)} ${labelTxt} <small>${note}</small>${openTxt}</div>
+      <div class="delta">
+        ${moneyTxt}
+        ${ed !== 0 ? `<span class="${ed > 0 ? 'plus' : 'minus'}"> ⭐${ed > 0 ? '+' : ''}${ed}</span>` : ''}
+      </div>`;
+    rows.appendChild(d);
+    if (res.openDos !== null && i !== myIdx) {
+      logLine(`R${rv.roundNo}: 🔍${seats[i].name}のお酒は ${dosStr(res.openDos)}(評価0のため公開)`);
+    }
+  });
+  const ms = document.getElementById('ov-mysake');
+  if (rv.mine.type === 'brew') {
+    ms.innerHTML = `あなたのお酒(あなただけに見える): <b>${rv.mine.label} ${dosStr(rv.mine.dos)}</b>`;
+    logLine(`R${rv.roundNo}: あなたは ${rv.mine.picks.map(id => 'No.' + id).join('・')} で ${rv.mine.label}(${dosStr(rv.mine.dos)}) → ` +
+      (rv.mine.winner ? '🏆優勝!' : rv.mine.failed ? '💥失敗' : rv.mine.rank ? `${rv.mine.rank}位` : '─'));
+  } else if (rv.mine.type === 'timeout') {
+    ms.innerHTML = `⏰ 時間切れ… (賞金なし / 評価−1)`;
+    logLine(`R${rv.roundNo}: あなたは時間切れ (評価−1)`);
+  } else {
+    ms.innerHTML = `あなたは休憩しました (+$5 / 評価−1)`;
+    logLine(`R${rv.roundNo}: あなたは休憩 (+$5 / 評価−1)`);
+  }
+  document.getElementById('ov-next').textContent = rv.ended ? '結果を見る 🏆' : 'つぎのラウンドへ ▶';
+  document.getElementById('overlay').classList.add('show');
+  if (rv.results.some(x => x.winner)) seWin(); else seReveal();
+});
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+  overlayOpen = false;
+  render();
+}
+
+/* ── 結果 ── */
+function renderResult() {
+  const { pub, priv } = ST;
+  show('scr-result');
+  const end = pendingEnd || pub.endInfo;
+  if (!end) return;
+  const w = end.winners;
+  document.getElementById('res-win').textContent =
+    w.length === 0 ? '引き分け…' : w.map(i => pub.seats[i].name).join(' と ') + ' の優勝!';
+  document.getElementById('res-reason').textContent =
+    end.reason === 'exact' ? 'ちょうど3.0%のお酒が完成しました!' :
+    end.reason === 'survivor' ? '評価が残った最後の1人になりました(生き残り勝利)' :
+    '全員の評価が0になってしまいました。';
+  document.getElementById('res-patterns').textContent = end.patterns;
+  document.getElementById('res-starname').textContent = `(${starTxt(end.stars)})`;
+  const st = document.getElementById('res-standings');
+  st.innerHTML = '<h3 style="margin-top:6px">最終順位 <small style="font-size:11px;color:#8a7a5c">(ピッタリ > 評価 > お金 > 同着)</small></h3>';
+  const FIN_MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const NUM_E = ['', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
+  end.final.forEach(f => {
+    const d = document.createElement('div');
+    d.className = 'finrow' + (f.rank >= 4 ? ' lowrank' : '');
+    const medal = w.includes(f.idx) ? '🏆' : (FIN_MEDAL[f.rank] || NUM_E[f.rank] || `${f.rank}位`);
+    d.innerHTML = `<span style="font-size:${f.rank >= 4 ? 17 : 22}px;${f.rank >= 4 ? 'opacity:.7' : ''}">${medal}</span>
+      <b style="color:${PCOLORS[f.idx]};flex:1;${f.rank >= 4 ? 'font-weight:700;color:#8a7a5c' : ''}">${f.rank}位 ${esc(f.name)}</b>
+      <span>💰$${f.money} ⭐${f.eval}</span>
+      <small>マイ食材 No.${f.myId}=${dosStr(f.myDos)}</small>`;
+    st.appendChild(d);
+  });
+  const isHost = priv.myIdx === 0;
+  document.getElementById('btn-again').style.display = isHost ? '' : 'none';
+  document.getElementById('res-wait').style.display = isHost ? 'none' : '';
+}
+
+/* ── ログ ── */
+function logLine(t) {
+  const lg = document.getElementById('log');
+  const d = document.createElement('div');
+  d.textContent = t;
+  lg.prepend(d);
+}
+
+/* ── 完成酒早見表の開閉 ── */
+(() => {
+  const panel = document.getElementById('cheat');
+  const tab = document.getElementById('cheat-tab');
+  const setTab = () => { tab.textContent = panel.classList.contains('open') ? '▶ しまう' : '🍶 早見表'; };
+  tab.onclick = () => { panel.classList.toggle('open'); setTab(); };
+  setTab();
+})();
+
+/* ── 計算スペース(手書きメモ) ── */
+(() => {
+  const panel = document.getElementById('memo');
+  const tab = document.getElementById('memo-tab');
+  const cv = document.getElementById('memo-canvas');
+  const ctx = cv.getContext ? cv.getContext('2d') : null;
+  let tool = 'pen', drawing = false, sized = false;
+  tab.onclick = () => {
+    panel.classList.toggle('open');
+    tab.textContent = panel.classList.contains('open') ? '▶ しまう' : '📝 メモ';
+    if (!sized) sizeCanvas();
+  };
+  if (!ctx) return;
+  function sizeCanvas() {
+    const r = cv.getBoundingClientRect();
+    if (r.width === 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(r.width * dpr);
+    cv.height = Math.round(r.height * dpr);
+    ctx.scale(dpr, dpr);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    clearAll();
+    sized = true;
+  }
+  function clearAll() {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.restore();
+  }
+  function pos(e) {
+    const r = cv.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  function applyTool() {
+    ctx.strokeStyle = tool === 'pen' ? '#222' : '#fff';
+    ctx.lineWidth = tool === 'pen' ? 2.5 : 24;
+  }
+  cv.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    if (cv.setPointerCapture) cv.setPointerCapture(e.pointerId);
+    drawing = true;
+    applyTool();
+    const p = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + 0.01, p.y + 0.01);
+    ctx.stroke();
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    const p = pos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev =>
+    cv.addEventListener(ev, () => { drawing = false; }));
+  const bPen = document.getElementById('mb-pen');
+  const bEra = document.getElementById('mb-eraser');
+  function setTool(t) {
+    tool = t;
+    bPen.classList.toggle('active', t === 'pen');
+    bEra.classList.toggle('active', t === 'eraser');
+    cv.classList.toggle('eraser', t === 'eraser');
+  }
+  bPen.onclick = () => setTool('pen');
+  bEra.onclick = () => setTool('eraser');
+  document.getElementById('mb-clear').onclick = () => {
+    if (window.confirm('メモをすべて消しますか?')) clearAll();
+  };
+})();
+</script>
+</body>
+</html>

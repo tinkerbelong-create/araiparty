@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ジャンデッキケン</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#f2f6ff; --bg2:#e8f7f1; --ink:#2a3140; --panel:#ffffff; --line:#dde5f0;
+  --accent:#5b6cff; --accent-d:#3d4ed6;
+  --gu:#e35b5b; --choki:#2fae6e; --pa:#3f8fe0;
+  --win:#1e9e57; --lose:#d64545; --tie:#8a94a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--ink);min-height:100vh;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(91,108,255,.10), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(47,174,110,.10), transparent 40%),
+    linear-gradient(var(--bg1),var(--bg2));
+}
+#app{max-width:980px;margin:0 auto;padding:14px 12px 40px}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:16px;
+  box-shadow:0 6px 20px rgba(42,49,64,.08);padding:16px;margin-top:14px}
+.btn{font-family:inherit;font-weight:900;font-size:16px;cursor:pointer;
+  border:none;border-radius:12px;padding:11px 24px;color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent-d));
+  box-shadow:0 4px 12px rgba(91,108,255,.35);transition:transform .06s}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--accent-d);border:2px solid var(--accent)}
+input.txt{font-family:inherit;font-size:16px;font-weight:700;padding:8px 12px;
+  border:2px solid var(--line);border-radius:10px}
+.hidden{display:none!important}
+
+/* タイトル */
+#scr-title{text-align:center;padding-top:40px}
+#scr-title .logo{font-size:52px;font-weight:900;letter-spacing:.05em;
+  background:linear-gradient(135deg,var(--gu),var(--accent),var(--choki));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+#scr-title .fists{font-size:56px;margin:10px 0}
+#scr-title .sub{font-weight:700;color:#5a647a}
+
+/* 共通バー */
+#topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  background:var(--ink);color:#fff;border-radius:14px;padding:10px 18px;margin-top:14px;font-weight:900}
+#tb-timer{background:rgba(255,255,255,.15);border-radius:8px;padding:2px 12px}
+#tb-timer.hurry{background:var(--lose);animation:blink .5s infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.5}}
+
+/* カード */
+.card{
+  width:74px;height:100px;border-radius:12px;background:#fff;border:2.5px solid var(--line);
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-weight:900;cursor:pointer;transition:transform .08s, box-shadow .08s;user-select:none;position:relative;
+}
+.card .em{font-size:34px}
+.card .nm{font-size:12px}
+.card.g{border-color:var(--gu);color:var(--gu)}
+.card.c{border-color:var(--choki);color:var(--choki)}
+.card.p{border-color:var(--pa);color:var(--pa)}
+.card:hover{transform:translateY(-4px);box-shadow:0 6px 14px rgba(42,49,64,.18)}
+.card.static{cursor:default}
+.card.static:hover{transform:none;box-shadow:none}
+.card.mini{width:44px;height:60px;border-radius:8px}
+.card.mini .em{font-size:20px}
+.card.mini .nm{display:none}
+.card.back{background:repeating-linear-gradient(45deg,#6c7cff 0 8px,#5b6cff 8px 16px);border-color:#4c5ce0;color:#fff}
+.card.back .em{font-size:22px}
+.card.taken{opacity:.18;pointer-events:none}
+.card.banned{opacity:.25;pointer-events:none;filter:grayscale(.8)}
+.card .abn{font-size:9px;line-height:1.2;font-weight:900;color:#7a849a;padding:0 3px;text-align:center;min-height:11px}
+.card.hasab{box-shadow:inset 0 0 0 2px rgba(91,108,255,.18)}
+.card.mini .abn{display:none}
+#flags{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+.flag{border-radius:999px;padding:3px 14px;font-weight:900;font-size:13px;color:#fff}
+.flag.ban{background:var(--lose)} .flag.good{background:var(--win)} .flag.watch{background:var(--accent-d)}
+#ov-effects{text-align:left;background:#f4f7ff;border-radius:12px;padding:10px 14px;margin-top:10px;font-weight:700;font-size:13px}
+#ov-effects div{padding:2px 0}
+#ov-effects .priv{color:var(--accent-d)}
+#blog{max-height:140px;overflow:auto;font-size:12px;background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 12px;margin-top:8px;font-weight:700}
+#blog div{padding:1px 0;border-bottom:1px dashed #eef2f8}
+#counterbox{background:#fff8e6;border:2px solid #f0c040;border-radius:12px;padding:10px;margin-top:10px;text-align:center;font-weight:900}
+.cardrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+
+/* ドラフト */
+#draft-market{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.turnbadge{display:inline-block;border-radius:999px;padding:3px 16px;font-weight:900;color:#fff}
+.turnbadge.me{background:var(--win)} .turnbadge.cpu{background:var(--tie)}
+.deckcount{font-size:13px;font-weight:900;color:#5a647a;margin-left:8px}
+
+/* 対戦 */
+#score{display:flex;justify-content:center;align-items:center;gap:18px;font-weight:900;font-size:22px;margin-top:4px}
+#score .pips{letter-spacing:4px;font-size:26px}
+#hand{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.inforow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-weight:700;font-size:13px;color:#5a647a;margin-top:8px}
+
+/* 公開オーバーレイ */
+#overlay{position:fixed;inset:0;background:rgba(28,32,44,.78);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+#overlay.show{display:flex}
+#ovbox{background:#fff;border-radius:20px;max-width:520px;width:100%;padding:26px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.4)}
+#ov-cards{display:flex;justify-content:center;align-items:center;gap:26px;margin:14px 0}
+#ov-cards .bigcard{width:110px;height:150px;border-radius:16px;border-width:4px}
+#ov-cards .bigcard .em{font-size:60px}
+#ov-vs{font-size:22px;font-weight:900;color:#8a94a8}
+#ov-result{font-size:30px;font-weight:900;margin-top:6px}
+#ov-result.win{color:var(--win)} #ov-result.lose{color:var(--lose)} #ov-result.tie{color:var(--tie)}
+#ov-sub{font-weight:700;color:#5a647a;margin-top:4px;font-size:13px}
+
+/* 結果 */
+#scr-result{text-align:center}
+.winline{font-size:36px;font-weight:900;margin:12px 0}
+details.rules{margin-top:12px;text-align:left}
+details.rules summary{cursor:pointer;font-weight:900;color:var(--accent-d)}
+details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
+h3 .cnt{font-size:12px;color:#8a94a8;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- タイトル -->
+  <div id="scr-title">
+    <div class="fists">✊✌️✋</div>
+    <div class="logo">ジャンデッキケン</div>
+    <p class="sub">デッキを組んで、じゃんけん3勝先取!</p>
+    <div class="panel" style="max-width:520px;margin:20px auto 0;text-align:left">
+      <div>名前: <input id="inp-name" class="txt" maxlength="10" value="あなた" style="width:140px"></div>
+      <div style="text-align:center;margin-top:14px">
+        <button class="btn" style="font-size:20px;padding:13px 44px" onclick="startGame()">✊ 勝負開始!</button>
+      </div>
+      <details class="rules">
+        <summary>📜 ルール</summary>
+        <div class="rb">
+          <b>デッキ構築:</b> 7枚が配られ(自分だけ見える)、場の公開15枚から交互に5枚ずつ取って12枚デッキを作る。取る順番はA→B→B→A→B→A→B→A→B→A(A/Bはランダム)。ピックは<b>10秒以内</b>。<br>
+          <b>対戦:</b> デッキをシャッフルし手札5枚。毎ラウンド1枚同時出しでじゃんけん! 勝ったら1勝、あいこはノーカウント(カードは消費)。出したら1枚ドロー。<b>20秒以内</b>に出すこと。<br>
+          <b>勝利:</b> 先に3勝! 出し切ったら勝ち数の多い方。同数ならランダム1枚のサドンデスを決着まで。<br>
+          <b>読み合い:</b> 相手がドラフトで取った5枚と捨て札は公開。残りを数えろ!<br>
+          <b>能力:</b> カードには能力持ちがある(各手4種×2枚+素2枚)。勝った時・負けた時・あいこの時・出した時に発動。ドラフトでコンボを組め!
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ドラフト -->
+  <div id="scr-draft" class="hidden">
+    <div id="topbar">
+      <span>🃏 デッキ構築ドラフト <span id="dr-step"></span></span>
+      <span id="tb-timer"></span>
+      <span id="dr-turn"></span>
+    </div>
+    <div class="panel">
+      <h3>場のカード <span class="cnt">(クリックして取る)</span></h3>
+      <div id="draft-market"></div>
+    </div>
+    <div class="panel">
+      <h3>あなたのデッキ <span id="my-deck-count" class="deckcount"></span></h3>
+      <div class="cardrow" id="my-deck"></div>
+      <h3 style="margin-top:12px">相手が取ったカード <span class="cnt">(初期7枚は見えない)</span></h3>
+      <div class="cardrow" id="opp-picks"></div>
+    </div>
+  </div>
+
+  <!-- 対戦 -->
+  <div id="scr-battle" class="hidden">
+    <div id="topbar">
+      <span id="bt-round"></span>
+      <span id="tb-timer2"></span>
+      <span id="bt-pile"></span>
+    </div>
+    <div class="panel" style="text-align:center">
+      <div id="score"></div>
+      <div id="flags"></div>
+      <div id="counterbox" class="hidden"></div>
+      <h3 style="margin-top:8px">あなたの手札 <span class="cnt">(クリックで出す)</span></h3>
+      <div id="hand"></div>
+    </div>
+    <div class="panel">
+      <h3>公開情報</h3>
+      <div class="inforow">相手のドラフト5枚:</div>
+      <div class="cardrow" id="b-opp-picks"></div>
+      <div class="inforow">あなたの捨て札:</div>
+      <div class="cardrow" id="b-my-discard"></div>
+      <div class="inforow">相手の捨て札:</div>
+      <div class="cardrow" id="b-opp-discard"></div>
+      <h3 style="margin-top:12px">📋 記録</h3>
+      <div id="blog"></div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div id="scr-result" class="hidden">
+    <div class="panel">
+      <div class="fists" style="font-size:44px">🏆</div>
+      <div class="winline" id="res-win"></div>
+      <p id="res-detail" style="font-weight:700;color:#5a647a"></p>
+      <div style="margin-top:16px">
+        <button class="btn" onclick="location.reload()">✊ もう一度勝負!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 同時公開オーバーレイ -->
+<div id="overlay"><div id="ovbox">
+  <div id="ov-title" style="font-weight:900;color:#5a647a"></div>
+  <div id="ov-cards"></div>
+  <div id="ov-result"></div>
+  <div id="ov-sub"></div>
+  <div id="ov-effects" class="hidden"></div>
+  <div style="margin-top:16px"><button class="btn" id="ov-next" onclick="closeOverlay()">つぎへ ▶</button></div>
+</div></div>
+
+<script>
+/* ════════ コアロジック(node検証済み: 1316テスト・能力v0.3) ════════ */
+'use strict';
+const HANDS = ['G', 'C', 'P'];
+const HAND_NAME = { G: 'グー', C: 'チョキ', P: 'パー' };
+const HAND_EMOJI = { G: '✊', C: '✌️', P: '✋' };
+const BEATS = { G: 'C', C: 'P', P: 'G' };
+const LOSES = { G: 'P', C: 'G', P: 'C' };
+const DRAFT_ORDER = [0, 1, 1, 0, 1, 0, 1, 0, 1, 0];
+const MAX_ROUNDS = 30; // もう一丁ループ等の安全弁
+
+/* 能力定義: tr = win|lose|tie|play */
+const ABILITIES = {
+  double:  { hand: 'G', tr: 'win',  name: 'ダブルナックル',  text: 'このカードでの勝利は2勝分' },
+  counter: { hand: 'G', tr: 'win',  name: 'カウンターアイ',  text: '勝ったら、次のラウンドは相手の手を見てから出せる' },
+  revG:    { hand: 'G', tr: 'lose', name: 'リベンジ・グー',  text: '負けたら、次のラウンド相手はパーを出せない' },
+  freeze:  { hand: 'G', tr: 'play', name: 'フリーズ',        text: 'このラウンド、相手の能力は発動しない' },
+  cut:     { hand: 'C', tr: 'tie',  name: 'チョッキン',      text: 'あいこなら、相手の勝利を1消す' },
+  revC:    { hand: 'C', tr: 'lose', name: 'リベンジ・チョキ', text: '負けたら、次のラウンド相手はグーを出せない' },
+  peektop: { hand: 'C', tr: 'win',  name: '山さぐり',        text: '勝ったら、相手の山札の一番上を自分だけ見る' },
+  rebound: { hand: 'C', tr: 'tie',  name: 'もう一丁',        text: 'あいこなら、このカードは手札に戻る' },
+  scan:    { hand: 'P', tr: 'play', name: 'スキャン',        text: '出した時、相手の残りのパーの枚数が分かる' },
+  revP:    { hand: 'P', tr: 'lose', name: 'リベンジ・パー',  text: '負けたら、次のラウンド相手はチョキを出せない' },
+  sticky:  { hand: 'P', tr: 'tie',  name: 'ねばりごし',      text: '次のラウンドもあいこなら、自分の勝ちになる' },
+  draw1:   { hand: 'P', tr: 'lose', name: '転売テクニック',  text: '負けたら、山札から1枚ドロー' },
+};
+const REV_BAN = { revG: 'P', revC: 'G', revP: 'C' };
+/* 各手10枚: 能力4種×2 + 素2 */
+const HAND_ABS = {
+  G: ['double', 'double', 'counter', 'counter', 'revG', 'revG', 'freeze', 'freeze', null, null],
+  C: ['cut', 'cut', 'revC', 'revC', 'peektop', 'peektop', 'rebound', 'rebound', null, null],
+  P: ['scan', 'scan', 'revP', 'revP', 'sticky', 'sticky', 'draw1', 'draw1', null, null],
+};
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rng) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function judge(h0, h1) {
+  if (h0 === h1) return 0;
+  return BEATS[h0] === h1 ? 1 : -1;
+}
+function buildDeal(rng) {
+  const cards = [];
+  HANDS.forEach((h, hi) => {
+    HAND_ABS[h].forEach((ab, k) => cards.push({ id: hi * 10 + k + 1, hand: h, ab }));
+  });
+  shuffle(cards, rng);
+  return {
+    initial: [cards.slice(0, 7), cards.slice(7, 14)],
+    market: cards.slice(14, 29),
+    unused: cards[29],
+  };
+}
+
+class JankenEngine {
+  constructor(seed) {
+    this.rng = mulberry32(seed ?? (Date.now() & 0xffffffff));
+    const deal = buildDeal(this.rng);
+    this.decks = [[...deal.initial[0]], [...deal.initial[1]]];
+    this.market = [...deal.market];
+    this.unused = deal.unused;
+    this.draftPicks = [[], []];
+    this.draftStep = 0;
+    this.phase = 'draft'; // draft | battle | sudden | ended
+    this.wins = [0, 0];
+    this.round = 0;
+    this.piles = null;
+    this.hands = null;
+    this.discards = [[], []];
+    this.winner = null;
+    this.endReason = null; // three | more | sudden
+    this.suddenLog = [];
+    /* 持ち越し効果 */
+    this.restrict = [null, null];     // p は次ラウンドこの手を出せない
+    this.counterNext = [false, false]; // p は次ラウンドあと出しできる
+    this.stickyNext = [false, false];  // p は次ラウンドあいこなら勝ち
+  }
+
+  currentDrafter() { return this.phase === 'draft' ? DRAFT_ORDER[this.draftStep] : null; }
+
+  draftPick(pIdx, cardId) {
+    if (this.phase !== 'draft') throw new Error('ドラフト中ではない');
+    if (DRAFT_ORDER[this.draftStep] !== pIdx) throw new Error('あなたの手番ではない');
+    const mi = this.market.findIndex(c => c.id === cardId);
+    if (mi < 0) throw new Error('場にないカード');
+    const card = this.market.splice(mi, 1)[0];
+    this.decks[pIdx].push(card);
+    this.draftPicks[pIdx].push(card);
+    this.draftStep++;
+    if (this.draftStep >= DRAFT_ORDER.length) this.startBattle();
+    return card;
+  }
+
+  startBattle() {
+    this.phase = 'battle';
+    this.piles = [shuffle([...this.decks[0]], this.rng), shuffle([...this.decks[1]], this.rng)];
+    this.hands = [this.piles[0].splice(0, 5), this.piles[1].splice(0, 5)];
+  }
+
+  /* 制限を考慮した出せるカード(全部禁止なら制限無効) */
+  legalPlays(p) {
+    const ban = this.restrict[p];
+    if (!ban) return [...this.hands[p]];
+    const ok = this.hands[p].filter(c => c.hand !== ban);
+    return ok.length ? ok : [...this.hands[p]];
+  }
+
+  playRound(id0, id1) {
+    if (this.phase !== 'battle') throw new Error('対戦中ではない');
+    this.round++;
+    const ids = [id0, id1];
+    const cs = [];
+    for (const p of [0, 1]) {
+      const legal = this.legalPlays(p).map(c => c.id);
+      if (!legal.includes(ids[p])) throw new Error(`P${p}: そのカードは出せない(制限中)`);
+      const hi = this.hands[p].findIndex(c => c.id === ids[p]);
+      const c = this.hands[p].splice(hi, 1)[0];
+      cs.push(c);
+    }
+    /* 持ち越し効果はこのラウンドで消費 */
+    const sticky = [...this.stickyNext];
+    this.stickyNext = [false, false];
+    this.restrict = [null, null];
+    this.counterNext = [false, false];
+    /* フリーズ: frozen[p]=pのカード能力が無効(フリーズ自体は止められない) */
+    const frozen = [cs[1].ab === 'freeze', cs[0].ab === 'freeze'];
+    const active = p => !frozen[p] && cs[p].ab;
+    const effects = [];       // 公開される発動ログ {p, ab}
+    const info = [[], []];    // 本人限定情報
+    /* 【出】 */
+    for (const p of [0, 1]) {
+      if (cs[p].ab === 'freeze') effects.push({ p, ab: 'freeze' }); // フリーズは常に発動
+      if (active(p) === 'scan') {
+        const cnt = [...this.hands[1 - p], ...this.piles[1 - p]].filter(c => c.hand === 'P').length;
+        info[p].push({ ab: 'scan', count: cnt });
+        effects.push({ p, ab: 'scan' });
+      }
+    }
+    /* 判定 + ねばりごし変換 */
+    let res = judge(cs[0].hand, cs[1].hand);
+    if (res === 0) {
+      if (sticky[0] && !sticky[1]) { res = 1; effects.push({ p: 0, ab: 'sticky-win' }); }
+      else if (sticky[1] && !sticky[0]) { res = -1; effects.push({ p: 1, ab: 'sticky-win' }); }
+      // 両者発動は相殺(素のあいこ)
+    }
+    this.discards[0].push(cs[0]);
+    this.discards[1].push(cs[1]);
+    /* 勝敗適用(ダブルナックル) */
+    const winner = res === 1 ? 0 : res === -1 ? 1 : null;
+    if (winner !== null) {
+      const inc = active(winner) === 'double' ? 2 : 1;
+      this.wins[winner] += inc;
+      if (inc === 2) effects.push({ p: winner, ab: 'double' });
+    }
+    /* 【勝】【負】 */
+    if (winner !== null) {
+      const w = winner, l = 1 - winner;
+      if (active(w) === 'counter') { this.counterNext[w] = true; effects.push({ p: w, ab: 'counter' }); }
+      if (active(w) === 'peektop') {
+        const top = this.piles[l][0] || null;
+        info[w].push({ ab: 'peektop', card: top ? { hand: top.hand, ab: top.ab } : null });
+        effects.push({ p: w, ab: 'peektop' });
+      }
+      if (REV_BAN[active(l)]) { this.restrict[w] = REV_BAN[cs[l].ab]; effects.push({ p: l, ab: cs[l].ab }); }
+      if (active(l) === 'draw1' && this.piles[l].length) {
+        this.hands[l].push(this.piles[l].shift());
+        effects.push({ p: l, ab: 'draw1' });
+      }
+    } else { /* 【引】(素のあいこのみ) */
+      for (const p of [0, 1]) {
+        if (active(p) === 'cut') {
+          if (this.wins[1 - p] > 0) { this.wins[1 - p]--; effects.push({ p, ab: 'cut' }); }
+          else effects.push({ p, ab: 'cut-miss' });
+        }
+        if (active(p) === 'rebound') {
+          this.discards[p].pop();
+          this.hands[p].push(cs[p]);
+          effects.push({ p, ab: 'rebound' });
+        }
+        if (active(p) === 'sticky') { this.stickyNext[p] = true; effects.push({ p, ab: 'sticky' }); }
+      }
+    }
+    /* 終了判定 */
+    let ended = false;
+    if (this.wins[0] >= 3) { this.winner = 0; this.endReason = 'three'; this.phase = 'ended'; ended = true; }
+    else if (this.wins[1] >= 3) { this.winner = 1; this.endReason = 'three'; this.phase = 'ended'; ended = true; }
+    else {
+      for (const p of [0, 1]) if (this.piles[p].length) this.hands[p].push(this.piles[p].shift());
+      const anyEmpty = this.hands[0].length === 0 || this.hands[1].length === 0;
+      if (anyEmpty || this.round >= MAX_ROUNDS) {
+        if (this.wins[0] !== this.wins[1]) {
+          this.winner = this.wins[0] > this.wins[1] ? 0 : 1;
+          this.endReason = 'more'; this.phase = 'ended'; ended = true;
+        } else {
+          this.phase = 'sudden';
+        }
+      }
+    }
+    return {
+      round: this.round,
+      cards: cs.map(c => ({ id: c.id, hand: c.hand, ab: c.ab })),
+      res, wins: [...this.wins], effects, info,
+      restrict: [...this.restrict], counterNext: [...this.counterNext], stickyNext: [...this.stickyNext],
+      ended, sudden: this.phase === 'sudden',
+    };
+  }
+
+  suddenStep() {
+    if (this.phase !== 'sudden') throw new Error('サドンデス中ではない');
+    const h0 = HANDS[Math.floor(this.rng() * 3)];
+    const h1 = HANDS[Math.floor(this.rng() * 3)];
+    const res = judge(h0, h1);
+    this.suddenLog.push({ h0, h1, res });
+    if (res !== 0) {
+      this.winner = res === 1 ? 0 : 1;
+      this.endReason = 'sudden';
+      this.phase = 'ended';
+    }
+    return { h0, h1, res, ended: this.phase === 'ended' };
+  }
+}
+
+/* ===== CPU ===== */
+const DRAFT_AB_W = {
+  double: 1.1, counter: 0.8, cut: 0.8, freeze: 0.5,
+  revG: 0.55, revC: 0.55, revP: 0.55,
+  scan: 0.35, sticky: 0.5, rebound: 0.5, peektop: 0.3, draw1: 0.3,
+};
+class JankenBrain {
+  constructor(pIdx, rng) { this.p = pIdx; this.rng = rng ?? Math.random; }
+  countHands(cards) {
+    const c = { G: 0, C: 0, P: 0 };
+    cards.forEach(x => c[x.hand]++);
+    return c;
+  }
+  draftChoose(E) {
+    const me = this.p, op = 1 - me;
+    const mine = this.countHands(E.decks[me]);
+    const oppPicks = this.countHands(E.draftPicks[op]);
+    let best = null, bestScore = -Infinity;
+    for (const card of E.market) {
+      const h = card.hand;
+      const need = 4 - mine[h];
+      const deny = Math.max(0, 2 - oppPicks[h]) * 0.3;
+      const abw = card.ab ? (DRAFT_AB_W[card.ab] || 0) : 0;
+      const score = need + deny + abw + (this.rng() - 0.5) * 0.8;
+      if (score > bestScore) { bestScore = score; best = card; }
+    }
+    return best.id;
+  }
+  /* knownOppCard: あと出し(カウンターアイ)時に相手の出したカードが分かる */
+  playChoose(E, knownOppCard = null) {
+    const me = this.p, op = 1 - me;
+    const legal = E.legalPlays(me);
+    if (knownOppCard) { // 確定情報で最善手
+      let best = legal[0], bestS = -2;
+      for (const card of legal) {
+        const r = judge(card.hand, knownOppCard.hand);
+        const s = r + (card.ab === 'double' && r === 1 ? 0.5 : 0) - (card.ab ? 0.05 : 0);
+        if (s > bestS) { bestS = s; best = card; }
+      }
+      return best.id;
+    }
+    /* 相手の残り構成を推定 */
+    const oppDiscard = this.countHands(E.discards[op]);
+    const oppKnown = this.countHands(E.draftPicks[op]);
+    const seen = { G: 0, C: 0, P: 0 };
+    [...E.decks[me], ...E.draftPicks[op], ...E.market].forEach(c => seen[c.hand]++);
+    const unseen = { G: 10 - seen.G, C: 10 - seen.C, P: 10 - seen.P };
+    const unseenTotal = Math.max(1, unseen.G + unseen.C + unseen.P);
+    const est = {};
+    for (const h of HANDS) {
+      const knownLeft = Math.max(0, oppKnown[h] - Math.min(oppDiscard[h], oppKnown[h]));
+      const unknownDiscarded = Math.max(0, oppDiscard[h] - oppKnown[h]);
+      const unknownLeft = Math.max(0, (7 * unseen[h] / unseenTotal) - unknownDiscarded);
+      est[h] = knownLeft + unknownLeft;
+    }
+    /* 相手の制限を考慮 */
+    if (E.restrict[op]) est[E.restrict[op]] = 0;
+    const total = Math.max(0.001, est.G + est.C + est.P);
+    let best = null, bestScore = -Infinity;
+    for (const card of legal) {
+      const h = card.hand;
+      const winP = est[BEATS[h]] / total;
+      const loseP = est[LOSES[h]] / total;
+      const tieP = est[h] / total;
+      let bias = 0;
+      if (card.ab === 'double') bias += 0.35 * winP;
+      if (card.ab === 'cut' && E.wins[op] > 0) bias += 0.5 * tieP;
+      if (card.ab === 'sticky') bias += 0.3 * tieP;
+      if (card.ab === 'rebound') bias += 0.2 * tieP;
+      if (card.ab === 'counter') bias += 0.15 * winP;
+      if (REV_BAN[card.ab]) bias += 0.15 * loseP;
+      if (card.ab === 'freeze') bias += 0.05;
+      const score = winP - loseP + bias + (this.rng() - 0.5) * 0.2;
+      if (score > bestScore) { bestScore = score; best = card; }
+    }
+    return best.id;
+  }
+}
+
+const api = {
+  HANDS, HAND_NAME, HAND_EMOJI, BEATS, LOSES, DRAFT_ORDER, ABILITIES, REV_BAN, HAND_ABS, MAX_ROUNDS,
+  mulberry32, shuffle, judge, buildDeal, JankenEngine, JankenBrain,
+};
+if (typeof window !== 'undefined') window.Janken = api;
+
+/* ════════ UI層 ════════ */
+let E = null, brain = null, humanName = 'あなた';
+let humanIs = 0; // エンジン内で人間は常にP0。A/B表示はドラフト順で決まる
+let deadline = null, timerLabel = '';
+
+/* 効果音 */
+let AC = null;
+function se(freq, dur = 0.07, type = 'square', vol = 0.2) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const seClick = () => se(600, 0.05, 'square', 0.12);
+const sePick = () => se(880, 0.08, 'triangle', 0.22);
+const seWinR = () => { se(659, 0.1, 'triangle', 0.22); setTimeout(() => se(988, 0.15, 'triangle', 0.22), 100); };
+const seLoseR = () => se(220, 0.2, 'sawtooth', 0.15);
+const seTie = () => se(440, 0.1, 'triangle', 0.15);
+const seWin = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.2, 'triangle', 0.25), i * 130));
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.btn')) seClick(); });
+
+function show(id) {
+  ['scr-title', 'scr-draft', 'scr-battle', 'scr-result'].forEach(s =>
+    document.getElementById(s).classList.toggle('hidden', s !== id));
+}
+function cardEl(card, opts = {}) {
+  const d = document.createElement('div');
+  const cls = { G: 'g', C: 'c', P: 'p' }[card.hand];
+  d.className = `card ${cls}` + (opts.mini ? ' mini' : '') + (opts.static ? ' static' : '') +
+    (card.ab ? ' hasab' : '') + (opts.banned ? ' banned' : '');
+  const abn = card.ab ? ABILITIES[card.ab].name : '';
+  d.innerHTML = `<div class="em">${HAND_EMOJI[card.hand]}</div><div class="nm">${HAND_NAME[card.hand]}</div>` +
+    `<div class="abn">${abn}</div>`;
+  if (card.ab) d.title = `${ABILITIES[card.ab].name}: ${ABILITIES[card.ab].text}`;
+  if (opts.onclick && !opts.banned) d.onclick = opts.onclick;
+  return d;
+}
+function backEl(n) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cardrow';
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'card mini back static';
+    d.innerHTML = '<div class="em">?</div>';
+    wrap.appendChild(d);
+  }
+  return wrap;
+}
+
+/* ── タイマー(ドラフト10秒/対戦20秒、超過はランダム自動) ── */
+setInterval(() => {
+  const els = [document.getElementById('tb-timer'), document.getElementById('tb-timer2')];
+  if (!deadline || !E || E.phase === 'ended') { els.forEach(el => { if (el) { el.textContent = ''; el.className = ''; } }); return; }
+  const remain = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+  els.forEach(el => { if (el) { el.textContent = `⏱ ${remain}秒`; el.className = remain <= 5 ? 'hurry' : ''; } });
+  if (remain <= 0) {
+    deadline = null;
+    if (E.phase === 'draft' && E.currentDrafter() === 0) {
+      // ランダムピック
+      humanDraftPick(E.market[Math.floor(Math.random() * E.market.length)].id, true);
+    } else if (E.phase === 'battle' && !overlayOpen) {
+      const legal = E.legalPlays(0);
+      const c = legal[Math.floor(Math.random() * legal.length)];
+      humanPlay(c.id, true);
+    }
+  }
+}, 250);
+function setTimer(sec) { deadline = Date.now() + sec * 1000; }
+
+/* ── 開始 ── */
+function startGame() {
+  humanName = document.getElementById('inp-name').value.trim() || 'あなた';
+  E = new JankenEngine();
+  brain = new JankenBrain(1, mulberry32(Date.now() & 0xffff));
+  show('scr-draft');
+  renderDraft();
+  proceedDraft();
+}
+
+/* ── ドラフト ── */
+function renderDraft() {
+  const meTurn = E.phase === 'draft' && E.currentDrafter() === 0;
+  document.getElementById('dr-step').textContent = `(${Math.min(E.draftStep + 1, 10)}/10手)`;
+  document.getElementById('dr-turn').innerHTML = E.phase !== 'draft' ? '' :
+    meTurn ? '<span class="turnbadge me">あなたの番!</span>' : '<span class="turnbadge cpu">CPUの番…</span>';
+  const mk = document.getElementById('draft-market');
+  mk.innerHTML = '';
+  E.market.forEach(c => {
+    mk.appendChild(cardEl(c, { onclick: meTurn ? () => humanDraftPick(c.id) : null, static: !meTurn }));
+  });
+  const my = document.getElementById('my-deck');
+  my.innerHTML = '';
+  [...E.decks[0]].sort((a, b) => HANDS.indexOf(a.hand) - HANDS.indexOf(b.hand)).forEach(c =>
+    my.appendChild(cardEl(c, { mini: true, static: true })));
+  const cnt = { G: 0, C: 0, P: 0 };
+  E.decks[0].forEach(c => cnt[c.hand]++);
+  document.getElementById('my-deck-count').textContent =
+    `${E.decks[0].length}/12枚 (✊${cnt.G} ✌️${cnt.C} ✋${cnt.P})`;
+  const op = document.getElementById('opp-picks');
+  op.innerHTML = '';
+  E.draftPicks[1].forEach(c => op.appendChild(cardEl(c, { mini: true, static: true })));
+  op.appendChild(backEl(0));
+}
+function humanDraftPick(cardId, auto = false) {
+  if (E.phase !== 'draft' || E.currentDrafter() !== 0) return;
+  try { E.draftPick(0, cardId); } catch (e) { return; }
+  if (!auto) sePick();
+  deadline = null;
+  renderDraft();
+  proceedDraft();
+}
+function proceedDraft() {
+  if (E.phase !== 'draft') { startBattleUI(); return; }
+  if (E.currentDrafter() === 1) {
+    setTimeout(() => {
+      if (E.phase !== 'draft') return;
+      E.draftPick(1, brain.draftChoose(E));
+      sePick();
+      renderDraft();
+      proceedDraft();
+    }, 900);
+  } else {
+    setTimer(10);
+    renderDraft();
+  }
+}
+
+/* ── 対戦 ── */
+let overlayOpen = false;
+let cpuCommitId = null; // カウンターアイ(あなた)発動中: CPUが先に出したカード
+function startRoundUI() {
+  // ラウンド開始処理: あなたのあと出し権があればCPUが先にコミット
+  cpuCommitId = null;
+  if (E.phase === 'battle' && E.counterNext[0]) {
+    cpuCommitId = brain.playChoose(E);
+  }
+  renderBattle();
+  setTimer(20);
+}
+function startBattleUI() {
+  show('scr-battle');
+  blogLine('⚔ 対戦開始! デッキをシャッフルして5枚ドロー');
+  startRoundUI();
+}
+function renderBattle() {
+  document.getElementById('bt-round').textContent = `第 ${E.round + 1} ラウンド`;
+  document.getElementById('bt-pile').textContent =
+    `山札 あなた${E.piles[0].length}枚 / 相手${E.piles[1].length}枚・相手の手札${E.hands[1].length}枚`;
+  const pips = w => '●'.repeat(w) + '○'.repeat(3 - w);
+  document.getElementById('score').innerHTML =
+    `<span style="color:var(--win)">${escq(humanName)} <span class="pips">${pips(E.wins[0])}</span></span>
+     <span style="color:#8a94a8">VS</span>
+     <span style="color:var(--lose)"><span class="pips">${pips(E.wins[1])}</span> CPU</span>`;
+  // 継続効果フラグ
+  const flags = document.getElementById('flags');
+  flags.innerHTML = '';
+  const addFlag = (cls, txt) => { const f = document.createElement('span'); f.className = 'flag ' + cls; f.textContent = txt; flags.appendChild(f); };
+  if (E.restrict[0]) addFlag('ban', `⛔ あなたはこのラウンド ${HAND_NAME[E.restrict[0]]} を出せない`);
+  if (E.restrict[1]) addFlag('good', `🔥 相手はこのラウンド ${HAND_NAME[E.restrict[1]]} を出せない`);
+  if (E.stickyNext[0]) addFlag('good', '🤝 このラウンドあいこなら、あなたの勝ち');
+  if (E.stickyNext[1]) addFlag('ban', '⚠ このラウンドあいこなら、相手の勝ち');
+  if (E.counterNext[1]) addFlag('ban', '👁 相手のカウンターアイ! あなたの手を見てから出してくる');
+  // カウンターアイ(あなた)
+  const cbox = document.getElementById('counterbox');
+  if (cpuCommitId !== null) {
+    const cc = E.hands[1].find(c => c.id === cpuCommitId);
+    cbox.classList.remove('hidden');
+    cbox.innerHTML = '👁 カウンターアイ発動! 相手はこのカードを出している:';
+    cbox.appendChild(cardEl(cc, { static: true }));
+  } else cbox.classList.add('hidden');
+  // 手札(制限中のカードは出せない)
+  const legalIds = E.legalPlays(0).map(c => c.id);
+  const hand = document.getElementById('hand');
+  hand.innerHTML = '';
+  E.hands[0].forEach(c => hand.appendChild(cardEl(c, {
+    banned: !legalIds.includes(c.id),
+    onclick: () => humanPlay(c.id),
+  })));
+  const bp = document.getElementById('b-opp-picks');
+  bp.innerHTML = '';
+  E.draftPicks[1].forEach(c => bp.appendChild(cardEl(c, { mini: true, static: true })));
+  const md = document.getElementById('b-my-discard');
+  md.innerHTML = '';
+  E.discards[0].forEach(c => md.appendChild(cardEl(c, { mini: true, static: true })));
+  const od = document.getElementById('b-opp-discard');
+  od.innerHTML = '';
+  E.discards[1].forEach(c => od.appendChild(cardEl(c, { mini: true, static: true })));
+}
+function escq(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function humanPlay(cardId, auto = false) {
+  if (E.phase !== 'battle' || overlayOpen) return;
+  deadline = null;
+  let cpuId;
+  if (cpuCommitId !== null) {
+    cpuId = cpuCommitId; // あなたのあと出し: CPUは先にコミット済み
+  } else if (E.counterNext[1]) {
+    const myCard = E.hands[0].find(c => c.id === cardId);
+    cpuId = brain.playChoose(E, myCard); // CPUのあと出し
+  } else {
+    cpuId = brain.playChoose(E);
+  }
+  const r = E.playRound(cardId, cpuId);
+  showReveal(r, auto);
+}
+
+function effectText(e) {
+  const who = e.p === 0 ? humanName : 'CPU';
+  const A = ABILITIES;
+  switch (e.ab) {
+    case 'freeze':     return `❄ ${who}の${A.freeze.name}! 相手の能力は発動しない`;
+    case 'scan':       return `🔍 ${who}の${A.scan.name}発動`;
+    case 'double':     return `👊 ${who}の${A.double.name}!! 2勝分!`;
+    case 'counter':    return `👁 ${who}の${A.counter.name}! 次はあと出しできる`;
+    case 'peektop':    return `⛰ ${who}の${A.peektop.name}発動`;
+    case 'cut':        return `✂ ${who}の${A.cut.name}! 相手の勝利を1消した`;
+    case 'cut-miss':   return `✂ ${who}の${A.cut.name}…消す勝利がなかった`;
+    case 'rebound':    return `↩ ${who}の${A.rebound.name}! カードが手札に戻った`;
+    case 'sticky':     return `🤝 ${who}の${A.sticky.name}! 次もあいこなら${who}の勝ち`;
+    case 'sticky-win': return `🤝 ${A.sticky.name}発動! あいこが${who}の勝ちに!`;
+    case 'revG':       return `🔥 ${who}の${A.revG.name}! 相手は次にパーを出せない`;
+    case 'revC':       return `🔥 ${who}の${A.revC.name}! 相手は次にグーを出せない`;
+    case 'revP':       return `🔥 ${who}の${A.revP.name}! 相手は次にチョキを出せない`;
+    case 'draw1':      return `💰 ${who}の${A.draw1.name}! 1枚ドロー`;
+    default: return '';
+  }
+}
+function privateInfoText(i) {
+  if (i.ab === 'scan') return `🔍 スキャン結果: 相手の残りのパーは ${i.count}枚`;
+  if (i.ab === 'peektop') {
+    if (!i.card) return '⛰ 山さぐり: 相手の山札は空だった';
+    const abn = i.card.ab ? `「${ABILITIES[i.card.ab].name}」` : '(素)';
+    return `⛰ 山さぐり: 相手の山札の一番上は ${HAND_EMOJI[i.card.hand]}${HAND_NAME[i.card.hand]}${abn}`;
+  }
+  return '';
+}
+function blogLine(t) {
+  const b = document.getElementById('blog');
+  const d = document.createElement('div');
+  d.textContent = t;
+  b.prepend(d);
+}
+function showReveal(r, auto) {
+  overlayOpen = true;
+  const [c0, c1] = r.cards;
+  document.getElementById('ov-title').textContent = `第${r.round}ラウンド じゃん・けん・ぽん!` + (auto ? ' (時間切れ・自動)' : '');
+  document.getElementById('ov-cards').innerHTML = '';
+  const box = document.getElementById('ov-cards');
+  const e0 = cardEl(c0, { static: true }); e0.classList.add('bigcard');
+  const vs = document.createElement('div'); vs.id = 'ov-vs'; vs.textContent = 'VS';
+  const e1 = cardEl(c1, { static: true }); e1.classList.add('bigcard');
+  box.append(e0, vs, e1);
+  const res = document.getElementById('ov-result');
+  const sub = document.getElementById('ov-sub');
+  if (r.res === 1) { res.textContent = 'あなたの勝ち!'; res.className = 'win'; seWinR(); }
+  else if (r.res === -1) { res.textContent = 'CPUの勝ち…'; res.className = 'lose'; seLoseR(); }
+  else { res.textContent = 'あいこ!(ノーカウント)'; res.className = 'tie'; seTie(); }
+  sub.textContent = `${escqText(humanName)} ${r.wins[0]}勝 - ${r.wins[1]}勝 CPU`;
+  // 能力の発動と本人限定情報
+  const fx = document.getElementById('ov-effects');
+  const lines = [];
+  r.effects.forEach(e => { const t = effectText(e); if (t) lines.push({ t, priv: false }); });
+  (r.info[0] || []).forEach(i => { const t = privateInfoText(i); if (t) lines.push({ t: t + ' (あなただけに見える)', priv: true }); });
+  if (lines.length) {
+    fx.classList.remove('hidden');
+    fx.innerHTML = '';
+    lines.forEach(l => { const d = document.createElement('div'); if (l.priv) d.className = 'priv'; d.textContent = l.t; fx.appendChild(d); });
+  } else fx.classList.add('hidden');
+  // 記録
+  const resTxt = r.res === 1 ? `${humanName}の勝ち` : r.res === -1 ? 'CPUの勝ち' : 'あいこ';
+  blogLine(`R${r.round}: ${HAND_EMOJI[r.cards[0].hand]}${r.cards[0].ab ? '(' + ABILITIES[r.cards[0].ab].name + ')' : ''} vs ${HAND_EMOJI[r.cards[1].hand]}${r.cards[1].ab ? '(' + ABILITIES[r.cards[1].ab].name + ')' : ''} → ${resTxt} [${r.wins[0]}-${r.wins[1]}]`);
+  lines.forEach(l => blogLine('　' + l.t));
+  document.getElementById('ov-next').textContent = r.ended ? '結果を見る 🏆' : r.sudden ? 'サドンデスへ!! ⚡' : 'つぎへ ▶';
+  document.getElementById('overlay').classList.add('show');
+}
+function escqText(s) { return s; }
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+  overlayOpen = false;
+  if (E.phase === 'ended') return showResult();
+  if (E.phase === 'sudden') return runSudden();
+  startRoundUI();
+}
+
+/* ── サドンデス演出 ── */
+function runSudden() {
+  const st = E.suddenStep();
+  overlayOpen = true;
+  document.getElementById('ov-title').textContent = `⚡ サドンデス! ランダムな1枚で勝負 (${E.suddenLog.length}回目)`;
+  const box = document.getElementById('ov-cards');
+  box.innerHTML = '';
+  const e0 = cardEl({ hand: st.h0 }, { static: true }); e0.classList.add('bigcard');
+  const vs = document.createElement('div'); vs.id = 'ov-vs'; vs.textContent = 'VS';
+  const e1 = cardEl({ hand: st.h1 }, { static: true }); e1.classList.add('bigcard');
+  box.append(e0, vs, e1);
+  const res = document.getElementById('ov-result');
+  document.getElementById('ov-sub').textContent = '';
+  document.getElementById('ov-effects').classList.add('hidden');
+  if (st.res === 1) { res.textContent = 'あなたの勝ち!!'; res.className = 'win'; }
+  else if (st.res === -1) { res.textContent = 'CPUの勝ち…'; res.className = 'lose'; }
+  else { res.textContent = 'あいこ! もう一回!'; res.className = 'tie'; seTie(); }
+  document.getElementById('ov-next').textContent = st.ended ? '結果を見る 🏆' : 'もう一回 ⚡';
+  document.getElementById('overlay').classList.add('show');
+}
+
+/* ── 結果 ── */
+function showResult() {
+  deadline = null;
+  show('scr-result');
+  const youWin = E.winner === 0;
+  if (youWin) seWin();
+  document.getElementById('res-win').textContent = youWin ? `${humanName} の勝利!` : 'CPU の勝利…';
+  document.getElementById('res-win').style.color = youWin ? 'var(--win)' : 'var(--lose)';
+  const reason = { three: '3勝先取!', more: '出し切り・勝ち数の差で決着', sudden: `サドンデス(${E.suddenLog.length}回)で決着` }[E.endReason];
+  document.getElementById('res-detail').textContent =
+    `${reason} ── 最終スコア ${E.wins[0]} - ${E.wins[1]} (全${E.round}ラウンド)`;
+}
+</script>
+</body>
+</html>
