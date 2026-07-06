@@ -14,7 +14,7 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 3000;
 const rooms = new Map(); // code -> room
-const CPU_NAMES = ['ハンス', 'グレーテル', 'オットー', 'リーゼル'];
+const CPU_NAMES = ['ハンス', 'グレーテル', 'オットー', 'リーゼル', 'ブルーノ', 'エルザ', 'クラウス'];
 
 function genCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -104,7 +104,7 @@ function broadcast(room) {
 
 /* ── ゲーム進行 ── */
 function startGame(room) {
-  room.engine = new S.Engine();
+  room.engine = new S.Engine(undefined, room.seats.length);
   room.phase = 'myselect';
   room.reveal = null;
   room.endInfo = null;
@@ -239,7 +239,7 @@ io.on('connection', (socket) => {
     const room = rooms.get(code);
     if (!room) return cb({ ok: false, error: '部屋が見つかりません' });
     if (room.phase !== 'lobby') return cb({ ok: false, error: 'この部屋は対戦中です' });
-    if (room.seats.length >= 4) return cb({ ok: false, error: '満席です(4人まで)' });
+    if (room.seats.length >= 8) return cb({ ok: false, error: '満席です(8人まで)' });
     if (room.seats.some(s => s.name === name)) name = name + (room.seats.length + 1);
     room.seats.push({ name, socketId: socket.id, isCpu: false, brain: null, connected: true, myId: null, sub: null });
     socket.join(room.code);
@@ -252,7 +252,7 @@ io.on('connection', (socket) => {
     if (!room) return cb && cb({ ok: false, error: '部屋にいません' });
     const me = seatOf(room, socket.id);
     if (me.idx !== 0) return cb && cb({ ok: false, error: 'ホストのみ操作できます' });
-    if (room.phase !== 'lobby' || room.seats.length >= 4) return cb && cb({ ok: false, error: '追加できません' });
+    if (room.phase !== 'lobby' || room.seats.length >= 8) return cb && cb({ ok: false, error: '追加できません(8人まで)' });
     const used = room.seats.map(s => s.name);
     const name = CPU_NAMES.find(n => !used.includes(n)) || ('CPU' + room.seats.length);
     room.seats.push({ name, socketId: null, isCpu: true, brain: null, connected: true, myId: null, sub: null });
@@ -278,7 +278,7 @@ io.on('connection', (socket) => {
     const me = seatOf(room, socket.id);
     if (me.idx !== 0) return cb && cb({ ok: false, error: 'ホストのみ開始できます' });
     if (room.phase !== 'lobby') return cb && cb({ ok: false, error: 'すでに開始しています' });
-    if (room.seats.length !== 4) return cb && cb({ ok: false, error: '4人そろえてください(CPU追加可)' });
+    if (room.seats.length < 2 || room.seats.length > 8) return cb && cb({ ok: false, error: '2〜8人で開始できます(CPU追加可)' });
     startGame(room);
     cb && cb({ ok: true });
   });

@@ -118,7 +118,7 @@ function rankByDos(entries) { // entries: [{idx, dos}]
 
 /* ===== Engine ===== */
 class Engine {
-  constructor(seed) {
+  constructor(seed, playerCount = 4) {
     this.rng = mulberry32(seed ?? (Date.now() & 0xffffffff));
     this.ingredients = dealIngredients(this.rng);
     this.patterns = countPatterns(this.ingredients);
@@ -127,8 +127,8 @@ class Engine {
     this.round = 0;
     this.winnerIdxs = null; // 勝者(複数可)
     this.endReason = null;  // 'exact' | 'survivor' | 'draw'
-    this.players = [0,1,2,3].map(i => ({
-      idx: i, money: 10, eval: 3, myIngredientId: null,
+    this.players = Array.from({ length: playerCount }, (_, i) => ({
+      idx: i, money: 10, eval: 5, myIngredientId: null,
       revealed: false, buyCount: {}, restedLastRound: false,
       lastSakeDos: null, lastRank: null,
     }));
@@ -198,20 +198,27 @@ class Engine {
       results[b.idx].moneyDelta -= loss;
       results[b.idx].evalDelta -= 1;
     });
-    const payout = HIGH.length > 0 ? [8, 5, 3] : [8, 6, 5, 3];
+    const PAYOUT = [10, 8, 6, 5, 4, 3, 2, 1]; // 1位から順(最大8人)
     const ranked = rankByDos(LOW);
     ranked.forEach(({ idx, rank }) => {
       const p = this.players[idx];
-      const pay = payout[rank - 1] || 0;
+      const pay = PAYOUT[rank - 1] || 1;
       p.money += pay;
       results[idx].rank = rank;
       results[idx].moneyDelta += pay;
       if (rank === 1) { p.eval += 1; results[idx].evalDelta += 1; }
-      if (HIGH.length === 0 && rank === 4) {
-        p.eval = Math.max(0, p.eval - 1);
-        results[idx].evalDelta -= 1;
-      }
     });
+    // 失敗者がいないラウンドは最下位(同率は全員)が評価−1
+    if (HIGH.length === 0 && ranked.length > 0) {
+      const maxRank = Math.max(...ranked.map(r => r.rank));
+      if (maxRank > 1) {
+        ranked.filter(r => r.rank === maxRank).forEach(({ idx }) => {
+          const p = this.players[idx];
+          p.eval = Math.max(0, p.eval - 1);
+          results[idx].evalDelta -= 1;
+        });
+      }
+    }
 
     // 評価0 → 永続公開
     this.players.forEach(p => { if (p.eval <= 0) { p.eval = 0; p.revealed = true; } });
