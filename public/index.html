@@ -130,6 +130,11 @@ input.txt{
 #ovbox h2{text-align:center;color:var(--wood-d);margin-bottom:10px}
 .rrow{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e2d5b8;border-radius:10px;padding:8px 12px;margin-top:8px}
 .rrow .medal{font-size:26px;width:36px;text-align:center}
+.rrow.lowrank .medal{font-size:19px;opacity:.7}
+.rrow.lowrank .rnm{font-weight:700;color:#8a7a5c!important}
+#rb-timer{background:rgba(0,0,0,.25);border-radius:8px;padding:1px 10px}
+#rb-timer.hurry{background:#c0392b;color:#fff;animation:blink .5s infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.55}}
 .rrow .rnm{font-weight:900;flex:1}
 .sakechip{display:inline-block;background:var(--wood);color:var(--beer-gold);border-radius:8px;
   padding:0 8px;font-size:12px;font-weight:900;vertical-align:middle}
@@ -251,7 +256,8 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
           <b>目的:</b> 合計ちょうど3.0%のお酒を最初に造る。<br>
           <b>準備:</b> 24食材に度数(0.0〜2.8%)がランダムに配られる(非公開)。各自マイ食材を1つ選び、その度数だけ自分に見える。初期値は $10・評価5。<br>
           <b>毎ラウンド:</b> 食材を3つ選んで醸造(同じ食材は2つまで)。使用料は同じ食材を買うたびに $1→$2→$3…と値上がり(自分だけ)。金欠なら休憩(+$5、評価−1)。<br>
-          <b>公開:</b> 4人同時公開。見えるのは順位だけ。<br>
+          <b>時間制限:</b> 1ラウンドの考慮時間は1分。超過すると賞金なし・評価−1。<br>
+          <b>公開:</b> 全員同時公開。見えるのは順位だけ。<br>
           <b>採点:</b> 3.1%以上は失敗(評価−1・所持金半減)。それ以外は度数の高い順に賞金(1位$10/2位$6/3位$4/4位$3/5位以下$2)。1位は評価+1。失敗者がいないラウンドは最下位が評価−1。<br>
           <b>評価0:</b> マイ食材とお酒の度数が全員に公開され続ける。<br>
           <b>終了:</b> 3.0%達成で即勝利。または評価が残った最後の1人が勝利。
@@ -294,6 +300,7 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
   <div id="scr-game" class="hidden">
     <div id="roundbar">
       <span id="rb-round"></span>
+      <span id="rb-timer" title="1ラウンドの考慮時間は1分"></span>
       <span class="stars" id="rb-stars"></span>
       <span id="rb-my"></span>
     </div>
@@ -559,9 +566,24 @@ function removeCpu() { socket.emit('removeCpu', {}, () => {}); }
 function startGameReq() { socket.emit('startGame', {}, r => { if (!r.ok) toast(r.error); }); }
 function backToLobby() { socket.emit('backToLobby', {}, () => {}); }
 
+/* ── 残り時間表示 ── */
+setInterval(() => {
+  const el = document.getElementById('rb-timer');
+  if (!ST || ST.pub.phase !== 'play' || !ST.pub.deadline) { el.textContent = ''; el.className = ''; return; }
+  if (ST.priv.submitted) { el.textContent = '✔ 提出済み'; el.className = ''; return; }
+  const remain = Math.max(0, Math.ceil((ST.pub.deadline - Date.now()) / 1000));
+  el.textContent = `⏱ ${remain}秒`;
+  el.className = remain <= 10 ? 'hurry' : '';
+}, 300);
+
 /* ── 状態受信 → 画面振り分け ── */
+let lastPhase = null;
 socket.on('state', (st) => {
   ST = st;
+  if (st.pub.phase === 'myselect' && lastPhase !== 'myselect' && st.pub.round === 0) {
+    document.getElementById('log').innerHTML = ''; // 新しい試合開始でログをリセット
+  }
+  lastPhase = st.pub.phase;
   if (overlayOpen) return; // 公開演出中は裏で更新だけ
   render();
 });
@@ -755,16 +777,19 @@ socket.on('reveal', (rv) => {
   const myIdx = ST.priv.myIdx;
   const order = [...rv.results].sort((a, b) =>
     (a.rank ?? 9) - (b.rank ?? 9) || (a.failed ? 1 : 0) - (b.failed ? 1 : 0));
-  const medals = { 1: '🥇', 2: '🥈', 3: '🥉', 4: '4位' };
+  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const NUM_EMOJI = ['', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
   order.forEach(res => {
     const i = res.idx;
     const d = document.createElement('div');
-    d.className = 'rrow' + (i === myIdx ? ' me' : '');
+    const low = res.rank && res.rank >= 4;
+    d.className = 'rrow' + (i === myIdx ? ' me' : '') + (low ? ' lowrank' : '');
     let medal, note = '';
     if (res.type === 'rest') { medal = '😴'; note = '休憩'; }
+    else if (res.type === 'timeout') { medal = '⏰'; note = '時間切れ…'; }
     else if (res.winner) { medal = '🏆'; note = 'ちょうど3.0%!!'; }
     else if (res.failed) { medal = '💥'; note = '失敗(3.1%以上)'; }
-    else if (res.rank) { medal = medals[res.rank] || `${res.rank}位`; }
+    else if (res.rank) { medal = medals[res.rank] || NUM_EMOJI[res.rank] || `${res.rank}位`; }
     else { medal = '🍺'; } // 優勝者が出たラウンドの他プレイヤー(順位なし)
     const md = res.moneyDelta, ed = res.evalDelta;
     const labelTxt = res.label ? `<span class="sakechip">${res.label}</span>` : '';
@@ -785,6 +810,9 @@ socket.on('reveal', (rv) => {
     ms.innerHTML = `あなたのお酒(あなただけに見える): <b>${rv.mine.label} ${dosStr(rv.mine.dos)}</b>`;
     logLine(`R${rv.roundNo}: あなたは ${rv.mine.picks.map(id => 'No.' + id).join('・')} で ${rv.mine.label}(${dosStr(rv.mine.dos)}) → ` +
       (rv.mine.winner ? '🏆優勝!' : rv.mine.failed ? '💥失敗' : rv.mine.rank ? `${rv.mine.rank}位` : '─'));
+  } else if (rv.mine.type === 'timeout') {
+    ms.innerHTML = `⏰ 時間切れ… (賞金なし / 評価−1)`;
+    logLine(`R${rv.roundNo}: あなたは時間切れ (評価−1)`);
   } else {
     ms.innerHTML = `あなたは休憩しました (+$5 / 評価−1)`;
     logLine(`R${rv.roundNo}: あなたは休憩 (+$5 / 評価−1)`);
@@ -816,12 +844,15 @@ function renderResult() {
   document.getElementById('res-patterns').textContent = end.patterns;
   document.getElementById('res-starname').textContent = `(${starTxt(end.stars)})`;
   const st = document.getElementById('res-standings');
-  st.innerHTML = '<h3 style="margin-top:6px">最終結果</h3>';
+  st.innerHTML = '<h3 style="margin-top:6px">最終順位 <small style="font-size:11px;color:#8a7a5c">(ピッタリ > 評価 > お金 > 同着)</small></h3>';
+  const FIN_MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const NUM_E = ['', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
   end.final.forEach(f => {
     const d = document.createElement('div');
-    d.className = 'finrow';
-    d.innerHTML = `<span style="font-size:22px">${w.includes(f.idx) ? '🏆' : '🍺'}</span>
-      <b style="color:${PCOLORS[f.idx]};flex:1">${esc(f.name)}</b>
+    d.className = 'finrow' + (f.rank >= 4 ? ' lowrank' : '');
+    const medal = w.includes(f.idx) ? '🏆' : (FIN_MEDAL[f.rank] || NUM_E[f.rank] || `${f.rank}位`);
+    d.innerHTML = `<span style="font-size:${f.rank >= 4 ? 17 : 22}px;${f.rank >= 4 ? 'opacity:.7' : ''}">${medal}</span>
+      <b style="color:${PCOLORS[f.idx]};flex:1;${f.rank >= 4 ? 'font-weight:700;color:#8a7a5c' : ''}">${f.rank}位 ${esc(f.name)}</b>
       <span>💰$${f.money} ⭐${f.eval}</span>
       <small>マイ食材 No.${f.myId}=${dosStr(f.myDos)}</small>`;
     st.appendChild(d);

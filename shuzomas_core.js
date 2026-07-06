@@ -135,6 +135,21 @@ class Engine {
     this.log = [];
   }
   ing(id) { return this.ingredients[id - 1]; }
+  /* 最終順位: ピッタリ勝者 > 評価が多い順 > お金が多い順 > 同着 */
+  finalRanking() {
+    const win = new Set(this.winnerIdxs || []);
+    const arr = this.players.map(p => ({
+      idx: p.idx, w: win.has(p.idx) ? 1 : 0, ev: p.eval, mo: p.money,
+    }));
+    arr.sort((a, b) => b.w - a.w || b.ev - a.ev || b.mo - a.mo);
+    let prevKey = null, prevRank = 0;
+    return arr.map((x, i) => {
+      const key = `${x.w}|${x.ev}|${x.mo}`;
+      const rank = key === prevKey ? prevRank : i + 1;
+      prevKey = key; prevRank = rank;
+      return { idx: x.idx, rank };
+    });
+  }
   setMyIngredient(pIdx, id) { this.players[pIdx].myIngredientId = id; }
 
   canAffordAnyBrew(p) { return minBrewCost(p.buyCount, this.combos) <= p.money; }
@@ -155,7 +170,13 @@ class Engine {
     // 支払い・度数計算
     submissions.forEach((s, i) => {
       const p = this.players[i];
-      if (s.type === 'rest') {
+      if (s.type === 'timeout') {
+        // 時間切れ: 賞金なし・評価−1
+        p.eval = Math.max(0, p.eval - 1);
+        p.restedLastRound = false;
+        p.lastSakeDos = null;
+        results[i] = { type: 'timeout', moneyDelta: 0, evalDelta: -1 };
+      } else if (s.type === 'rest') {
         if (this.canAffordAnyBrew(p)) throw new Error(`P${i}: 休憩条件を満たしていない`);
         p.money += 5;
         p.eval = Math.max(0, p.eval - 1);

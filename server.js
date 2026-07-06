@@ -13,6 +13,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 3000;
+const ROUND_MS = (parseFloat(process.env.ROUND_SECONDS) || 60) * 1000; // 1ラウンドの考慮時間
 const rooms = new Map(); // code -> room
 const CPU_NAMES = ['ハンス', 'グレーテル', 'オットー', 'リーゼル', 'ブルーノ', 'エルザ', 'クラウス'];
 
@@ -32,6 +33,8 @@ function makeRoom() {
     engine: null,
     reveal: null,   // 直近ラウンドの公開結果(観戦/再入室用)
     endInfo: null,
+    deadline: null, // 現ラウンドの提出期限(epoch ms)
+    timer: null,
     createdAt: Date.now(),
   };
   rooms.set(room.code, room);
@@ -59,6 +62,7 @@ function publicState(room) {
     starName: E ? S.STAR_NAMES[E.stars] : null,
     ingredients: E ? E.ingredients.map(g => ({ id: g.id, attr: g.attr })) : null, // 個別の度数は送らない!
     dosSet: E ? E.ingredients.map(g => g.dos).sort((a, b) => a - b) : null, // 内訳セットのみ公開(昇順)
+    deadline: room.phase === 'play' ? room.deadline : null,
     seats: room.seats.map((s, i) => {
       const p = E ? E.players[i] : null;
       return {
@@ -102,6 +106,26 @@ function broadcast(room) {
   });
 }
 
+/* ── ラウンドタイマー: 期限切れの席は timeout 提出扱い ── */
+function clearRoundTimer(room) {
+  if (room.timer) { clearTimeout(room.timer); room.timer = null; }
+  room.deadline = null;
+}
+function startRoundTimer(room) {
+  clearRoundTimer(room);
+  if (room.phase !== 'play') return;
+  room.deadline = Date.now() + ROUND_MS;
+  room.timer = setTimeout(() => {
+    room.timer = null;
+    if (!rooms.has(room.code) || room.phase !== 'play') return;
+    let forced = false;
+    room.seats.forEach(s => {
+      if (!s.isCpu && s.connected && !s.sub) { s.sub = { type: 'timeout' }; forced = true; }
+    });
+    if (forced) { checkRoundDone(room); broadcast(room); }
+  }, ROUND_MS + 250); // 通信ラグ分の猶予
+}
+
 /* ── ゲーム進行 ── */
 function startGame(room) {
   room.engine = new S.Engine(undefined, room.seats.length);
@@ -141,7 +165,10 @@ function checkMySelectDone(room) {
       if (s.brain) s.brain.setKnown(id, room.engine.ing(id).dos);
     }
   });
-  if (room.seats.every(s => s.myId)) room.phase = 'play';
+  if (room.seats.every(s => s.myId)) {
+    room.phase = 'play';
+    startRoundTimer(room);
+  }
 }
 
 function submit(room, idx, sub) {
@@ -156,6 +183,7 @@ function submit(room, idx, sub) {
     if (!S.isValidPicks(sub.picks)) return '食材は3つ(同じ食材は2つまで)選んでください';
     if (S.pickCost(p.buyCount, sub.picks) > p.money) return '所持金が足りません';
   } else return '不正な提出です';
+  if (room.deadline && Date.now() > room.deadline + 500) return '時間切れです';
   s.sub = sub.type === 'brew' ? { type: 'brew', picks: sub.picks.map(Number) } : { type: 'rest' };
   checkRoundDone(room);
   broadcast(room);
@@ -191,17 +219,21 @@ function checkRoundDone(room) {
   room.reveal = { roundNo: r.roundNo, results: pubResults, ended: r.ended };
   if (r.ended) {
     room.phase = 'ended';
+    clearRoundTimer(room);
+    const franks = {};
+    E.finalRanking().forEach(x => { franks[x.idx] = x.rank; });
     room.endInfo = {
       winners: E.winnerIdxs,
       reason: E.endReason,
       patterns: E.patterns,
       stars: E.stars,
+      // 最終順位: ピッタリ > 評価 > お金 > 同着
       final: room.seats.map((s, i) => ({
-        idx: i, name: s.name,
+        idx: i, name: s.name, rank: franks[i],
         money: E.players[i].money, eval: E.players[i].eval,
         myId: E.players[i].myIngredientId,
         myDos: E.ing(E.players[i].myIngredientId).dos, // 終了時は全公開
-      })),
+      })).sort((a, b) => a.rank - b.rank),
     };
   }
   room.seats.forEach((s, i) => {
@@ -214,11 +246,14 @@ function checkRoundDone(room) {
         endInfo: room.endInfo,
         mine: mine.type === 'brew'
           ? { type: 'brew', picks: mine.picks, dos: mine.dos, label: mine.label, rank: mine.rank ?? null, failed: !!mine.failed, winner: !!mine.winner }
-          : { type: 'rest' },
+          : { type: mine.type },
       });
     }
   });
-  if (!r.ended) room.seats.forEach(s => { s.sub = null; });
+  if (!r.ended) {
+    room.seats.forEach(s => { s.sub = null; });
+    startRoundTimer(room);
+  }
   broadcast(room);
 }
 
@@ -304,6 +339,7 @@ io.on('connection', (socket) => {
     if (!room) return;
     const me = seatOf(room, socket.id);
     if (me.idx !== 0 || room.phase !== 'ended') return;
+    clearRoundTimer(room);
     room.phase = 'lobby';
     room.engine = null;
     room.reveal = null;
