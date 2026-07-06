@@ -226,6 +226,7 @@ class Engine {
       const pay = PAYOUT[rank - 1] || 2;
       p.money += pay;
       results[idx].rank = rank;
+      results[idx].pay = pay; // もらった賞金(表示用)
       results[idx].moneyDelta += pay;
       if (rank === 1) { p.eval += 1; results[idx].evalDelta += 1; }
     });

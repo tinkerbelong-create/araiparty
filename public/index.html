@@ -791,13 +791,20 @@ socket.on('reveal', (rv) => {
     else if (res.failed) { medal = '💥'; note = '失敗(3.1%以上)'; }
     else if (res.rank) { medal = medals[res.rank] || NUM_EMOJI[res.rank] || `${res.rank}位`; }
     else { medal = '🍺'; } // 優勝者が出たラウンドの他プレイヤー(順位なし)
-    const md = res.moneyDelta, ed = res.evalDelta;
+    const ed = res.evalDelta;
+    // お金の表記: 収支ではなく「もらった賞金」を表示(失敗のみ損失を表示)
+    let moneyTxt;
+    if (res.winner) moneyTxt = '';
+    else if (res.type === 'rest') moneyTxt = `<span class="plus">+$5</span>`;
+    else if (res.type === 'timeout') moneyTxt = `<span class="minus">賞金なし</span>`;
+    else if (res.failed) moneyTxt = `<span class="minus">−$${Math.abs(res.moneyDelta)}</span>`;
+    else moneyTxt = `<span class="plus">賞金 +$${res.pay || 0}</span>`;
     const labelTxt = res.label ? `<span class="sakechip">${res.label}</span>` : '';
     const openTxt = res.openDos !== null ? ` <small>🔍度数公開: ${dosStr(res.openDos)}</small>` : '';
     d.innerHTML = `<div class="medal">${medal}</div>
       <div class="rnm" style="color:${PCOLORS[i]}">${esc(seats[i].name)} ${labelTxt} <small>${note}</small>${openTxt}</div>
       <div class="delta">
-        <span class="${md >= 0 ? 'plus' : 'minus'}">${md >= 0 ? '+' : '−'}$${Math.abs(md)}</span>
+        ${moneyTxt}
         ${ed !== 0 ? `<span class="${ed > 0 ? 'plus' : 'minus'}"> ⭐${ed > 0 ? '+' : ''}${ed}</span>` : ''}
       </div>`;
     rows.appendChild(d);

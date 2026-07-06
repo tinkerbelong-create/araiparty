@@ -210,6 +210,7 @@ function checkRoundDone(room) {
     rank: res.rank ?? null,
     failed: !!res.failed,
     winner: !!res.winner,
+    pay: res.pay ?? null, // もらった賞金(表示用)
     label: res.type === 'brew' ? res.label : null, // 完成酒の種類は公開
     moneyDelta: res.moneyDelta ?? 0,
     evalDelta: res.evalDelta ?? 0,
