@@ -198,11 +198,11 @@ class Engine {
       results[b.idx].moneyDelta -= loss;
       results[b.idx].evalDelta -= 1;
     });
-    const PAYOUT = [10, 8, 6, 5, 4, 3, 2, 1]; // 1位から順(最大8人)
+    const PAYOUT = [10, 6, 4, 3]; // 1位から順、5位以下は$2(急勾配型)
     const ranked = rankByDos(LOW);
     ranked.forEach(({ idx, rank }) => {
       const p = this.players[idx];
-      const pay = PAYOUT[rank - 1] || 1;
+      const pay = PAYOUT[rank - 1] || 2;
       p.money += pay;
       results[idx].rank = rank;
       results[idx].moneyDelta += pay;
