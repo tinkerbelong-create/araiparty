@@ -133,6 +133,7 @@ table.log th{color:#6a7488;font-size:11px}
     <div style="text-align:center">
       <div style="font-weight:900;color:#6a7488;font-size:13px">招待コード</div>
       <div class="codebox" id="lbCode">-----</div>
+      <div style="margin-top:8px"><button class="btn blue small" id="btnCopy">📋 コードをコピー</button></div>
       <p class="note">友達にこのコードを伝えよう(2人で対戦)</p>
     </div>
     <div id="lbSeats"></div>
@@ -148,6 +149,7 @@ table.log th{color:#6a7488;font-size:11px}
       <p class="note">3回の出題でこの数を使い切る配分もかけひき。多いほど数えるのが大変!</p>
       <div class="row" style="margin-top:12px">
         <button class="btn green" id="btnAddCpu">CPUを追加</button>
+        <button class="btn gray hidden" id="btnRemoveCpu">CPUを削除</button>
         <button class="btn" id="btnStart">ゲーム開始!</button>
       </div>
     </div>
@@ -252,6 +254,35 @@ table.log th{color:#6a7488;font-size:11px}
 'use strict';
 const socket = io();
 const $ = id => document.getElementById(id);
+
+/* ── 効果音(SE): WebAudioで軽量に合成(シュゾマスと同方式) ── */
+let AC = null;
+function se(freq, dur = 0.07, type = 'square', vol = 0.2, slide = 0) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, AC.currentTime + dur);
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const seClick  = () => se(600, 0.05, 'square', 0.12);
+const sePick   = () => se(880, 0.08, 'triangle', 0.22);
+const seUnpick = () => se(440, 0.06, 'triangle', 0.15);
+const seSubmit = () => { se(523, 0.08, 'triangle', 0.22); setTimeout(() => se(784, 0.12, 'triangle', 0.22), 90); };
+const seGood   = () => [659, 880, 1175].forEach((f, i) => setTimeout(() => se(f, 0.13, 'triangle', 0.22), i * 100));
+const seMid    = () => se(659, 0.15, 'triangle', 0.2);
+const seBad    = () => se(220, 0.3, 'sawtooth', 0.15, 110);
+const seWin    = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.2, 'triangle', 0.25), i * 130));
+const seLose   = () => [392, 330, 262].forEach((f, i) => setTimeout(() => se(f, 0.25, 'triangle', 0.2), i * 160));
+/* フルーツごとに音程を変えたポップ音 */
+const POPF = { ichigo: 740, cherry: 880, lemon: 620, banana: 520 };
+const sePop = f => se(POPF[f] || 700, 0.06, 'sine', 0.14, (POPF[f] || 700) * 0.6);
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.btn, .choices button, .fbox button')) seClick(); });
 const VIEWS = ['vHome','vLobby','vQpick','vSetup','vWaitSetup','vDrop','vAnswer','vEnd'];
 const FRUITS = [
   {key:'ichigo',emoji:'🍓',name:'イチゴ'},
@@ -299,6 +330,24 @@ function sendBudget(){
   socket.emit('cf:setBudget', {budget: Number($('inBudget').value)}, r => { if(r && !r.ok) $('lbErr').textContent = r.error; });
 }
 $('btnAddCpu').onclick = () => socket.emit('cf:addCpu', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnRemoveCpu').onclick = () => socket.emit('cf:removeCpu', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnCopy').onclick = () => {
+  const code = $('lbCode').textContent;
+  const done = ok => { $('btnCopy').textContent = ok ? '✅ コピーしました!' : '❌ コピー失敗'; setTimeout(() => { $('btnCopy').textContent = '📋 コードをコピー'; }, 1600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => done(true)).catch(() => done(fallbackCopy(code)));
+  } else done(fallbackCopy(code));
+};
+function fallbackCopy(text){
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch(e){ return false; }
+}
 $('btnStart').onclick = () => socket.emit('cf:start', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
 $('btnAgain').onclick = () => {
   if (S && S.pub.isHost) socket.emit('cf:backToLobby', {}, ()=>{});
@@ -325,6 +374,9 @@ socket.on('cf:state', st => {
 
   if (dropping && p.phase === 'drop') return; // アニメ継続
 
+  // 【重要】結果表示が終わって次のフェーズに進んだら、必ずオーバーレイを閉じる
+  if (p.phase !== 'result' && p.phase !== 'ended') $('ovResult').classList.add('hidden');
+
   switch(p.phase){
     case 'lobby': renderLobby(p); break;
     case 'qpick': renderQpick(p, st.priv); break;
@@ -349,6 +401,9 @@ function renderLobby(p){
   ).join('') + (p.seats.length<2 ? '<div class="seat" style="opacity:.5">💺 あと1人…</div>' : '');
   $('lbHostArea').classList.toggle('hidden', !p.isHost);
   $('lbGuestArea').classList.toggle('hidden', p.isHost);
+  const hasCpu = p.seats.some(s => s.isCpu);
+  $('btnAddCpu').classList.toggle('hidden', hasCpu || p.seats.length >= 2);
+  $('btnRemoveCpu').classList.toggle('hidden', !hasCpu);
   if (p.isHost && document.activeElement !== $('inBudget')) $('inBudget').value = p.budget;
   if (!p.isHost) $('lbGuestArea').innerHTML = `<p class="note" style="text-align:center">フルーツ総数: <b>${p.budget}個</b> / ホストの開始を待っています…</p>`;
   $('btnStart').disabled = p.seats.length !== 2;
@@ -367,8 +422,8 @@ function renderQpick(p, priv){
   $('qpickGrid').innerHTML = p.questions.map(q => qcardHtml(q, picked.includes(q.id) ? 'sel' : '')).join('');
   document.querySelectorAll('#qpickGrid .qcard').forEach(el => el.onclick = () => {
     const id = Number(el.dataset.id);
-    if (picked.includes(id)) picked = picked.filter(x => x!==id);
-    else if (picked.length < 3) picked.push(id);
+    if (picked.includes(id)) { picked = picked.filter(x => x!==id); seUnpick(); }
+    else if (picked.length < 3) { picked.push(id); sePick(); }
     renderQpick(p, priv);
   });
   $('btnPick').textContent = `この3問にする (${picked.length}/3)`;
@@ -418,7 +473,7 @@ function renderSetup(p, priv){
   $('btnDrop').onclick = () => {
     socket.emit('cf:setup', {qid: setupQid, alloc}, r => {
       if(!r.ok) $('setupErr').textContent = r.error;
-      else { alloc = {ichigo:0,cherry:0,lemon:0,banana:0}; setupQid = null; $('setupErr').textContent=''; }
+      else { alloc = {ichigo:0,cherry:0,lemon:0,banana:0}; setupQid = null; $('setupErr').textContent=''; seSubmit(); }
     });
   };
 }
@@ -472,6 +527,7 @@ socket.on('cf:drop', d => {
       el.style.setProperty('--rot', (item.r - 180) + 'deg');
       el.style.animation = `fall ${item.fall}ms cubic-bezier(.45,.05,.85,.6) forwards`;
       stage.appendChild(el);
+      sePop(item.f);
       dropTimers.push(setTimeout(() => el.remove(), item.fall + 250));
     }, item.t));
   });
@@ -517,6 +573,7 @@ function sendAnswer(v){
     if (!r.ok){ $('ansErr').textContent = r.error; return; }
     answeredLocal = true;
     $('ansErr').textContent = '';
+    seSubmit();
     if (S) renderAnswer(S.pub);
   });
 }
@@ -544,8 +601,10 @@ socket.on('cf:reveal', r => {
     <div style="font-weight:900">${who}の回答: ${ansTxt}</div>
     <div class="pts ${cls}">${emoji} ${who}に +${r.points}pt</div>
     <div style="font-weight:900;color:#6a7488;margin-top:6px">スコア ${r.scores[0]} - ${r.scores[1]}</div>
-    ${r.finished ? '' : '<div class="note">まもなく次の出題へ…</div>'}`;
+    ${r.finished ? '' : '<div class="note">まもなく次の出題へ…</div>'}
+    <div style="margin-top:12px"><button class="btn gray small" onclick="document.getElementById('ovResult').classList.add('hidden')">とじる</button></div>`;
   $('ovResult').classList.remove('hidden');
+  (r.points >= 5 ? seGood : r.points > 0 ? seMid : seBad)();
 });
 
 /* ══ 終了 ══ */
@@ -558,6 +617,7 @@ socket.on('cf:end', e => {
     const win = e.winner === 0, draw = e.winner === null;
     $('endEmoji').textContent = draw ? '🤝' : win ? '🏆' : '😢';
     $('endTitle').textContent = draw ? '引き分け!' : win ? 'あなたの勝ち!!' : 'あなたの負け…';
+    (win ? seWin : draw ? seMid : seLose)();
     $('endScore').textContent = `${e.scores[0]} - ${e.scores[1]}`;
     $('endLog').innerHTML = '<tr><th>R</th><th>出題</th><th>問題</th><th>正解</th><th>回答</th><th>pt</th></tr>' +
       e.log.map(r => {
