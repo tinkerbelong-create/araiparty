@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>カウントフルーツ 🍓🍒🍋🍌</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{ --ink:#2a3140; --line:#dde5f0; --accent:#ff6b81; --gold:#e8a020; --green:#2fae6e; --blue:#5b6cff; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--ink);min-height:100vh;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(255,107,129,.14), transparent 40%),
+    radial-gradient(circle at 90% 18%, rgba(232,160,32,.16), transparent 40%),
+    radial-gradient(circle at 50% 95%, rgba(47,174,110,.12), transparent 45%),
+    linear-gradient(#fff8f4,#f2f9f1);
+}
+.wrap{max-width:760px;margin:0 auto;padding:18px 14px 50px}
+h1{font-size:34px;font-weight:900;text-align:center;letter-spacing:.04em;
+  background:linear-gradient(135deg,#ff6b81,#e8a020,#2fae6e);
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.sub{text-align:center;font-weight:700;color:#6a7488;font-size:12.5px;margin-top:2px}
+.card{background:#fff;border:2px solid var(--line);border-radius:18px;padding:20px;margin-top:16px;box-shadow:0 8px 22px rgba(42,49,64,.08)}
+.btn{display:inline-block;border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#fff;border-radius:12px;padding:11px 26px;font-size:15px;
+  background:linear-gradient(135deg,#ff6b81,#e05a70);box-shadow:0 4px 12px rgba(255,107,129,.35);transition:transform .1s}
+.btn:hover{transform:translateY(-2px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.blue{background:linear-gradient(135deg,#5b6cff,#3d4ed6);box-shadow:0 4px 12px rgba(91,108,255,.35)}
+.btn.green{background:linear-gradient(135deg,#2fae6e,#1f8f57);box-shadow:0 4px 12px rgba(47,174,110,.35)}
+.btn.gray{background:#98a2b8;box-shadow:none}
+.btn.small{padding:6px 14px;font-size:13px;border-radius:9px}
+input[type=text],input[type=number]{
+  font-family:inherit;font-weight:700;font-size:16px;color:var(--ink);
+  border:2px solid var(--line);border-radius:10px;padding:9px 12px;outline:none;width:100%;
+}
+input:focus{border-color:var(--accent)}
+label{font-size:12.5px;font-weight:900;color:#6a7488;display:block;margin:12px 0 4px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.err{color:#d6455d;font-weight:900;font-size:13px;min-height:18px;margin-top:8px}
+.hidden{display:none!important}
+.codebox{font-size:30px;font-weight:900;letter-spacing:.25em;color:var(--accent);background:#fff2f4;border:2px dashed var(--accent);border-radius:12px;padding:8px 18px;display:inline-block}
+.seat{display:flex;align-items:center;gap:8px;background:#f7f9ff;border:2px solid var(--line);border-radius:12px;padding:9px 14px;font-weight:900;margin-top:8px}
+.seat .tag{font-size:11px;color:#fff;background:#98a2b8;border-radius:99px;padding:2px 10px}
+.note{font-size:12.5px;font-weight:700;color:#6a7488;line-height:1.8;margin-top:10px}
+/* ── スコアヘッダー ── */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 14px;margin-top:14px;font-weight:900}
+.hud .pl{flex:1;text-align:center}
+.hud .name{font-size:13px;color:#6a7488}
+.hud .sc{font-size:26px}
+.hud .fruits{font-size:11.5px;color:#e8871a}
+.hud .mid{font-size:12px;color:#6a7488;text-align:center;white-space:nowrap}
+.timer{font-size:15px;font-weight:900;color:#d6455d;text-align:center;margin-top:8px;min-height:20px}
+/* ── 問題カード ── */
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+.qcard{border:2px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;font-size:13.5px;line-height:1.6;background:#fff;transition:all .1s;position:relative}
+.qcard:hover{border-color:#b9c4dd}
+.qcard.sel{border-color:var(--accent);background:#fff2f4;box-shadow:0 0 0 2px rgba(255,107,129,.25)}
+.qcard.used{opacity:.4;cursor:not-allowed}
+.qcard .kind{position:absolute;top:-9px;right:8px;font-size:10.5px;color:#fff;border-radius:99px;padding:2px 9px;font-weight:900}
+.kind.input{background:var(--blue)} .kind.choice{background:var(--gold)}
+/* ── 配分 ── */
+.alloc{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+.fbox{border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center;background:#fffdf8}
+.fbox .fe{font-size:34px}
+.fbox .fn{font-size:12px;font-weight:900;color:#6a7488}
+.fbox .cnt{font-size:26px;font-weight:900;margin:4px 0}
+.fbox .ops{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+.fbox button{font-family:inherit;font-weight:900;border:2px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;cursor:pointer;font-size:13px}
+.fbox button:hover{border-color:var(--accent);color:var(--accent)}
+.budget{font-size:15px;font-weight:900;text-align:center;margin-top:12px}
+.budget b{color:#e8871a;font-size:22px}
+/* ── 落下ステージ ── */
+#stage{position:relative;height:56vh;min-height:380px;overflow:hidden;border-radius:16px;margin-top:12px;
+  background:linear-gradient(#dff1ff 0%,#f0fbff 55%,#e8f7e8 100%);border:2px solid var(--line)}
+#stage .ground{position:absolute;bottom:0;left:0;right:0;height:26px;background:linear-gradient(#bfe6b5,#a4d69a);border-top:2px solid #93c789}
+.fruit{position:absolute;top:-60px;font-size:36px;will-change:transform;filter:drop-shadow(0 3px 3px rgba(0,0,0,.15));pointer-events:none}
+@keyframes fall{ from{transform:translateY(-70px) rotate(0deg)} to{transform:translateY(var(--fy)) rotate(var(--rot))} }
+.stageinfo{text-align:center;font-weight:900;margin-top:10px;font-size:15px}
+.dropbar{height:8px;background:#eef1f8;border-radius:99px;margin-top:8px;overflow:hidden}
+.dropbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff6b81,#e8a020);transition:width .3s linear}
+/* ── 回答 ── */
+.qtext{font-size:21px;font-weight:900;text-align:center;line-height:1.7;padding:16px;background:#fff8ee;border:2px dashed var(--gold);border-radius:14px;margin-top:12px}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.choices button{font-family:inherit;font-size:17px;font-weight:900;padding:16px 10px;border:2px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;transition:all .1s}
+.choices button:hover{border-color:var(--accent);background:#fff2f4}
+.anssend{display:flex;gap:10px;margin-top:14px;justify-content:center;align-items:center}
+.anssend input{width:140px;font-size:22px;text-align:center;font-weight:900}
+/* ── 結果 ── */
+.overlay{position:fixed;inset:0;background:rgba(30,34,46,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:14px}
+.panel{background:#fff;border-radius:20px;padding:26px 24px;max-width:520px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:88vh;overflow:auto}
+.pts{font-size:44px;font-weight:900}
+.pts.good{color:var(--green)} .pts.bad{color:#d6455d} .pts.mid{color:var(--gold)}
+.breakdown{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.breakdown span{background:#f5f7fc;border-radius:10px;padding:6px 11px;font-weight:900;font-size:14px}
+table.log{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px;font-weight:700}
+table.log th,table.log td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:center}
+table.log th{color:#6a7488;font-size:11px}
+.wait{ text-align:center;font-weight:900;font-size:16px;color:#6a7488;padding:30px 0 }
+.wait .big{font-size:44px;margin-bottom:8px;animation:bounce 1.2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.backlink{display:block;text-align:center;margin-top:22px;font-size:12.5px;font-weight:900;color:#8a94a8;text-decoration:none}
+.modalrule{text-align:left;font-size:13px;font-weight:700;line-height:1.9}
+.modalrule h3{margin-top:12px;color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>カウントフルーツ</h1>
+  <p class="sub">🍓🍒🍋🍌 降ってくるフルーツを数えて、あとから来る問題に答えろ!</p>
+
+  <!-- ══ ホーム ══ -->
+  <div id="vHome" class="card">
+    <label>なまえ(10文字まで)</label>
+    <input id="inName" type="text" maxlength="10" placeholder="なまえ">
+    <div class="row" style="margin-top:16px">
+      <button class="btn" id="btnCreate">部屋を作る</button>
+      <button class="btn green" id="btnCpu">CPUと対戦</button>
+    </div>
+    <label style="margin-top:18px">招待コードで参加</label>
+    <div class="row">
+      <input id="inCode" type="text" maxlength="5" placeholder="F○○○○" style="width:130px;text-transform:uppercase">
+      <button class="btn blue" id="btnJoin">参加する</button>
+    </div>
+    <div class="err" id="homeErr"></div>
+    <button class="btn gray small" id="btnRule" style="margin-top:10px">📜 ルールを読む</button>
+    <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+  </div>
+
+  <!-- ══ ロビー ══ -->
+  <div id="vLobby" class="card hidden">
+    <div style="text-align:center">
+      <div style="font-weight:900;color:#6a7488;font-size:13px">招待コード</div>
+      <div class="codebox" id="lbCode">-----</div>
+      <p class="note">友達にこのコードを伝えよう(2人で対戦)</p>
+    </div>
+    <div id="lbSeats"></div>
+    <div id="lbHostArea">
+      <label>🍎 フルーツの総数(ひとり分・15〜300)</label>
+      <div class="row">
+        <button class="btn gray small" data-bd="-15">-15</button>
+        <button class="btn gray small" data-bd="-5">-5</button>
+        <input id="inBudget" type="number" min="15" max="300" step="1" value="75" style="width:90px;text-align:center;font-weight:900">
+        <button class="btn gray small" data-bd="5">+5</button>
+        <button class="btn gray small" data-bd="15">+15</button>
+      </div>
+      <p class="note">3回の出題でこの数を使い切る配分もかけひき。多いほど数えるのが大変!</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn green" id="btnAddCpu">CPUを追加</button>
+        <button class="btn" id="btnStart">ゲーム開始!</button>
+      </div>
+    </div>
+    <div id="lbGuestArea" class="hidden"><p class="note" style="text-align:center">ホストの開始を待っています…</p></div>
+    <div class="err" id="lbErr"></div>
+  </div>
+
+  <!-- ══ HUD(対戦中共通) ══ -->
+  <div id="hud" class="hud hidden">
+    <div class="pl"><div class="name" id="hMyName">あなた</div><div class="sc" id="hMySc">0</div><div class="fruits" id="hMyFr">🍎75</div></div>
+    <div class="mid" id="hMid">ラウンド 1/3</div>
+    <div class="pl"><div class="name" id="hOpName">あいて</div><div class="sc" id="hOpSc">0</div><div class="fruits" id="hOpFr">🍎75</div></div>
+  </div>
+  <div id="timer" class="timer hidden"></div>
+
+  <!-- ══ 問題選択 ══ -->
+  <div id="vQpick" class="card hidden">
+    <div style="font-weight:900;font-size:16px;text-align:center">📋 出題する問題を <span style="color:var(--accent)">3つ</span> 選ぼう</div>
+    <p class="note" style="text-align:center">この15問は相手にも見えている。どれを選んだかは秘密!<br>相手が引っかかりそうな問題を選べ。</p>
+    <div class="qgrid" id="qpickGrid"></div>
+    <div style="text-align:center;margin-top:14px">
+      <button class="btn" id="btnPick" disabled>この3問にする (0/3)</button>
+    </div>
+    <div class="err" id="qpickErr"></div>
+  </div>
+
+  <!-- ══ 作問(出題者) ══ -->
+  <div id="vSetup" class="card hidden">
+    <div style="font-weight:900;font-size:16px;text-align:center">🎯 あなたの出題ターン</div>
+    <label>① 出す問題を選ぶ</label>
+    <div class="qgrid" id="setupQGrid"></div>
+    <label style="margin-top:16px">② 降らせるフルーツを決める</label>
+    <div class="alloc" id="allocGrid"></div>
+    <div class="budget">今回使う: <b id="useNow">0</b>個 / 残り <b id="budLeft">75</b>個 <span class="note" id="setupsLeftNote"></span></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn" id="btnDrop">フルーツを降らせる!</button></div>
+    <div class="err" id="setupErr"></div>
+  </div>
+
+  <!-- ══ 待機(相手の作問中) ══ -->
+  <div id="vWaitSetup" class="card hidden">
+    <div class="wait"><div class="big">🧺</div>相手が作問中…<br><span style="font-size:13px;color:#98a2b8">フルーツが降ってきたら<b>ぜんぶ</b>数えよう。何を聞かれるかは落下後のお楽しみ!</span></div>
+  </div>
+
+  <!-- ══ 落下ステージ ══ -->
+  <div id="vDrop" class="hidden">
+    <div class="stageinfo" id="dropInfo">🍇 フルーツが降ってくる!</div>
+    <div id="stage"><div class="ground"></div></div>
+    <div class="dropbar"><i id="dropProg"></i></div>
+  </div>
+
+  <!-- ══ 回答 ══ -->
+  <div id="vAnswer" class="card hidden">
+    <div style="font-weight:900;font-size:15px;text-align:center" id="ansWho">❓ 問題!</div>
+    <div class="qtext" id="ansQ"></div>
+    <div id="ansInputArea" class="anssend hidden">
+      <input id="inAnswer" type="number" min="0" step="1" placeholder="?">
+      <button class="btn" id="btnAnswer">回答する!</button>
+    </div>
+    <div id="ansChoiceArea" class="choices hidden"></div>
+    <div id="ansWait" class="wait hidden"><div class="big">🤔</div>相手が回答中…</div>
+    <div class="err" id="ansErr"></div>
+  </div>
+
+  <!-- ══ 終了 ══ -->
+  <div id="vEnd" class="card hidden">
+    <div style="text-align:center;font-size:40px" id="endEmoji">🏆</div>
+    <div style="text-align:center;font-size:26px;font-weight:900" id="endTitle"></div>
+    <div style="text-align:center;font-size:19px;font-weight:900;margin-top:6px" id="endScore"></div>
+    <table class="log" id="endLog"></table>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn blue" id="btnAgain">ロビーにもどる</button>
+      <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+    </div>
+  </div>
+</div>
+
+<!-- 結果オーバーレイ -->
+<div id="ovResult" class="overlay hidden"><div class="panel" id="ovPanel"></div></div>
+<!-- ルールモーダル -->
+<div id="ovRule" class="overlay hidden">
+  <div class="panel modalrule">
+    <h2 style="text-align:center">📜 カウントフルーツのルール</h2>
+    <h3>🎮 ゲームの流れ(1対1・3回戦)</h3>
+    ・最初に<b>15個の問題</b>が両プレイヤーに公開される。<br>
+    ・それぞれ<b>3問</b>をこっそり選ぶ(相手には見えない)。<br>
+    ・毎回戦、先攻→後攻の順で<b>交互に出題</b>。出題者は選んだ問題1つと、降らせるフルーツ(🍓🍒🍋🍌)の個数を決める。<br>
+    ・回答者はフルーツが全部落ちたあとに問題を見て回答!<b>何を聞かれるかわからないので全部数えるべし。</b>
+    <h3>🍎 フルーツの持ち数</h3>
+    ・各プレイヤーは合計<b>75個</b>(ロビーで変更可)のフルーツを持ち、3回の出題で配分して使う。<br>
+    ・例: 1回目に30個使うと、残り2回で使えるのは45個。<br>
+    ・たくさん降らせるほど数えにくいが、後の回で弾切れに…!
+    <h3>🎯 得点</h3>
+    ・<b>選択式</b>: 正解で5ポイント。<br>
+    ・<b>入力式</b>: ピッタリで5ポイント。ずれた分だけ−1(0未満にはならない)。<br>
+    ・3回戦合計の多いほうが勝ち!
+    <div style="text-align:center;margin-top:16px"><button class="btn" onclick="document.getElementById('ovRule').classList.add('hidden')">とじる</button></div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+'use strict';
+const socket = io();
+const $ = id => document.getElementById(id);
+const VIEWS = ['vHome','vLobby','vQpick','vSetup','vWaitSetup','vDrop','vAnswer','vEnd'];
+const FRUITS = [
+  {key:'ichigo',emoji:'🍓',name:'イチゴ'},
+  {key:'cherry',emoji:'🍒',name:'チェリー'},
+  {key:'lemon',emoji:'🍋',name:'レモン'},
+  {key:'banana',emoji:'🍌',name:'バナナ'},
+];
+let S = null;            // 最新のstate {pub, priv}
+let deadline = null;
+let picked = [];         // qpickで選択中
+let alloc = {ichigo:0,cherry:0,lemon:0,banana:0};
+let setupQid = null;
+let dropping = false;    // 落下アニメ中はstate再描画で画面を切り替えない
+let dropTimers = [];
+let answeredLocal = false;
+
+function show(view){ VIEWS.forEach(v => $(v).classList.toggle('hidden', v !== view)); }
+function showHud(on){ $('hud').classList.toggle('hidden', !on); $('timer').classList.toggle('hidden', !on); }
+
+/* ── タイマー表示 ── */
+setInterval(() => {
+  const el = $('timer');
+  if (!deadline){ el.textContent=''; return; }
+  const remain = Math.max(0, Math.ceil((deadline - Date.now())/1000));
+  el.textContent = remain > 0 ? `⏱ のこり ${remain} 秒` : '';
+}, 250);
+
+/* ══ ホーム ══ */
+$('btnRule').onclick = () => $('ovRule').classList.remove('hidden');
+function myName(){ return $('inName').value.trim() || 'ゲスト'; }
+$('btnCreate').onclick = () => socket.emit('cf:createRoom', {name: myName()}, r => { if(!r.ok) $('homeErr').textContent = r.error; });
+$('btnCpu').onclick = () => socket.emit('cf:createRoom', {name: myName()}, r => {
+  if(!r.ok) return $('homeErr').textContent = r.error;
+  socket.emit('cf:addCpu', {}, ()=>{});
+});
+$('btnJoin').onclick = () => socket.emit('cf:joinRoom', {code: $('inCode').value, name: myName()}, r => { if(!r.ok) $('homeErr').textContent = r.error; });
+
+/* ══ ロビー ══ */
+document.querySelectorAll('[data-bd]').forEach(b => b.onclick = () => {
+  const v = Math.max(15, Math.min(300, (Number($('inBudget').value)||75) + Number(b.dataset.bd)));
+  $('inBudget').value = v; sendBudget();
+});
+$('inBudget').onchange = sendBudget;
+function sendBudget(){
+  socket.emit('cf:setBudget', {budget: Number($('inBudget').value)}, r => { if(r && !r.ok) $('lbErr').textContent = r.error; });
+}
+$('btnAddCpu').onclick = () => socket.emit('cf:addCpu', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnStart').onclick = () => socket.emit('cf:start', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnAgain').onclick = () => {
+  if (S && S.pub.isHost) socket.emit('cf:backToLobby', {}, ()=>{});
+  else location.reload();
+};
+
+/* ══ 描画 ══ */
+socket.on('cf:state', st => {
+  S = st;
+  const p = st.pub;
+  deadline = p.deadline || null;
+
+  // HUD
+  if (p.phase !== 'lobby' && p.phase !== 'ended' && p.names[1]) {
+    showHud(true);
+    $('hMyName').textContent = p.names[0] + (p.first === 0 ? '(先攻)' : '');
+    $('hOpName').textContent = (p.names[1]||'?') + (p.first === 1 ? '(先攻)' : '');
+    $('hMySc').textContent = p.scores ? p.scores[0] : 0;
+    $('hOpSc').textContent = p.scores ? p.scores[1] : 0;
+    $('hMyFr').textContent = '🍎のこり' + (p.remaining ? p.remaining[0] : p.budget);
+    $('hOpFr').textContent = '🍎のこり' + (p.remaining ? p.remaining[1] : p.budget);
+    $('hMid').textContent = p.phase === 'qpick' ? '問題えらび' : `ラウンド ${p.round}/3`;
+  } else showHud(false);
+
+  if (dropping && p.phase === 'drop') return; // アニメ継続
+
+  switch(p.phase){
+    case 'lobby': renderLobby(p); break;
+    case 'qpick': renderQpick(p, st.priv); break;
+    case 'setup':
+      answeredLocal = false;
+      if (p.myRole === 'setter') renderSetup(p, st.priv);
+      else show('vWaitSetup');
+      break;
+    case 'drop': /* cf:dropイベントで開始 */ break;
+    case 'answer': renderAnswer(p); break;
+    case 'result': /* cf:revealで表示 */ break;
+    case 'ended': /* cf:endで表示 */ break;
+  }
+});
+
+function renderLobby(p){
+  $('ovResult').classList.add('hidden');
+  show('vLobby');
+  $('lbCode').textContent = p.code;
+  $('lbSeats').innerHTML = p.seats.map((s,i) =>
+    `<div class="seat">${s.isCpu?'🤖':'🙂'} ${esc(s.name)} ${i===0?'<span class="tag">ホスト</span>':''}${!s.connected?'<span class="tag">切断</span>':''}</div>`
+  ).join('') + (p.seats.length<2 ? '<div class="seat" style="opacity:.5">💺 あと1人…</div>' : '');
+  $('lbHostArea').classList.toggle('hidden', !p.isHost);
+  $('lbGuestArea').classList.toggle('hidden', p.isHost);
+  if (p.isHost && document.activeElement !== $('inBudget')) $('inBudget').value = p.budget;
+  if (!p.isHost) $('lbGuestArea').innerHTML = `<p class="note" style="text-align:center">フルーツ総数: <b>${p.budget}個</b> / ホストの開始を待っています…</p>`;
+  $('btnStart').disabled = p.seats.length !== 2;
+}
+
+function renderQpick(p, priv){
+  show('vQpick');
+  const mine = priv && priv.myPicks;
+  if (mine){
+    $('qpickGrid').innerHTML = p.questions.map(q =>
+      qcardHtml(q, mine.includes(q.id) ? 'sel' : '')).join('');
+    $('btnPick').textContent = p.pickDone[1] ? '相手も選択ずみ…' : '相手が選んでいます…';
+    $('btnPick').disabled = true;
+    return;
+  }
+  $('qpickGrid').innerHTML = p.questions.map(q => qcardHtml(q, picked.includes(q.id) ? 'sel' : '')).join('');
+  document.querySelectorAll('#qpickGrid .qcard').forEach(el => el.onclick = () => {
+    const id = Number(el.dataset.id);
+    if (picked.includes(id)) picked = picked.filter(x => x!==id);
+    else if (picked.length < 3) picked.push(id);
+    renderQpick(p, priv);
+  });
+  $('btnPick').textContent = `この3問にする (${picked.length}/3)`;
+  $('btnPick').disabled = picked.length !== 3;
+  $('btnPick').onclick = () => socket.emit('cf:pick', {ids: picked}, r => { if(!r.ok) $('qpickErr').textContent = r.error; });
+}
+function qcardHtml(q, cls){
+  return `<div class="qcard ${cls}" data-id="${q.id}">
+    <span class="kind ${q.kind}">${q.kind==='input'?'✏️入力式':'🔘選択式'}</span>${esc(q.text)}</div>`;
+}
+
+function renderSetup(p, priv){
+  show('vSetup');
+  const unused = priv.myPicks.filter(id => !priv.myUsed.includes(id));
+  if (setupQid === null || !unused.includes(setupQid)) setupQid = unused[0];
+  $('setupQGrid').innerHTML = priv.myPicks.map(id => {
+    const q = p.questions.find(x => x.id === id);
+    const used = priv.myUsed.includes(id);
+    return qcardHtml(q, (used ? 'used' : '') + (id === setupQid ? ' sel' : ''));
+  }).join('');
+  document.querySelectorAll('#setupQGrid .qcard').forEach(el => {
+    const id = Number(el.dataset.id);
+    if (!priv.myUsed.includes(id)) el.onclick = () => { setupQid = id; renderSetup(p, priv); };
+  });
+  // 配分UI
+  $('allocGrid').innerHTML = FRUITS.map(f => `
+    <div class="fbox">
+      <div class="fe">${f.emoji}</div><div class="fn">${f.name}</div>
+      <div class="cnt" id="cnt_${f.key}">${alloc[f.key]}</div>
+      <div class="ops">
+        <button data-f="${f.key}" data-d="-5">-5</button>
+        <button data-f="${f.key}" data-d="-1">-1</button>
+        <button data-f="${f.key}" data-d="1">+1</button>
+        <button data-f="${f.key}" data-d="5">+5</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('#allocGrid button').forEach(b => b.onclick = () => {
+    const k = b.dataset.f, d = Number(b.dataset.d);
+    alloc[k] = Math.max(0, alloc[k] + d);
+    clampAlloc(p);
+    renderAllocNums(p);
+  });
+  const myLeft = p.remaining[0];
+  const setupsLeft = countMySetupsLeft(p);
+  $('setupsLeftNote').textContent = setupsLeft > 1 ? `(このあと自分の出題があと${setupsLeft-1}回ある)` : '(これが最後の出題!)';
+  renderAllocNums(p);
+  $('btnDrop').onclick = () => {
+    socket.emit('cf:setup', {qid: setupQid, alloc}, r => {
+      if(!r.ok) $('setupErr').textContent = r.error;
+      else { alloc = {ichigo:0,cherry:0,lemon:0,banana:0}; setupQid = null; $('setupErr').textContent=''; }
+    });
+  };
+}
+function countMySetupsLeft(p){
+  // duelNo..5 のうち自分(=先攻なら偶数duel)が出題者の回数
+  let left = 0;
+  for (let n = p.duelNo; n < 6; n++){
+    const setterIsFirst = (n % 2 === 0);
+    const iAmFirst = p.first === 0;
+    if (setterIsFirst === iAmFirst) left++;
+  }
+  return left;
+}
+function clampAlloc(p){
+  const myLeft = p.remaining[0];
+  let total = FRUITS.reduce((s,f)=>s+alloc[f.key],0);
+  while (total > myLeft){
+    const k = FRUITS.map(f=>f.key).filter(k=>alloc[k]>0).sort((a,b)=>alloc[b]-alloc[a])[0];
+    alloc[k]--; total--;
+  }
+}
+function renderAllocNums(p){
+  const total = FRUITS.reduce((s,f)=>s+alloc[f.key],0);
+  FRUITS.forEach(f => { const el = $('cnt_'+f.key); if(el) el.textContent = alloc[f.key]; });
+  $('useNow').textContent = total;
+  $('budLeft').textContent = p.remaining[0] - total;
+  $('btnDrop').disabled = total < 1;
+}
+
+/* ══ 落下 ══ */
+socket.on('cf:drop', d => {
+  $('ovResult').classList.add('hidden');
+  dropping = true;
+  answeredLocal = false;
+  dropTimers.forEach(clearTimeout); dropTimers = [];
+  show('vDrop');
+  $('dropInfo').textContent = d.setter === 0
+    ? `ラウンド${d.round} あなたの出題 — 相手が数えている…`
+    : `ラウンド${d.round} 相手の出題 — ぜんぶ数えろ!! 👀`;
+  const stage = $('stage');
+  stage.querySelectorAll('.fruit').forEach(e => e.remove());
+  const H = stage.clientHeight;
+  const EM = Object.fromEntries(FRUITS.map(f=>[f.key,f.emoji]));
+  d.seq.forEach(item => {
+    dropTimers.push(setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'fruit';
+      el.textContent = EM[item.f] || '🍎';
+      el.style.left = (item.x * 100) + '%';
+      el.style.setProperty('--fy', (H - 20) + 'px');
+      el.style.setProperty('--rot', (item.r - 180) + 'deg');
+      el.style.animation = `fall ${item.fall}ms cubic-bezier(.45,.05,.85,.6) forwards`;
+      stage.appendChild(el);
+      dropTimers.push(setTimeout(() => el.remove(), item.fall + 250));
+    }, item.t));
+  });
+  // 進捗バー
+  const t0 = Date.now();
+  const prog = setInterval(() => {
+    const r = Math.min(1, (Date.now()-t0)/d.duration);
+    $('dropProg').style.width = (r*100)+'%';
+    if (r >= 1){ clearInterval(prog); dropping = false; }
+  }, 200);
+  dropTimers.push(setTimeout(() => { dropping = false; }, d.duration + 400));
+});
+
+/* ══ 回答 ══ */
+function renderAnswer(p){
+  show('vAnswer');
+  dropping = false;
+  const q = p.currentQ;
+  if (!q) return;
+  $('ansQ').textContent = q.text;
+  const meAnswering = p.myRole === 'answerer';
+  $('ansWho').textContent = meAnswering ? '❓ 問題! いくつだった?' : '📤 あなたの出題 — 相手が回答中';
+  $('ansInputArea').classList.toggle('hidden', !(meAnswering && q.kind === 'input') || answeredLocal);
+  $('ansChoiceArea').classList.toggle('hidden', !(meAnswering && q.kind === 'choice') || answeredLocal);
+  $('ansWait').classList.toggle('hidden', meAnswering && !answeredLocal);
+  if (meAnswering && q.kind === 'choice' && !answeredLocal){
+    $('ansChoiceArea').innerHTML = q.options.map((o,i) => `<button data-i="${i}">${esc(o)}</button>`).join('');
+    document.querySelectorAll('#ansChoiceArea button').forEach(b => b.onclick = () => sendAnswer(Number(b.dataset.i)));
+  }
+  if (meAnswering && q.kind === 'input' && !answeredLocal){
+    $('inAnswer').value = '';
+    setTimeout(()=>$('inAnswer').focus(), 50);
+    $('btnAnswer').onclick = () => {
+      const v = Number($('inAnswer').value);
+      if (!Number.isFinite(v) || v < 0 || $('inAnswer').value === '') { $('ansErr').textContent = '0以上の数を入れてね'; return; }
+      sendAnswer(Math.floor(v));
+    };
+    $('inAnswer').onkeydown = e => { if (e.key === 'Enter') $('btnAnswer').click(); };
+  }
+}
+function sendAnswer(v){
+  socket.emit('cf:answer', {value: v}, r => {
+    if (!r.ok){ $('ansErr').textContent = r.error; return; }
+    answeredLocal = true;
+    $('ansErr').textContent = '';
+    if (S) renderAnswer(S.pub);
+  });
+}
+
+/* ══ 結果 ══ */
+socket.on('cf:reveal', r => {
+  dropping = false;
+  const meAns = r.answerer === 0;
+  const who = meAns ? 'あなた' : '相手';
+  let ansTxt, correctTxt;
+  if (r.kind === 'choice'){
+    ansTxt = r.answer === null ? '時間切れ…' : esc(r.options[r.answer]);
+    correctTxt = r.correct.map(i => esc(r.options[i])).join(' / ');
+  } else {
+    ansTxt = r.answer === null ? '時間切れ…' : r.answer + ' 個';
+    correctTxt = r.correct + ' 個';
+  }
+  const cls = r.points >= 5 ? 'good' : r.points > 0 ? 'mid' : 'bad';
+  const emoji = r.points >= 5 ? '🎉' : r.points > 0 ? '😗' : '💥';
+  $('ovPanel').innerHTML = `
+    <div style="font-weight:900;color:#6a7488">ラウンド${r.round} ${r.setter===0?'あなた':'相手'}の出題</div>
+    <div class="qtext" style="font-size:17px">${esc(r.text)}</div>
+    <div class="breakdown">${FRUITS.map(f=>`<span>${f.emoji}×${r.alloc[f.key]}</span>`).join('')}<span>合計 ${r.total}個</span></div>
+    <div style="margin-top:14px;font-weight:900">正解: <span style="color:var(--green)">${correctTxt}</span></div>
+    <div style="font-weight:900">${who}の回答: ${ansTxt}</div>
+    <div class="pts ${cls}">${emoji} ${who}に +${r.points}pt</div>
+    <div style="font-weight:900;color:#6a7488;margin-top:6px">スコア ${r.scores[0]} - ${r.scores[1]}</div>
+    ${r.finished ? '' : '<div class="note">まもなく次の出題へ…</div>'}`;
+  $('ovResult').classList.remove('hidden');
+});
+
+/* ══ 終了 ══ */
+socket.on('cf:end', e => {
+  dropping = false;
+  setTimeout(() => {
+    $('ovResult').classList.add('hidden');
+    showHud(false); deadline = null;
+    show('vEnd');
+    const win = e.winner === 0, draw = e.winner === null;
+    $('endEmoji').textContent = draw ? '🤝' : win ? '🏆' : '😢';
+    $('endTitle').textContent = draw ? '引き分け!' : win ? 'あなたの勝ち!!' : 'あなたの負け…';
+    $('endScore').textContent = `${e.scores[0]} - ${e.scores[1]}`;
+    $('endLog').innerHTML = '<tr><th>R</th><th>出題</th><th>問題</th><th>正解</th><th>回答</th><th>pt</th></tr>' +
+      e.log.map(r => {
+        const c = r.kind==='choice' ? r.correct.map(i=>r.options[i]).join('/') : r.correct;
+        const a = r.answer === null ? '×' : (r.kind==='choice' ? r.options[r.answer] : r.answer);
+        return `<tr><td>${r.round}</td><td>${r.setter===0?'自分':'相手'}</td><td style="text-align:left">${esc(r.text)}</td><td>${esc(String(c))}</td><td>${esc(String(a))}</td><td><b>${r.points}</b></td></tr>`;
+      }).join('');
+  }, 2400); // 最後のリザルトを少し見せる
+});
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>

@@ -392,4 +392,11 @@ require('./jd_server.js')(io, {
   gapMs: parseFloat(process.env.JD_GAP_MS) || 2600,
 });
 
+require('./cf_server.js')(io, {
+  qpickMs: (parseFloat(process.env.CF_QPICK_SECONDS) || 60) * 1000,
+  setupMs: (parseFloat(process.env.CF_SETUP_SECONDS) || 75) * 1000,
+  answerMs: (parseFloat(process.env.CF_ANSWER_SECONDS) || 30) * 1000,
+  gapMs: parseFloat(process.env.CF_GAP_MS) || 6000,
+});
+
 server.listen(PORT, () => console.log(`あらいの遊び場 : http://localhost:${PORT}`));
