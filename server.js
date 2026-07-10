@@ -228,6 +228,8 @@ function checkRoundDone(room) {
       reason: E.endReason,
       patterns: E.patterns,
       stars: E.stars,
+      // 終了時は全食材の度数を公開(答え合わせ用)
+      ingredients: E.ingredients.map(g => ({ id: g.id, attr: g.attr, dos: g.dos })),
       // 最終順位: ピッタリ > 評価 > お金 > 同着
       final: room.seats.map((s, i) => ({
         idx: i, name: s.name, rank: franks[i],

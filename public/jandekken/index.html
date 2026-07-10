@@ -83,6 +83,42 @@ input.txt{font-family:inherit;font-size:16px;font-weight:700;padding:8px 12px;
 #blog{max-height:140px;overflow:auto;font-size:12px;background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 12px;margin-top:8px;font-weight:700}
 #blog div{padding:1px 0;border-bottom:1px dashed #eef2f8}
 #counterbox{background:#fff8e6;border:2px solid #f0c040;border-radius:12px;padding:10px;margin-top:10px;text-align:center;font-weight:900}
+/* 対戦テーブル(セット状態の可視化) */
+#table{display:flex;justify-content:center;align-items:flex-end;gap:34px;margin-top:12px}
+#table .side{text-align:center;font-weight:900;font-size:13px;color:#5a647a}
+.tslot{
+  width:86px;height:116px;border:3px dashed var(--line);border-radius:14px;margin:6px auto 4px;
+  display:flex;align-items:center;justify-content:center;background:#f7f9ff;
+}
+.tslot .card{cursor:default}
+.tslot .card:hover{transform:none;box-shadow:none}
+.setstate{font-size:12px;font-weight:900}
+.setstate.ok{color:var(--win)} .setstate.wait{color:#98a2b8}
+#table .vs{font-size:22px;font-weight:900;color:#98a2b8;padding-bottom:56px}
+/* 掛け声 */
+#ov-call{font-size:56px;font-weight:900;letter-spacing:.1em;padding:40px 0;
+  background:linear-gradient(135deg,var(--gu),var(--accent),var(--choki));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+/* 能力早見表ドロワー */
+#abbook{
+  position:fixed;top:50%;right:0;transform:translate(100%,-50%);z-index:60;
+  width:min(360px,92vw);max-height:88vh;overflow:auto;background:#fff;border:2px solid var(--line);border-right:none;
+  border-radius:16px 0 0 16px;box-shadow:-8px 8px 24px rgba(42,49,64,.2);
+  transition:transform .22s ease;padding:14px;
+}
+#abbook.open{transform:translate(0,-50%)}
+#abbook-tab{
+  position:absolute;left:-42px;top:14px;font-family:inherit;font-weight:900;font-size:13px;cursor:pointer;
+  background:var(--accent-d);color:#fff;border:none;border-radius:12px 0 0 12px;padding:14px 9px;
+  writing-mode:vertical-rl;box-shadow:-3px 3px 8px rgba(0,0,0,.2);
+}
+#abbook h4{font-size:14px;margin-top:8px}
+#abbook table{width:100%;border-collapse:collapse;font-size:11.5px;font-weight:700;margin-top:6px}
+#abbook td{border:1px solid var(--line);padding:4px 6px;vertical-align:top}
+#abbook td.n{font-weight:900;white-space:nowrap}
+.trg{display:inline-block;border-radius:6px;padding:0 6px;font-size:10px;font-weight:900;color:#fff}
+.trg.win{background:var(--win)} .trg.lose{background:var(--lose)} .trg.tie{background:#e8a020} .trg.play{background:var(--accent-d)}
+#abbook .basics{font-size:12px;font-weight:700;color:#5a647a;line-height:1.7;margin-top:4px}
 .cardrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
 
 /* ドラフト */
@@ -175,7 +211,12 @@ h3 .cnt{font-size:12px;color:#8a94a8;font-weight:700}
       <div id="score"></div>
       <div id="flags"></div>
       <div id="counterbox" class="hidden"></div>
-      <h3 style="margin-top:8px">あなたの手札 <span class="cnt">(クリックで出す)</span></h3>
+      <div id="table">
+        <div class="side">あなた<div class="tslot" id="slot-me"></div><div class="setstate" id="state-me"></div></div>
+        <div class="vs">VS</div>
+        <div class="side">CPU<div class="tslot" id="slot-op"></div><div class="setstate" id="state-op"></div></div>
+      </div>
+      <h3 style="margin-top:8px">あなたの手札 <span class="cnt">(クリックでセット!)</span></h3>
       <div id="hand"></div>
     </div>
     <div class="panel">
@@ -204,8 +245,27 @@ h3 .cnt{font-size:12px;color:#8a94a8;font-weight:700}
   </div>
 </div>
 
+<!-- 能力早見表 -->
+<div id="abbook">
+  <button id="abbook-tab">📖 能力表</button>
+  <h4 style="margin-top:0">📖 ルール＆能力早見表</h4>
+  <div class="basics">
+    ✅ <b>先に3勝で勝利!</b> あいこはノーカウント(カードは消費)<br>
+    ✅ 出し切ったら勝ち数の多い方 → 同数はサドンデス<br>
+    発動タイミング: <span class="trg win">勝</span>勝った時 <span class="trg lose">負</span>負けた時 <span class="trg tie">引</span>あいこの時 <span class="trg play">出</span>出した時
+  </div>
+  <h4>✊ グー系(パワー)</h4>
+  <table id="abt-G"></table>
+  <h4>✌️ チョキ系(妨害)</h4>
+  <table id="abt-C"></table>
+  <h4>✋ パー系(情報・ねばり)</h4>
+  <table id="abt-P"></table>
+  <div class="basics" style="margin-top:8px">※ 各能力は2枚ずつ+能力なしの素カードが各手2枚(全30枚)</div>
+</div>
+
 <!-- 同時公開オーバーレイ -->
 <div id="overlay"><div id="ovbox">
+  <div id="ov-call" class="hidden"></div>
   <div id="ov-title" style="font-weight:900;color:#5a647a"></div>
   <div id="ov-cards"></div>
   <div id="ov-result"></div>
@@ -561,6 +621,36 @@ const seTie = () => se(440, 0.1, 'triangle', 0.15);
 const seWin = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.2, 'triangle', 0.25), i * 130));
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.btn')) seClick(); });
 
+/* 能力早見表の生成 */
+(function buildAbBook() {
+  const TRG = { win: ['勝', 'win'], lose: ['負', 'lose'], tie: ['引', 'tie'], play: ['出', 'play'] };
+  for (const h of HANDS) {
+    const t = document.getElementById('abt-' + h);
+    if (!t) continue;
+    Object.entries(ABILITIES).filter(([k, a]) => a.hand === h).forEach(([k, a]) => {
+      const [lbl, cls] = TRG[a.tr];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="n">${a.name}<br><span class="trg ${cls}">${lbl}</span></td><td>${a.text}</td>`;
+      t.appendChild(tr);
+    });
+  }
+  const panel = document.getElementById('abbook');
+  const tab = document.getElementById('abbook-tab');
+  const setTab = () => { tab.textContent = panel.classList.contains('open') ? '▶ とじる' : '📖 能力表'; };
+  tab.onclick = () => { panel.classList.toggle('open'); setTab(); };
+  setTab();
+})();
+
+/* 掛け声(音声合成 + 効果音) */
+function say(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP'; u.rate = 1.15; u.pitch = 1.2; u.volume = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
 function show(id) {
   ['scr-title', 'scr-draft', 'scr-battle', 'scr-result'].forEach(s =>
     document.getElementById(s).classList.toggle('hidden', s !== id));
@@ -669,12 +759,18 @@ function proceedDraft() {
 
 /* ── 対戦 ── */
 let overlayOpen = false;
-let cpuCommitId = null; // カウンターアイ(あなた)発動中: CPUが先に出したカード
+let cpuCommitId = null;  // カウンターアイ(あなた): CPUが先に公開したカード
+let cpuSetId = null;     // CPUが伏せてセットしたカード(通常時)
+let mySetId = null;
 function startRoundUI() {
-  // ラウンド開始処理: あなたのあと出し権があればCPUが先にコミット
-  cpuCommitId = null;
-  if (E.phase === 'battle' && E.counterNext[0]) {
-    cpuCommitId = brain.playChoose(E);
+  cpuCommitId = null; cpuSetId = null; mySetId = null;
+  if (E.phase === 'battle') {
+    if (E.counterNext[0]) {
+      cpuCommitId = brain.playChoose(E); // あなたのあと出し: 公開でセット
+    } else if (!E.counterNext[1]) {
+      cpuSetId = brain.playChoose(E);    // 通常: CPUは先に伏せてセット済み
+    }
+    // CPUのあと出し(counterNext[1])のときは、あなたが出すまでセットしない
   }
   renderBattle();
   setTimer(20);
@@ -702,14 +798,39 @@ function renderBattle() {
   if (E.stickyNext[0]) addFlag('good', '🤝 このラウンドあいこなら、あなたの勝ち');
   if (E.stickyNext[1]) addFlag('ban', '⚠ このラウンドあいこなら、相手の勝ち');
   if (E.counterNext[1]) addFlag('ban', '👁 相手のカウンターアイ! あなたの手を見てから出してくる');
-  // カウンターアイ(あなた)
+  // カウンターアイ(あなた)の案内
   const cbox = document.getElementById('counterbox');
   if (cpuCommitId !== null) {
-    const cc = E.hands[1].find(c => c.id === cpuCommitId);
     cbox.classList.remove('hidden');
-    cbox.innerHTML = '👁 カウンターアイ発動! 相手はこのカードを出している:';
-    cbox.appendChild(cardEl(cc, { static: true }));
+    cbox.textContent = '👁 カウンターアイ発動! 相手のカードが見えている。ゆっくり選べ!';
   } else cbox.classList.add('hidden');
+  // 対戦テーブル(セット状態)
+  const slotMe = document.getElementById('slot-me');
+  const slotOp = document.getElementById('slot-op');
+  const stMe = document.getElementById('state-me');
+  const stOp = document.getElementById('state-op');
+  slotMe.innerHTML = ''; slotOp.innerHTML = '';
+  if (mySetId !== null) {
+    const d = document.createElement('div');
+    d.className = 'card back static';
+    d.innerHTML = '<div class="em">✓</div>';
+    slotMe.appendChild(d);
+    stMe.textContent = 'セット済み!'; stMe.className = 'setstate ok';
+  } else {
+    stMe.textContent = '手札から選んでセット'; stMe.className = 'setstate wait';
+  }
+  if (cpuCommitId !== null) {
+    slotOp.appendChild(cardEl(E.hands[1].find(c => c.id === cpuCommitId), { static: true }));
+    stOp.textContent = '公開セット(あと出し権)'; stOp.className = 'setstate ok';
+  } else if (cpuSetId !== null) {
+    const d = document.createElement('div');
+    d.className = 'card back static';
+    d.innerHTML = '<div class="em">?</div>';
+    slotOp.appendChild(d);
+    stOp.textContent = 'セット済み!'; stOp.className = 'setstate ok';
+  } else {
+    stOp.textContent = 'あなたの手を見てから出す…'; stOp.className = 'setstate wait';
+  }
   // 手札(制限中のカードは出せない)
   const legalIds = E.legalPlays(0).map(c => c.id);
   const hand = document.getElementById('hand');
@@ -731,19 +852,61 @@ function renderBattle() {
 function escq(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function humanPlay(cardId, auto = false) {
-  if (E.phase !== 'battle' || overlayOpen) return;
+  if (E.phase !== 'battle' || overlayOpen || mySetId !== null) return;
   deadline = null;
+  mySetId = cardId;
+  sePick();
   let cpuId;
   if (cpuCommitId !== null) {
-    cpuId = cpuCommitId; // あなたのあと出し: CPUは先にコミット済み
+    cpuId = cpuCommitId;                 // あなたのあと出し: CPUは公開済み
   } else if (E.counterNext[1]) {
     const myCard = E.hands[0].find(c => c.id === cardId);
-    cpuId = brain.playChoose(E, myCard); // CPUのあと出し
+    cpuId = brain.playChoose(E, myCard); // CPUのあと出し: あなたの手を見て決める
+    cpuSetId = cpuId;
   } else {
-    cpuId = brain.playChoose(E);
+    cpuId = cpuSetId ?? brain.playChoose(E);
   }
-  const r = E.playRound(cardId, cpuId);
-  showReveal(r, auto);
+  renderBattle(); // 両者セット済みを見せる
+  jankenCall(() => {
+    const r = E.playRound(cardId, cpuId);
+    showReveal(r, auto);
+  });
+}
+
+/* じゃん・けん・ぽん! の掛け声演出 */
+let calling = false;
+function jankenCall(done) {
+  if (calling) return;
+  calling = true;
+  overlayOpen = true; // 誤操作防止
+  const ov = document.getElementById('overlay');
+  const call = document.getElementById('ov-call');
+  ['ov-title', 'ov-cards', 'ov-result', 'ov-sub', 'ov-effects'].forEach(id =>
+    document.getElementById(id).classList.add('hidden'));
+  document.getElementById('ov-next').style.visibility = 'hidden';
+  call.classList.remove('hidden');
+  ov.classList.add('show');
+  say('じゃんけん、ぽん!');
+  const steps = [
+    ['じゃん…', 440], ['けん…', 550], ['ぽん!!', 880],
+  ];
+  let i = 0;
+  const tick = () => {
+    if (i < steps.length) {
+      call.textContent = steps[i][0];
+      se(steps[i][1], 0.15, 'triangle', 0.25);
+      i++;
+      setTimeout(tick, i === steps.length ? 450 : 550);
+    } else {
+      call.classList.add('hidden');
+      ['ov-title', 'ov-cards', 'ov-result', 'ov-sub'].forEach(id =>
+        document.getElementById(id).classList.remove('hidden'));
+      document.getElementById('ov-next').style.visibility = '';
+      calling = false;
+      done();
+    }
+  };
+  tick();
 }
 
 function effectText(e) {

@@ -208,6 +208,16 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
 #dosset h4 small{font-size:10px;color:#8a7a5c;font-weight:700}
 #dosset .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
 .dchip{background:#fff;border:1px solid #d9c9a8;border-radius:6px;text-align:center;font-size:11px;font-weight:900;padding:2px 0}
+.guessdos{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  background:#e07b28;color:#fff;font-size:11px;font-weight:900;border-radius:8px;padding:0 7px;white-space:nowrap}
+/* 結果画面: 全食材の度数一覧 */
+#res-dostable{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:760px;margin:14px auto 0;text-align:left}
+#res-dostable .dt-col{min-width:0}
+#res-dostable .dt-row{display:flex;justify-content:space-between;align-items:center;background:#fff;
+  border:1px solid #e2d5b8;border-radius:8px;padding:2px 8px;margin-top:4px;font-size:12px;font-weight:700}
+#res-dostable .dt-row b{font-size:13px}
+#res-dostable .dt-row small{color:#c0392b;font-weight:900}
+@media (max-width:700px){#res-dostable{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:1420px){#dosset{display:none}}
 #cheat h4{font-size:14px;color:var(--wood-d)}
 #cheat .csec{font-size:11px;font-weight:700;color:#8a7a5c;margin-top:10px;border-top:1px dashed #d9c9a8;padding-top:8px}
@@ -333,6 +343,8 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
       <p id="res-reason" style="font-weight:700"></p>
       <p style="margin-top:10px">今回の正解(3.0%になる組み合わせ)は <b id="res-patterns" style="font-size:20px;color:var(--bavaria-blue-d)"></b> 通りありました
         <span id="res-starname"></span></p>
+      <h3 style="margin-top:14px">🌡 答え合わせ: 全食材の度数 <small style="font-size:11px;color:#8a7a5c">(カッコはあなたの予想)</small></h3>
+      <div id="res-dostable"></div>
       <div id="res-standings" style="max-width:520px;margin:14px auto 0"></div>
       <div style="margin-top:18px">
         <button class="btn" id="btn-again" onclick="backToLobby()">🏠 ロビーへもどる</button>
@@ -518,6 +530,7 @@ document.addEventListener('keydown', bgmKick);
 const socket = io();
 let ST = null;      // {pub, priv} 最新状態
 let picks = [];
+let guesses = {};   // 自分用の度数予想メモ {id: '1.4'}
 let overlayOpen = false;
 let pendingEnd = null; // reveal.ended時のendInfo
 
@@ -582,6 +595,7 @@ socket.on('state', (st) => {
   ST = st;
   if (st.pub.phase === 'myselect' && lastPhase !== 'myselect' && st.pub.round === 0) {
     document.getElementById('log').innerHTML = ''; // 新しい試合開始でログをリセット
+    guesses = {}; // 予想メモもリセット
   }
   lastPhase = st.pub.phase;
   if (overlayOpen) return; // 公開演出中は裏で更新だけ
@@ -693,9 +707,12 @@ function renderGame() {
       (priv.myId === ing.id ? `<span class="mymark">マイ</span>` : '') +
       `${fruitHTML(ing.id)}<div class="id">No.${ing.id}</div>` +
       `<div class="price${nextPrice > 1 ? ' up' : ''}">$${nextPrice}</div>` +
-      (kd !== null ? `<span class="knowndos">${dosStr(kd)}</span>` : '');
+      (kd !== null ? `<span class="knowndos">${dosStr(kd)}</span>` :
+        (guesses[ing.id] ? `<span class="guessdos">予想${guesses[ing.id]}%</span>` : ''));
     if (cntInPicks >= 2 && picks.length < 3) d.classList.add('dim');
     if (!priv.submitted) d.onclick = () => togglePick(ing.id);
+    d.oncontextmenu = (ev) => { ev.preventDefault(); editGuess(ing.id); }; // 右クリックで予想メモ
+    d.title = '右クリックで度数の予想をメモできます';
     return d;
   });
 
@@ -753,6 +770,17 @@ function renderBench() {
   restBtn.title = restBtn.disabled ? '休憩できるのは、最小コストのお酒すら買えないときだけ' : '';
 }
 function pubAttr(id) { return ST.pub.ingredients.find(g => g.id === id).attr; }
+
+/* 右クリックで度数の予想をメモ(自分のブラウザ内だけ) */
+function editGuess(id) {
+  const cur = guesses[id] || '';
+  const v = window.prompt(`No.${id} の予想度数(%)を入力\n例: 1.4 (空欄にすると削除)`, cur);
+  if (v === null) return;
+  const t = v.trim().replace('%', '');
+  if (t === '') delete guesses[id];
+  else if (!isNaN(parseFloat(t))) guesses[id] = parseFloat(t).toFixed(1);
+  renderGame();
+}
 
 function submitBrew() {
   socket.emit('submit', { type: 'brew', picks: [...picks] }, r => {
@@ -864,6 +892,28 @@ function renderResult() {
       <small>マイ食材 No.${f.myId}=${dosStr(f.myDos)}</small>`;
     st.appendChild(d);
   });
+  // 答え合わせ: 全食材の度数一覧(属性ごとの4列)
+  const dt = document.getElementById('res-dostable');
+  dt.innerHTML = '';
+  if (end.ingredients) {
+    ATTR_ORDER.forEach(attr => {
+      const col = document.createElement('div');
+      col.className = 'dt-col';
+      const head = document.createElement('div');
+      head.className = 'attrhead a-' + attr;
+      head.textContent = ATTR_NAME[attr];
+      col.appendChild(head);
+      end.ingredients.filter(g => g.attr === attr).sort((a, b) => a.id - b.id).forEach(g => {
+        const row = document.createElement('div');
+        row.className = 'dt-row';
+        const mine = g.id === priv.myId ? ' ★' : '';
+        const gs = guesses[g.id] ? ` <small>(予想${guesses[g.id]})</small>` : '';
+        row.innerHTML = `<span>No.${g.id}${mine}</span><span><b>${dosStr(g.dos)}</b>${gs}</span>`;
+        col.appendChild(row);
+      });
+      dt.appendChild(col);
+    });
+  }
   const isHost = priv.myIdx === 0;
   document.getElementById('btn-again').style.display = isHost ? '' : 'none';
   document.getElementById('res-wait').style.display = isHost ? 'none' : '';
