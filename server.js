@@ -6,6 +6,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const S = require('./shuzomas_core.js');
+const J = require('./janken_core.js');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
@@ -385,4 +386,10 @@ setInterval(() => {
   }
 }, 3600 * 1000);
 
-server.listen(PORT, () => console.log(`シュゾマス オンライン版 : http://localhost:${PORT}`));
+require('./jd_server.js')(io, {
+  pickMs: (parseFloat(process.env.JD_PICK_SECONDS) || 10) * 1000,
+  playMs: (parseFloat(process.env.JD_PLAY_SECONDS) || 20) * 1000,
+  gapMs: parseFloat(process.env.JD_GAP_MS) || 2600,
+});
+
+server.listen(PORT, () => console.log(`あらいの遊び場 : http://localhost:${PORT}`));

@@ -4,7 +4,7 @@ araiが作ったボードゲームで遊べるポータルサイト。
 
 - `/` … 遊び場トップ(ゲーム選択)
 - `/shuzomas/` … **シュゾマス**(2〜8人のオンライン推理ゲーム)
-- `/jandekken/` … **ジャンデッキケン**(デッキ構築×じゃんけん、1人vsCPU。オンライン対戦は準備中)
+- `/jandekken/` … **ジャンデッキケン**(デッキ構築×じゃんけん。ソロvsCPU / 招待コードで1対1オンライン対戦)
 
 ---
 
@@ -54,6 +54,8 @@ npm start
 ```
 ├─ server.js          … ゲームサーバー (Node.js + Express + Socket.IO)
 ├─ shuzomas_core.js   … シュゾマスのゲームロジック
+├─ jd_server.js       … ジャンデッキケン対戦サーバー(1対1)
+├─ janken_core.js     … ジャンデッキケンのゲームロジック
 ├─ package.json
 └─ public/                  … クライアント(ブラウザ配信)
     ├─ index.html            … あらいの遊び場(ポータル)
