@@ -40,7 +40,7 @@ module.exports = function attach(io, opts = {}) {
     if (E) {
       const info = E.finished ? null : E.duelInfo();
       Object.assign(pub, {
-        questions: E.questions.map(q => ({ id: q.id, text: q.text, kind: q.kind })), // 15問は共有公開
+        questions: E.questions.map(q => ({ id: q.id, text: q.text, kind: q.kind, type: q.type, params: q.params })), // 15問は共有公開
         first: E.first === me ? 0 : 1,
         round: Math.min(3, Math.floor(E.duelNo / 2) + 1),
         duelNo: E.duelNo,
@@ -128,13 +128,15 @@ module.exports = function attach(io, opts = {}) {
     if (!rooms.has(room.code) || room.phase !== 'setup') return;
     const E = room.engine;
     const { setter } = E.duelInfo();
-    // 時間切れ: 未使用問題からランダム+残りを均等配分
+    // 時間切れ: 未使用問題からランダム+残りを均等配分(後の出題用に1個ずつ温存)
     const unusedIds = E.picks[setter].filter(id => !E.usedQ[setter].includes(id));
     const qid = unusedIds[Math.floor(Math.random() * unusedIds.length)];
     const left = E.setupsLeftOf(setter);
-    const total = Math.max(1, Math.floor(E.remaining[setter] / Math.max(1, left)));
+    const maxUse = E.remaining[setter] - (left - 1);
+    const total = Math.max(1, Math.min(Math.floor(E.remaining[setter] / Math.max(1, left)), maxUse));
     const alloc = { ichigo: 0, cherry: 0, lemon: 0, banana: 0 };
     for (let i = 0; i < total; i++) alloc[CF.FKEYS[Math.floor(Math.random() * 4)]]++;
+    CF.fixAllocForQuestion(E.questions.find(q => q.id === qid), alloc); // 偶数奇数の対象フルーツ0を回避
     doSetup(room, qid, alloc);
   }
   function doSetup(room, qid, alloc) {

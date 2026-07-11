@@ -210,13 +210,14 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
 .dchip{background:#fff;border:1px solid #d9c9a8;border-radius:6px;text-align:center;font-size:11px;font-weight:900;padding:2px 0}
 .guessdos{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
   background:#e07b28;color:#fff;font-size:11px;font-weight:900;border-radius:8px;padding:0 7px;white-space:nowrap}
-/* 結果画面: 全食材の度数一覧 */
-#res-dostable{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:760px;margin:14px auto 0;text-align:left}
-#res-dostable .dt-col{min-width:0}
-#res-dostable .dt-row{display:flex;justify-content:space-between;align-items:center;background:#fff;
-  border:1px solid #e2d5b8;border-radius:8px;padding:2px 8px;margin-top:4px;font-size:12px;font-weight:700}
-#res-dostable .dt-row b{font-size:13px}
-#res-dostable .dt-row small{color:#c0392b;font-weight:900}
+/* 結果画面: 全食材の度数をプレイ中と同じ盤面(属性グループ+画像)で公開 */
+#res-dostable{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:900px;margin:14px auto 0;text-align:center}
+#res-dostable .ing{cursor:default;padding-bottom:12px}
+#res-dostable .ing:hover{transform:none}
+#res-dostable .ing .guess{font-size:10px;font-weight:900;color:#e07b28;margin-top:2px}
+#res-dostable .ing .ownerchip{position:absolute;top:-8px;left:-6px;color:#fff;border:2px solid #fff;
+  border-radius:8px;font-size:10px;font-weight:900;padding:0 6px;z-index:1;max-width:90%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 @media (max-width:700px){#res-dostable{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:1420px){#dosset{display:none}}
 #cheat h4{font-size:14px;color:var(--wood-d)}
@@ -343,7 +344,7 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
       <p id="res-reason" style="font-weight:700"></p>
       <p style="margin-top:10px">今回の正解(3.0%になる組み合わせ)は <b id="res-patterns" style="font-size:20px;color:var(--bavaria-blue-d)"></b> 通りありました
         <span id="res-starname"></span></p>
-      <h3 style="margin-top:14px">🌡 答え合わせ: 全食材の度数 <small style="font-size:11px;color:#8a7a5c">(カッコはあなたの予想)</small></h3>
+      <h3 style="margin-top:14px">🌡 答え合わせ: 全食材の度数 <small style="font-size:11px;color:#8a7a5c">(プレイ中と同じ並び / オレンジの数字はあなたの予想メモ)</small></h3>
       <div id="res-dostable"></div>
       <div id="res-standings" style="max-width:520px;margin:14px auto 0"></div>
       <div style="margin-top:18px">
@@ -892,26 +893,26 @@ function renderResult() {
       <small>マイ食材 No.${f.myId}=${dosStr(f.myDos)}</small>`;
     st.appendChild(d);
   });
-  // 答え合わせ: 全食材の度数一覧(属性ごとの4列)
+  // 答え合わせ: プレイ中の盤面と同じ並び(属性グループ+果実画像)で全度数を公開
   const dt = document.getElementById('res-dostable');
   dt.innerHTML = '';
   if (end.ingredients) {
-    ATTR_ORDER.forEach(attr => {
-      const col = document.createElement('div');
-      col.className = 'dt-col';
-      const head = document.createElement('div');
-      head.className = 'attrhead a-' + attr;
-      head.textContent = ATTR_NAME[attr];
-      col.appendChild(head);
-      end.ingredients.filter(g => g.attr === attr).sort((a, b) => a.id - b.id).forEach(g => {
-        const row = document.createElement('div');
-        row.className = 'dt-row';
-        const mine = g.id === priv.myId ? ' ★' : '';
-        const gs = guesses[g.id] ? ` <small>(予想${guesses[g.id]})</small>` : '';
-        row.innerHTML = `<span>No.${g.id}${mine}</span><span><b>${dosStr(g.dos)}</b>${gs}</span>`;
-        col.appendChild(row);
-      });
-      dt.appendChild(col);
+    buildGroups(dt, end.ingredients, g => {
+      const d = document.createElement('div');
+      d.className = 'ing';
+      // 誰のマイ食材だったかを名前チップで表示(自分は「マイ」)
+      const owner = end.final.find(f => f.myId === g.id);
+      let ownerChip = '';
+      if (owner) {
+        ownerChip = owner.idx === priv.myIdx
+          ? '<span class="mymark">マイ</span>'
+          : `<span class="ownerchip" style="background:${PCOLORS[owner.idx]}">${esc(owner.name)}</span>`;
+      }
+      const gs = guesses[g.id] ? `<div class="guess">予想 ${esc(guesses[g.id])}%</div>` : '';
+      d.innerHTML = `<span class="attr a-${g.attr}">${ATTR_NAME[g.attr]}</span>` + ownerChip +
+        fruitHTML(g.id) + `<div class="id">No.${g.id}</div>` + gs +
+        `<span class="knowndos">${dosStr(g.dos)}</span>`;
+      return d;
     });
   }
   const isHost = priv.myIdx === 0;

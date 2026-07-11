@@ -240,10 +240,13 @@ table.log th{color:#6a7488;font-size:11px}
     <h3>🍎 フルーツの持ち数</h3>
     ・各プレイヤーは合計<b>75個</b>(ロビーで変更可)のフルーツを持ち、3回の出題で配分して使う。<br>
     ・例: 1回目に30個使うと、残り2回で使えるのは45個。<br>
+    ・<b>後の出題用に最低1個ずつ残す必要あり</b>(0個では出題できないため)。<br>
+    ・「偶数?奇数?」の問題は、対象フルーツを<b>1個以上</b>降らせないと出題できない。<br>
     ・たくさん降らせるほど数えにくいが、後の回で弾切れに…!
     <h3>🎯 得点</h3>
-    ・<b>選択式</b>: 正解で5ポイント。<br>
-    ・<b>入力式</b>: ピッタリで5ポイント。ずれた分だけ−1(0未満にはならない)。<br>
+    ・<b>正解(ピッタリ/択あて)</b>: <b>+10ポイント</b>。<br>
+    ・<b>入力式のずれ</b>: ずれた分だけ−1(0未満にはならない)。<br>
+    ・<b>選択式のハズレはペナルティ!</b> 2択: <b>−10</b> / 3択: <b>−7</b> / 4択: <b>−5</b>ポイント。<br>
     ・3回戦合計の多いほうが勝ち!
     <div style="text-align:center;margin-top:16px"><button class="btn" onclick="document.getElementById('ovRule').classList.add('hidden')">とじる</button></div>
   </div>
@@ -431,8 +434,13 @@ function renderQpick(p, priv){
   $('btnPick').onclick = () => socket.emit('cf:pick', {ids: picked}, r => { if(!r.ok) $('qpickErr').textContent = r.error; });
 }
 function qcardHtml(q, cls){
+  let tag = '✏️入力式';
+  if (q.kind === 'choice'){
+    const n = q.type === 'parity' ? 2 : q.type === 'compare' ? 3 : 4;
+    tag = `🔘${n}択(ハズレ−${Math.round(20/n)})`;
+  }
   return `<div class="qcard ${cls}" data-id="${q.id}">
-    <span class="kind ${q.kind}">${q.kind==='input'?'✏️入力式':'🔘選択式'}</span>${esc(q.text)}</div>`;
+    <span class="kind ${q.kind}">${tag}</span>${esc(q.text)}</div>`;
 }
 
 function renderSetup(p, priv){
@@ -466,9 +474,10 @@ function renderSetup(p, priv){
     clampAlloc(p);
     renderAllocNums(p);
   });
-  const myLeft = p.remaining[0];
   const setupsLeft = countMySetupsLeft(p);
-  $('setupsLeftNote').textContent = setupsLeft > 1 ? `(このあと自分の出題があと${setupsLeft-1}回ある)` : '(これが最後の出題!)';
+  $('setupsLeftNote').textContent = setupsLeft > 1
+    ? `(このあと自分の出題があと${setupsLeft-1}回 → 最低${setupsLeft-1}個は残す必要あり)`
+    : '(これが最後の出題! 全部使ってOK)';
   renderAllocNums(p);
   $('btnDrop').onclick = () => {
     socket.emit('cf:setup', {qid: setupQid, alloc}, r => {
@@ -487,20 +496,34 @@ function countMySetupsLeft(p){
   }
   return left;
 }
+function maxUseNow(p){
+  // 後の出題用に最低1個ずつ残す
+  return p.remaining[0] - (countMySetupsLeft(p) - 1);
+}
 function clampAlloc(p){
-  const myLeft = p.remaining[0];
+  const cap = maxUseNow(p);
   let total = FRUITS.reduce((s,f)=>s+alloc[f.key],0);
-  while (total > myLeft){
+  while (total > cap){
     const k = FRUITS.map(f=>f.key).filter(k=>alloc[k]>0).sort((a,b)=>alloc[b]-alloc[a])[0];
     alloc[k]--; total--;
   }
+}
+function parityNeed(p){
+  // 選択中の問題が「偶数?奇数?」(フルーツ対象)なら、そのフルーツを1個以上必須
+  const q = p.questions.find(x => x.id === setupQid);
+  if (q && q.type === 'parity' && q.params && q.params.f && q.params.f !== 'total') return q.params.f;
+  return null;
 }
 function renderAllocNums(p){
   const total = FRUITS.reduce((s,f)=>s+alloc[f.key],0);
   FRUITS.forEach(f => { const el = $('cnt_'+f.key); if(el) el.textContent = alloc[f.key]; });
   $('useNow').textContent = total;
   $('budLeft').textContent = p.remaining[0] - total;
-  $('btnDrop').disabled = total < 1;
+  const need = parityNeed(p);
+  const needOk = !need || alloc[need] >= 1;
+  const fr = need ? FRUITS.find(f=>f.key===need) : null;
+  $('setupErr').textContent = (!needOk && total >= 1) ? `この問題では ${fr.emoji}${fr.name} を1個以上降らせてね` : '';
+  $('btnDrop').disabled = total < 1 || total > maxUseNow(p) || !needOk;
 }
 
 /* ══ 落下 ══ */
@@ -591,20 +614,21 @@ socket.on('cf:reveal', r => {
     ansTxt = r.answer === null ? '時間切れ…' : r.answer + ' 個';
     correctTxt = r.correct + ' 個';
   }
-  const cls = r.points >= 5 ? 'good' : r.points > 0 ? 'mid' : 'bad';
-  const emoji = r.points >= 5 ? '🎉' : r.points > 0 ? '😗' : '💥';
+  const cls = r.points >= 10 ? 'good' : r.points > 0 ? 'mid' : 'bad';
+  const emoji = r.points >= 10 ? '🎉' : r.points > 0 ? '😗' : r.points < 0 ? '💥' : '😵';
+  const ptTxt = (r.points >= 0 ? '+' : '') + r.points;
   $('ovPanel').innerHTML = `
     <div style="font-weight:900;color:#6a7488">ラウンド${r.round} ${r.setter===0?'あなた':'相手'}の出題</div>
     <div class="qtext" style="font-size:17px">${esc(r.text)}</div>
     <div class="breakdown">${FRUITS.map(f=>`<span>${f.emoji}×${r.alloc[f.key]}</span>`).join('')}<span>合計 ${r.total}個</span></div>
     <div style="margin-top:14px;font-weight:900">正解: <span style="color:var(--green)">${correctTxt}</span></div>
     <div style="font-weight:900">${who}の回答: ${ansTxt}</div>
-    <div class="pts ${cls}">${emoji} ${who}に +${r.points}pt</div>
+    <div class="pts ${cls}">${emoji} ${who}に ${ptTxt}pt</div>
     <div style="font-weight:900;color:#6a7488;margin-top:6px">スコア ${r.scores[0]} - ${r.scores[1]}</div>
     ${r.finished ? '' : '<div class="note">まもなく次の出題へ…</div>'}
     <div style="margin-top:12px"><button class="btn gray small" onclick="document.getElementById('ovResult').classList.add('hidden')">とじる</button></div>`;
   $('ovResult').classList.remove('hidden');
-  (r.points >= 5 ? seGood : r.points > 0 ? seMid : seBad)();
+  (r.points >= 10 ? seGood : r.points > 0 ? seMid : seBad)();
 });
 
 /* ══ 終了 ══ */

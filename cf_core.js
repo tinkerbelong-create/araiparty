@@ -127,17 +127,19 @@ function resolveQuestion(q, counts, rng) {
 }
 
 /* ══ 採点 ══
- * 選択式: 正解なら5点 / 入力式: 5 - |差| (0未満にはならない)
+ * 選択式: 正解なら+10点 / ハズレはペナルティ −(20÷選択肢数) → 2択:−10, 3択:−7, 4択:−5
+ * 入力式: ピッタリ+10点、ずれた分だけ−1(0未満にはならない)
  * answer: input→数値, choice→選択index。null/undefined は時間切れ(0点)。 */
 function scoreAnswer(resolved, answer) {
   if (answer === null || answer === undefined) return { points: 0, exact: false };
   if (resolved.kind === 'choice') {
     const ok = resolved.correctSet.includes(Number(answer));
-    return { points: ok ? 5 : 0, exact: ok };
+    if (ok) return { points: 10, exact: true };
+    return { points: -Math.round(20 / resolved.options.length), exact: false };
   }
   const diff = Math.abs(Number(answer) - resolved.correct);
   if (!Number.isFinite(diff)) return { points: 0, exact: false };
-  return { points: Math.max(0, 5 - diff), exact: diff === 0 };
+  return { points: Math.max(0, 10 - diff), exact: diff === 0 };
 }
 
 /* ══ 落下シーケンス生成 ══
@@ -158,6 +160,16 @@ function buildDropSeq(alloc, rng) {
   });
   const duration = (seq.length ? seq[seq.length - 1].t + seq[seq.length - 1].fall : 0) + 900;
   return { seq, duration };
+}
+
+/* 偶数奇数の問題で対象フルーツが0個なら、一番多いフルーツから1個移す(合計は不変) */
+function fixAllocForQuestion(q, alloc) {
+  if (!q || q.type !== 'parity' || !q.params || !FKEYS.includes(q.params.f)) return alloc;
+  const f = q.params.f;
+  if ((alloc[f] || 0) >= 1) return alloc;
+  const donor = FKEYS.filter(k => k !== f).sort((a, b) => (alloc[b] || 0) - (alloc[a] || 0))[0];
+  if ((alloc[donor] || 0) > 0) { alloc[donor]--; alloc[f] = (alloc[f] || 0) + 1; }
+  return alloc;
 }
 
 /* ══ CPUブレイン ══ */
@@ -181,15 +193,13 @@ class CFBrain {
   plan(myUnusedQuestions, remaining, setupsLeft) {
     const rng = this.rng;
     const q = myUnusedQuestions[Math.floor(rng() * myUnusedQuestions.length)];
-    // 均等割 ±35% を使う(最終回は全部)
+    // 均等割 ±35% を使う(最終回は全部)。後の出題用に最低1個ずつ必ず残す
+    const future = Math.max(0, setupsLeft - 1);
+    const maxUse = remaining - future;
     let total;
     if (setupsLeft <= 1) total = remaining;
-    else {
-      const base = remaining / setupsLeft;
-      total = Math.round(base * (0.75 + rng() * 0.7));
-      total = Math.max(Math.min(5, remaining), Math.min(total, remaining - (setupsLeft - 1))); // 後の回に最低1個残す
-    }
-    total = Math.max(0, Math.min(total, remaining));
+    else total = Math.round((remaining / setupsLeft) * (0.75 + rng() * 0.7));
+    total = Math.max(1, Math.min(total, maxUse));
     // 問題に関係するフルーツを厚めにしつつランダム配分
     const weights = {};
     const hot = new Set();
@@ -203,6 +213,7 @@ class CFBrain {
     let used = 0;
     for (const k of FKEYS) { alloc[k] = Math.floor(total * weights[k] / wsum); used += alloc[k]; }
     while (used < total) { const k = FKEYS[Math.floor(rng() * 4)]; alloc[k]++; used++; }
+    fixAllocForQuestion(q, alloc); // 偶数奇数の対象フルーツが0にならないように
     return { qid: q.id, alloc };
   }
   /* 回答: 総数が多いほど数え間違える */
@@ -258,7 +269,12 @@ class CFEngine {
       if (v < 0) throw new Error('個数は0以上にしてください');
       a[k] = v; total += v;
     }
-    if (total > this.remaining[player]) throw new Error(`残りフルーツは${this.remaining[player]}個です`);
+    // 後の出題用に最低1個ずつ残す(所持0で出題不能になるのを防ぐ)
+    const future = this.setupsLeftOf(player) - 1;
+    const maxUse = this.remaining[player] - future;
+    if (total > maxUse) throw new Error(future > 0
+      ? `あとの出題${future}回のために最低${future}個残してください(今回使えるのは${maxUse}個まで)`
+      : `残りフルーツは${this.remaining[player]}個です`);
     if (total < 1) throw new Error('フルーツを1個以上降らせてください');
     return a;
   }
@@ -270,6 +286,9 @@ class CFEngine {
     if (!q) throw new Error('問題が見つかりません');
     if (!this.picks[setter].includes(qid)) throw new Error('自分が選んだ問題から出題してください');
     if (this.usedQ[setter].includes(qid)) throw new Error('その問題は出題済みです');
+    // 偶数奇数の問題は、対象フルーツが0個だと出題できない
+    if (q.type === 'parity' && q.params.f !== 'total' && a[q.params.f] < 1)
+      throw new Error(`この問題では${FBY[q.params.f].emoji}${FBY[q.params.f].name}を1個以上降らせてください`);
     const total = FKEYS.reduce((s, k) => s + a[k], 0);
     this.remaining[setter] -= total;
     this.usedQ[setter].push(qid);
@@ -308,6 +327,6 @@ class CFEngine {
 
 module.exports = {
   FRUITS, FKEYS, mulberry32,
-  generateQuestions, resolveQuestion, scoreAnswer, buildDropSeq, groupValue,
+  generateQuestions, resolveQuestion, scoreAnswer, buildDropSeq, groupValue, fixAllocForQuestion,
   CFBrain, CFEngine,
 };
