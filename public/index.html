@@ -164,8 +164,8 @@ footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px
       <span class="icon">🔍</span>
       <input id="q" type="text" placeholder="ゲームをさがす(名前・タグ・説明)" autocomplete="off">
     </div>
-    <!-- BGM: 次の作業でここに実装予定(トグル+音量) -->
-    <div id="bgmSlot"><button title="BGM(準備中)">🔇</button></div>
+    <!-- BGM: /bgm.js が🔊トグル+音量をここに設置する -->
+    <div id="bgmSlot"></div>
   </div>
 </header>
 
@@ -364,5 +364,7 @@ update();
 renderHero();
 restartHeroTimer();
 </script>
+<script src="/bgm.js"></script>
+<script>AraiBGM.init('home');</script>
 </body>
 </html>

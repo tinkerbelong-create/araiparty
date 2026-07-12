@@ -1087,5 +1087,7 @@ function wireSocket(s) {
   s.on('disconnect', () => { if (mode === 'online') toastErr('接続が切れました…再読み込みしてください'); });
 }
 </script>
+<script src="/bgm.js"></script>
+<script>AraiBGM.init('jandekken');</script>
 </body>
 </html>
