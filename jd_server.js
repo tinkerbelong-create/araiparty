@@ -243,6 +243,17 @@ module.exports = function attach(io, opts) {
       broadcast(room);
     });
 
+    socket.on('jd:removeCpu', (_, cb) => {
+      const room = roomOf(socket);
+      if (!room || seatIdx(room, socket) !== 0) return cb && cb({ ok: false, error: 'ホストのみ' });
+      if (room.engine) return cb && cb({ ok: false, error: '対戦中は削除できません' });
+      for (let i = room.seats.length - 1; i >= 0; i--) {
+        if (room.seats[i].isCpu) { room.seats.splice(i, 1); break; }
+      }
+      cb && cb({ ok: true });
+      broadcast(room);
+    });
+
     socket.on('jd:start', (_, cb) => {
       const room = roomOf(socket);
       if (!room || seatIdx(room, socket) !== 0) return cb && cb({ ok: false, error: 'ホストのみ開始できます' });

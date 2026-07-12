@@ -130,7 +130,16 @@ h3 .cnt{font-size:12px;color:#8a94a8;font-weight:700}
     <div class="panel" style="max-width:520px;margin:20px auto 0;text-align:left">
       <div>名前: <input id="inp-name" class="txt" maxlength="10" value="あなた" style="width:140px"></div>
       <div style="text-align:center;margin-top:14px">
-        <button class="btn" style="font-size:20px;padding:13px 44px" onclick="startGame()">✊ 勝負開始!</button>
+        <button class="btn" style="font-size:20px;padding:13px 44px" onclick="startGame()">✊ ソロで勝負!(vs CPU)</button>
+      </div>
+      <div style="border-top:2px dashed var(--line);margin-top:16px;padding-top:12px">
+        <b>🌐 オンライン対戦(1対1・招待コード)</b>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center">
+          <button class="btn" onclick="jdCreate()">部屋を作る</button>
+          <input id="inp-code" class="txt" maxlength="5" placeholder="J○○○○" style="width:110px;text-transform:uppercase">
+          <button class="btn" onclick="jdJoin()">コードで参加</button>
+        </div>
+        <div id="home-err" style="color:var(--lose);font-weight:900;font-size:13px;min-height:18px;margin-top:6px"></div>
       </div>
       <details class="rules">
         <summary>📜 ルール</summary>
@@ -142,6 +151,23 @@ h3 .cnt{font-size:12px;color:#8a94a8;font-weight:700}
           <b>能力:</b> カードには能力持ちがある(各手4種×2枚+素2枚)。勝った時・負けた時・あいこの時・出した時に発動。ドラフトでコンボを組め!
         </div>
       </details>
+    </div>
+  </div>
+
+  <!-- オンラインロビー -->
+  <div id="scr-lobby" class="hidden" style="text-align:center;padding-top:30px">
+    <div class="panel" style="max-width:460px;margin:0 auto">
+      <div style="font-weight:900;color:#5a647a;font-size:13px">招待コード</div>
+      <div id="lb-code" style="font-size:30px;font-weight:900;letter-spacing:.25em;color:var(--accent);border:2px dashed var(--accent);border-radius:12px;padding:8px 18px;display:inline-block;margin-top:6px">-----</div>
+      <div style="margin-top:8px"><button class="btn" id="btn-copy" onclick="jdCopy()">📋 コードをコピー</button></div>
+      <div id="lb-seats" style="margin-top:12px;font-weight:900"></div>
+      <div id="lb-host" class="hidden" style="margin-top:12px">
+        <button class="btn" onclick="jdAddCpu()">🤖 CPUを追加</button>
+        <button class="btn hidden" id="btn-rmcpu" onclick="jdRemoveCpu()">CPUを削除</button>
+        <button class="btn" id="btn-jdstart" onclick="jdStart()">✊ 対戦開始!</button>
+      </div>
+      <p id="lb-guest" class="hidden" style="font-weight:700;color:#5a647a;margin-top:10px">ホストの開始を待っています…</p>
+      <div id="lb-err" style="color:var(--lose);font-weight:900;font-size:13px;min-height:18px;margin-top:6px"></div>
     </div>
   </div>
 
@@ -199,6 +225,7 @@ h3 .cnt{font-size:12px;color:#8a94a8;font-weight:700}
       <p id="res-detail" style="font-weight:700;color:#5a647a"></p>
       <div style="margin-top:16px">
         <button class="btn" onclick="location.reload()">✊ もう一度勝負!</button>
+        <button class="btn hidden" id="btn-backlobby" onclick="jdBackToLobby()">🏠 ロビーにもどる</button>
       </div>
     </div>
   </div>
@@ -538,6 +565,12 @@ if (typeof window !== 'undefined') window.Janken = api;
 let E = null, brain = null, humanName = 'あなた';
 let humanIs = 0; // エンジン内で人間は常にP0。A/B表示はドラフト順で決まる
 let deadline = null, timerLabel = '';
+/* ── マルチ環境用の状態 ── */
+let mode = null;          // 'solo' | 'online'
+let oppName = 'CPU';      // 相手の表示名(ソロはCPU)
+let ST = null;            // オンライン: 最新のサーバービュー {pub, priv}
+let counterCard = null;   // オンライン: あと出し権発動時に見える相手のカード
+let prevPhase = null;
 
 /* 効果音 */
 let AC = null;
@@ -562,7 +595,7 @@ const seWin = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.btn')) seClick(); });
 
 function show(id) {
-  ['scr-title', 'scr-draft', 'scr-battle', 'scr-result'].forEach(s =>
+  ['scr-title', 'scr-lobby', 'scr-draft', 'scr-battle', 'scr-result'].forEach(s =>
     document.getElementById(s).classList.toggle('hidden', s !== id));
 }
 function cardEl(card, opts = {}) {
@@ -597,6 +630,7 @@ setInterval(() => {
   els.forEach(el => { if (el) { el.textContent = `⏱ ${remain}秒`; el.className = remain <= 5 ? 'hurry' : ''; } });
   if (remain <= 0) {
     deadline = null;
+    if (mode !== 'solo') return; // オンラインの時間切れ処理はサーバーが行う
     if (E.phase === 'draft' && E.currentDrafter() === 0) {
       // ランダムピック
       humanDraftPick(E.market[Math.floor(Math.random() * E.market.length)].id, true);
@@ -611,6 +645,8 @@ function setTimer(sec) { deadline = Date.now() + sec * 1000; }
 
 /* ── 開始 ── */
 function startGame() {
+  mode = 'solo';
+  oppName = 'CPU';
   humanName = document.getElementById('inp-name').value.trim() || 'あなた';
   E = new JankenEngine();
   brain = new JankenBrain(1, mulberry32(Date.now() & 0xffff));
@@ -624,7 +660,7 @@ function renderDraft() {
   const meTurn = E.phase === 'draft' && E.currentDrafter() === 0;
   document.getElementById('dr-step').textContent = `(${Math.min(E.draftStep + 1, 10)}/10手)`;
   document.getElementById('dr-turn').innerHTML = E.phase !== 'draft' ? '' :
-    meTurn ? '<span class="turnbadge me">あなたの番!</span>' : '<span class="turnbadge cpu">CPUの番…</span>';
+    meTurn ? '<span class="turnbadge me">あなたの番!</span>' : `<span class="turnbadge cpu">${escq(oppName)}の番…</span>`;
   const mk = document.getElementById('draft-market');
   mk.innerHTML = '';
   E.market.forEach(c => {
@@ -644,6 +680,12 @@ function renderDraft() {
   op.appendChild(backEl(0));
 }
 function humanDraftPick(cardId, auto = false) {
+  if (mode === 'online') {
+    if (!ST || ST.pub.phase !== 'draft' || ST.pub.drafter !== 0) return;
+    socket.emit('jd:draftPick', { id: cardId }, r => { if (r && !r.ok) toastErr(r.error); });
+    sePick();
+    return; // 次の状態はサーバーから届く
+  }
   if (E.phase !== 'draft' || E.currentDrafter() !== 0) return;
   try { E.draftPick(0, cardId); } catch (e) { return; }
   if (!auto) sePick();
@@ -692,7 +734,7 @@ function renderBattle() {
   document.getElementById('score').innerHTML =
     `<span style="color:var(--win)">${escq(humanName)} <span class="pips">${pips(E.wins[0])}</span></span>
      <span style="color:#8a94a8">VS</span>
-     <span style="color:var(--lose)"><span class="pips">${pips(E.wins[1])}</span> CPU</span>`;
+     <span style="color:var(--lose)"><span class="pips">${pips(E.wins[1])}</span> ${escq(oppName)}</span>`;
   // 継続効果フラグ
   const flags = document.getElementById('flags');
   flags.innerHTML = '';
@@ -702,13 +744,19 @@ function renderBattle() {
   if (E.stickyNext[0]) addFlag('good', '🤝 このラウンドあいこなら、あなたの勝ち');
   if (E.stickyNext[1]) addFlag('ban', '⚠ このラウンドあいこなら、相手の勝ち');
   if (E.counterNext[1]) addFlag('ban', '👁 相手のカウンターアイ! あなたの手を見てから出してくる');
-  // カウンターアイ(あなた)
+  if (mode === 'online' && ST && ST.pub.mySubmitted && !ST.pub.oppSubmitted)
+    addFlag('good', '✔ 出した! 相手が考え中…');
+  if (mode === 'online' && ST && E.counterNext[0] && !counterCard && !ST.pub.mySubmitted)
+    addFlag('good', '👁 あなたのカウンターアイ! 相手が出すのを待ってから選べる');
+  // カウンターアイ(あなた): 相手が先に出したカードが見える
   const cbox = document.getElementById('counterbox');
-  if (cpuCommitId !== null) {
-    const cc = E.hands[1].find(c => c.id === cpuCommitId);
+  const commitCard = mode === 'online'
+    ? counterCard
+    : (cpuCommitId !== null ? E.hands[1].find(c => c.id === cpuCommitId) : null);
+  if (commitCard) {
     cbox.classList.remove('hidden');
     cbox.innerHTML = '👁 カウンターアイ発動! 相手はこのカードを出している:';
-    cbox.appendChild(cardEl(cc, { static: true }));
+    cbox.appendChild(cardEl(commitCard, { static: true }));
   } else cbox.classList.add('hidden');
   // 手札(制限中のカードは出せない)
   const legalIds = E.legalPlays(0).map(c => c.id);
@@ -731,6 +779,14 @@ function renderBattle() {
 function escq(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function humanPlay(cardId, auto = false) {
+  if (mode === 'online') {
+    if (!ST || ST.pub.phase !== 'battle' || ST.pub.mySubmitted || overlayOpen) return;
+    socket.emit('jd:play', { id: cardId }, r => {
+      if (r && !r.ok) { toastErr(r.error); return; }
+      sePick();
+    });
+    return; // 公開はjd:revealで届く
+  }
   if (E.phase !== 'battle' || overlayOpen) return;
   deadline = null;
   let cpuId;
@@ -747,7 +803,7 @@ function humanPlay(cardId, auto = false) {
 }
 
 function effectText(e) {
-  const who = e.p === 0 ? humanName : 'CPU';
+  const who = e.p === 0 ? humanName : oppName;
   const A = ABILITIES;
   switch (e.ab) {
     case 'freeze':     return `❄ ${who}の${A.freeze.name}! 相手の能力は発動しない`;
@@ -784,6 +840,7 @@ function blogLine(t) {
 }
 function showReveal(r, auto) {
   overlayOpen = true;
+  document.getElementById('ov-next').disabled = false;
   const [c0, c1] = r.cards;
   document.getElementById('ov-title').textContent = `第${r.round}ラウンド じゃん・けん・ぽん!` + (auto ? ' (時間切れ・自動)' : '');
   document.getElementById('ov-cards').innerHTML = '';
@@ -795,9 +852,9 @@ function showReveal(r, auto) {
   const res = document.getElementById('ov-result');
   const sub = document.getElementById('ov-sub');
   if (r.res === 1) { res.textContent = 'あなたの勝ち!'; res.className = 'win'; seWinR(); }
-  else if (r.res === -1) { res.textContent = 'CPUの勝ち…'; res.className = 'lose'; seLoseR(); }
+  else if (r.res === -1) { res.textContent = `${oppName}の勝ち…`; res.className = 'lose'; seLoseR(); }
   else { res.textContent = 'あいこ!(ノーカウント)'; res.className = 'tie'; seTie(); }
-  sub.textContent = `${escqText(humanName)} ${r.wins[0]}勝 - ${r.wins[1]}勝 CPU`;
+  sub.textContent = `${escqText(humanName)} ${r.wins[0]}勝 - ${r.wins[1]}勝 ${escqText(oppName)}`;
   // 能力の発動と本人限定情報
   const fx = document.getElementById('ov-effects');
   const lines = [];
@@ -809,7 +866,7 @@ function showReveal(r, auto) {
     lines.forEach(l => { const d = document.createElement('div'); if (l.priv) d.className = 'priv'; d.textContent = l.t; fx.appendChild(d); });
   } else fx.classList.add('hidden');
   // 記録
-  const resTxt = r.res === 1 ? `${humanName}の勝ち` : r.res === -1 ? 'CPUの勝ち' : 'あいこ';
+  const resTxt = r.res === 1 ? `${humanName}の勝ち` : r.res === -1 ? `${oppName}の勝ち` : 'あいこ';
   blogLine(`R${r.round}: ${HAND_EMOJI[r.cards[0].hand]}${r.cards[0].ab ? '(' + ABILITIES[r.cards[0].ab].name + ')' : ''} vs ${HAND_EMOJI[r.cards[1].hand]}${r.cards[1].ab ? '(' + ABILITIES[r.cards[1].ab].name + ')' : ''} → ${resTxt} [${r.wins[0]}-${r.wins[1]}]`);
   lines.forEach(l => blogLine('　' + l.t));
   document.getElementById('ov-next').textContent = r.ended ? '結果を見る 🏆' : r.sudden ? 'サドンデスへ!! ⚡' : 'つぎへ ▶';
@@ -820,6 +877,13 @@ function escqText(s) { return s; }
 function closeOverlay() {
   document.getElementById('overlay').classList.remove('show');
   overlayOpen = false;
+  if (mode === 'online') {
+    // 進行はサーバー任せ。最新状態に合わせて画面を戻すだけ
+    if (!ST) return;
+    if (ST.pub.phase === 'ended') return showResult();
+    if (ST.pub.phase === 'battle' || ST.pub.phase === 'sudden') { show('scr-battle'); renderBattle(); }
+    return;
+  }
   if (E.phase === 'ended') return showResult();
   if (E.phase === 'sudden') return runSudden();
   startRoundUI();
@@ -840,7 +904,7 @@ function runSudden() {
   document.getElementById('ov-sub').textContent = '';
   document.getElementById('ov-effects').classList.add('hidden');
   if (st.res === 1) { res.textContent = 'あなたの勝ち!!'; res.className = 'win'; }
-  else if (st.res === -1) { res.textContent = 'CPUの勝ち…'; res.className = 'lose'; }
+  else if (st.res === -1) { res.textContent = `${oppName}の勝ち…`; res.className = 'lose'; }
   else { res.textContent = 'あいこ! もう一回!'; res.className = 'tie'; seTie(); }
   document.getElementById('ov-next').textContent = st.ended ? '結果を見る 🏆' : 'もう一回 ⚡';
   document.getElementById('overlay').classList.add('show');
@@ -852,11 +916,175 @@ function showResult() {
   show('scr-result');
   const youWin = E.winner === 0;
   if (youWin) seWin();
-  document.getElementById('res-win').textContent = youWin ? `${humanName} の勝利!` : 'CPU の勝利…';
+  document.getElementById('res-win').textContent = youWin ? `${humanName} の勝利!` : `${oppName} の勝利…`;
   document.getElementById('res-win').style.color = youWin ? 'var(--win)' : 'var(--lose)';
   const reason = { three: '3勝先取!', more: '出し切り・勝ち数の差で決着', sudden: `サドンデス(${E.suddenLog.length}回)で決着` }[E.endReason];
   document.getElementById('res-detail').textContent =
     `${reason} ── 最終スコア ${E.wins[0]} - ${E.wins[1]} (全${E.round}ラウンド)`;
+  // オンライン: ホストにはロビー復帰ボタンを見せる
+  document.getElementById('btn-backlobby').classList.toggle('hidden', !(mode === 'online' && ST && ST.pub.isHost));
+}
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+'use strict';
+/* ════════ オンライン対戦レイヤー(jd_server.jsに接続) ════════
+ * サーバービュー(pub/priv)を既存render関数が読むエンジンの形に変換して描画を再利用する */
+let socket = null;
+function ensureSocket() {
+  if (socket) return socket;
+  if (typeof io === 'undefined') { document.getElementById('home-err').textContent = 'サーバーに接続できません(オンライン対戦はサイト上でのみ遊べます)'; return null; }
+  socket = io();
+  wireSocket(socket);
+  return socket;
+}
+function toastErr(msg) {
+  const el = document.getElementById('lb-err') || document.getElementById('home-err');
+  if (el) { el.textContent = msg || ''; setTimeout(() => { el.textContent = ''; }, 2200); }
+}
+
+/* サーバービュー → 既存render関数用アダプタ(0=自分) */
+function makeView(st) {
+  const { pub, priv } = st;
+  return {
+    phase: pub.phase,
+    round: pub.round || 0,
+    market: pub.market || [],
+    draftStep: pub.draftStep || 0,
+    currentDrafter: () => (pub.drafter === 0 ? 0 : 1),
+    decks: [priv.myDeck || [], []],
+    draftPicks: pub.draftPicks || [[], []],
+    hands: [priv.myHand || [], { length: pub.oppHandCount || 0 }],
+    piles: [{ length: priv.myPileCount || 0 }, { length: pub.oppPileCount || 0 }],
+    discards: pub.discards || [[], []],
+    wins: pub.wins || [0, 0],
+    restrict: pub.restrict || [null, null],
+    counterNext: pub.counterNext || [false, false],
+    stickyNext: pub.stickyNext || [false, false],
+    legalPlays: () => (priv.myHand || []).filter(c => (priv.legalIds || []).includes(c.id)),
+    winner: pub.winner,
+    endReason: pub.endReason,
+    suddenLog: { length: pub.suddenCount || 0 },
+  };
+}
+
+/* ── ホーム操作 ── */
+function jdName() { return document.getElementById('inp-name').value.trim() || 'あなた'; }
+function jdCreate() {
+  const s = ensureSocket();
+  if (!s) return;
+  s.emit('jd:createRoom', { name: jdName() }, r => {
+    if (!r || !r.ok) return toastErr(r && r.error);
+    mode = 'online';
+    humanName = jdName();
+  });
+}
+function jdJoin() {
+  const s = ensureSocket();
+  if (!s) return;
+  const code = document.getElementById('inp-code').value.trim().toUpperCase();
+  s.emit('jd:joinRoom', { code, name: jdName() }, r => {
+    if (!r || !r.ok) return toastErr(r && r.error);
+    mode = 'online';
+    humanName = jdName();
+  });
+}
+function jdAddCpu() { socket.emit('jd:addCpu', {}, r => { if (r && !r.ok) toastErr(r.error); }); }
+function jdRemoveCpu() { socket.emit('jd:removeCpu', {}, r => { if (r && !r.ok) toastErr(r.error); }); }
+function jdStart() { socket.emit('jd:start', {}, r => { if (r && !r.ok) toastErr(r.error); }); }
+function jdBackToLobby() { socket.emit('jd:backToLobby', {}, () => {}); }
+function jdCopy() {
+  const code = document.getElementById('lb-code').textContent;
+  const btn = document.getElementById('btn-copy');
+  const done = ok => { btn.textContent = ok ? '✅ コピーしました!' : '❌ コピー失敗'; setTimeout(() => { btn.textContent = '📋 コードをコピー'; }, 1600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(() => done(true)).catch(() => done(fallbackCopyJD(code)));
+  else done(fallbackCopyJD(code));
+}
+function fallbackCopyJD(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove(); return ok;
+  } catch (e) { return false; }
+}
+
+/* ── ロビー描画 ── */
+function renderLobbyJD(pub) {
+  show('scr-lobby');
+  document.getElementById('lb-code').textContent = pub.code || '-----';
+  const seats = pub.seats || [];
+  document.getElementById('lb-seats').innerHTML =
+    seats.map((s, i) => `${s.isCpu ? '🤖' : '🙂'} ${escq(s.name)}${i === 0 ? ' <small>(ホスト)</small>' : ''}${!s.connected ? ' ⚠' : ''}`).join('<br>') +
+    (seats.length < 2 ? '<br><span style="opacity:.5">💺 あと1人…(CPUでもOK)</span>' : '');
+  document.getElementById('lb-host').classList.toggle('hidden', !pub.isHost);
+  document.getElementById('lb-guest').classList.toggle('hidden', pub.isHost);
+  document.getElementById('btn-rmcpu').classList.toggle('hidden', !seats.some(s => s.isCpu));
+  document.getElementById('btn-jdstart').disabled = seats.length !== 2;
+}
+
+/* ── サーバーイベント ── */
+function wireSocket(s) {
+  s.on('jd:state', st => {
+    if (mode !== 'online') return;
+    ST = st;
+    oppName = (st.pub.names && st.pub.names[1]) || '???';
+    E = makeView(st);
+    deadline = st.pub.deadline || null;
+    const ph = st.pub.phase;
+    if (ph === 'lobby') {
+      counterCard = null;
+      if (document.getElementById('overlay').classList.contains('show')) closeOverlay();
+      renderLobbyJD(st.pub);
+    } else if (ph === 'draft') {
+      if (prevPhase !== 'draft') show('scr-draft');
+      renderDraft();
+    } else if (ph === 'battle') {
+      if (prevPhase !== 'battle' && prevPhase !== 'sudden') {
+        show('scr-battle');
+        blogLine('⚔ 対戦開始! デッキをシャッフルして5枚ドロー');
+      }
+      if (!overlayOpen) { show('scr-battle'); renderBattle(); }
+    } else if (ph === 'ended') {
+      if (!overlayOpen) showResult();
+    }
+    prevPhase = ph;
+  });
+  /* あと出し権: 相手のカードが見える */
+  s.on('jd:counter', ev => {
+    counterCard = ev.card;
+    seTie();
+    if (!overlayOpen) renderBattle();
+  });
+  /* ラウンド同時公開 */
+  s.on('jd:reveal', r => {
+    counterCard = null;
+    showReveal(r, false);
+  });
+  /* サドンデス(サーバーが自動進行) */
+  s.on('jd:sudden', st2 => {
+    overlayOpen = true;
+    document.getElementById('ov-title').textContent = `⚡ サドンデス! ランダムな1枚で勝負 (${st2.count}回目)`;
+    const box = document.getElementById('ov-cards');
+    box.innerHTML = '';
+    const e0 = cardEl({ hand: st2.h0 }, { static: true }); e0.classList.add('bigcard');
+    const vs = document.createElement('div'); vs.id = 'ov-vs'; vs.textContent = 'VS';
+    const e1 = cardEl({ hand: st2.h1 }, { static: true }); e1.classList.add('bigcard');
+    box.append(e0, vs, e1);
+    const res = document.getElementById('ov-result');
+    document.getElementById('ov-sub').textContent = '';
+    document.getElementById('ov-effects').classList.add('hidden');
+    if (st2.res === 1) { res.textContent = 'あなたの勝ち!!'; res.className = 'win'; }
+    else if (st2.res === -1) { res.textContent = `${oppName}の勝ち…`; res.className = 'lose'; }
+    else { res.textContent = 'あいこ! もう一回!'; res.className = 'tie'; seTie(); }
+    const nx = document.getElementById('ov-next');
+    nx.textContent = st2.ended ? '結果を見る 🏆' : '⚡ 自動でつづきます…';
+    nx.disabled = !st2.ended;
+    document.getElementById('overlay').classList.add('show');
+    if (st2.ended) blogLine(`⚡ サドンデス${st2.count}回で決着!`);
+  });
+  s.on('disconnect', () => { if (mode === 'online') toastErr('接続が切れました…再読み込みしてください'); });
 }
 </script>
 </body>
