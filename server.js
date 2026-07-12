@@ -411,4 +411,10 @@ require('./qc_server.js')(io, {
   cpuMaxMs: parseFloat(process.env.QC_CPU_MAX_MS) || 40000,
 });
 
+require('./mo_server.js')(io, {
+  bidMs: (parseFloat(process.env.MO_BID_SECONDS) || 25) * 1000,
+  pickMs: (parseFloat(process.env.MO_PICK_SECONDS) || 60) * 1000,
+  gapMs: parseFloat(process.env.MO_GAP_MS) || 4500,
+});
+
 server.listen(PORT, () => console.log(`あらいの遊び場 : http://localhost:${PORT}`));
