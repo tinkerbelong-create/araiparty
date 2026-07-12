@@ -399,4 +399,9 @@ require('./cf_server.js')(io, {
   gapMs: parseFloat(process.env.CF_GAP_MS) || 6000,
 });
 
+require('./bz_server.js')(io, {
+  playMs: (parseFloat(process.env.BZ_PLAY_SECONDS) || 25) * 1000,
+  gapMs: parseFloat(process.env.BZ_GAP_MS) || 6500,
+});
+
 server.listen(PORT, () => console.log(`あらいの遊び場 : http://localhost:${PORT}`));
