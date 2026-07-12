@@ -405,4 +405,10 @@ require('./bz_server.js')(io, {
   gapMs: parseFloat(process.env.BZ_GAP_MS) || 6500,
 });
 
+require('./qc_server.js')(io, {
+  lockMs: parseFloat(process.env.QC_LOCK_MS) || 2000,
+  cpuMinMs: parseFloat(process.env.QC_CPU_MIN_MS) || 15000,
+  cpuMaxMs: parseFloat(process.env.QC_CPU_MAX_MS) || 40000,
+});
+
 server.listen(PORT, () => console.log(`あらいの遊び場 : http://localhost:${PORT}`));

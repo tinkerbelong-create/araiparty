@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>クアドルカラー 🟥🟦🟨🟩</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{ --ink:#2a3140; --line:#dde5f0; --c0:#e04545; --c1:#4a7dd6; --c2:#f0c010; --c3:#3cae5c; --accent:#7a4ad6; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--ink);min-height:100vh;user-select:none;-webkit-user-select:none;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(224,69,69,.10), transparent 35%),
+    radial-gradient(circle at 90% 12%, rgba(74,125,214,.10), transparent 35%),
+    radial-gradient(circle at 15% 90%, rgba(240,192,16,.10), transparent 35%),
+    radial-gradient(circle at 88% 88%, rgba(60,174,92,.10), transparent 35%),
+    linear-gradient(#f8f9ff,#f2f7f2);
+}
+.wrap{max-width:1060px;margin:0 auto;padding:14px 12px 40px}
+h1{font-size:30px;font-weight:900;text-align:center;letter-spacing:.05em;
+  background:linear-gradient(90deg,var(--c0),var(--c1),var(--c2),var(--c3));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;font-weight:700;color:#6a7488;font-size:12px;margin-top:2px}
+.card{background:#fff;border:2px solid var(--line);border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 8px 22px rgba(42,49,64,.08)}
+.btn{display:inline-block;border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#fff;border-radius:12px;padding:10px 24px;font-size:15px;
+  background:linear-gradient(135deg,#7a4ad6,#5c33ad);box-shadow:0 4px 12px rgba(122,74,214,.35);transition:transform .1s}
+.btn:hover{transform:translateY(-2px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.green{background:linear-gradient(135deg,#3cae5c,#268a44);box-shadow:0 4px 12px rgba(60,174,92,.35)}
+.btn.blue{background:linear-gradient(135deg,#4a7dd6,#3560b3);box-shadow:0 4px 12px rgba(74,125,214,.35)}
+.btn.gray{background:#98a2b8;box-shadow:none}
+.btn.small{padding:6px 14px;font-size:13px;border-radius:9px}
+input[type=text]{font-family:inherit;font-weight:700;font-size:16px;color:var(--ink);
+  border:2px solid var(--line);border-radius:10px;padding:9px 12px;outline:none;width:100%}
+input:focus{border-color:var(--accent)}
+label{font-size:12.5px;font-weight:900;color:#6a7488;display:block;margin:12px 0 4px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.err{color:#d6455d;font-weight:900;font-size:13px;min-height:18px;margin-top:8px}
+.hidden{display:none!important}
+.codebox{font-size:28px;font-weight:900;letter-spacing:.22em;color:var(--accent);background:#f3edff;border:2px dashed var(--accent);border-radius:12px;padding:7px 16px;display:inline-block}
+.seat{display:flex;align-items:center;gap:8px;background:#f7f9ff;border:2px solid var(--line);border-radius:12px;padding:8px 13px;font-weight:900;margin-top:7px;font-size:14px}
+.seat .tag{font-size:11px;color:#fff;background:#98a2b8;border-radius:99px;padding:2px 10px}
+.note{font-size:12.5px;font-weight:700;color:#6a7488;line-height:1.8;margin-top:8px}
+/* 設定ピル */
+.optrow{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-family:inherit;font-weight:900;font-size:13.5px;border:2px solid var(--line);background:#fff;border-radius:99px;padding:7px 16px;cursor:pointer;color:#6a7488}
+.pill.on{border-color:var(--accent);background:#f3edff;color:var(--accent)}
+/* ── ゲームレイアウト ── */
+#game{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+#leftCol{flex:0 1 560px;min-width:300px}
+#rightCol{flex:1 1 260px;min-width:250px;max-width:340px}
+.timerbig{text-align:center;font-weight:900;font-size:22px;color:#d6455d;min-height:28px}
+.timerbig.calm{color:#6a7488}
+/* 盤面 */
+#boardWrap{position:relative;margin:10px auto 0;touch-action:manipulation}
+#board{display:grid;gap:0;border:4px solid #2a3140;border-radius:10px;overflow:hidden}
+.cell{width:100%;height:100%;position:relative}
+.cell.c0{background:var(--c0)} .cell.c1{background:var(--c1)} .cell.c2{background:var(--c2)} .cell.c3{background:var(--c3)}
+.cell::after{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:.5;color:#fff;font-weight:900}
+.cell.c0::after{content:'●'} .cell.c1::after{content:'▲'} .cell.c2::after{content:'■'} .cell.c3::after{content:'★'}
+/* 交点ボタン */
+.xdot{position:absolute;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;z-index:5;
+  background:rgba(255,255,255,.35);box-shadow:inset 0 0 0 2px rgba(42,49,64,.35);transition:transform .08s}
+.xdot:hover{transform:translate(-50%,-50%) scale(1.35);background:rgba(255,255,255,.8)}
+.xdot.armed{background:rgba(255,255,255,.75);box-shadow:inset 0 0 0 3px var(--accent);animation:xp 1s infinite}
+@keyframes xp{50%{box-shadow:inset 0 0 0 3px var(--accent),0 0 12px var(--accent)}}
+.xmark{position:absolute;transform:translate(-50%,-50%);z-index:6;font-size:17px;font-weight:900;color:#fff;background:var(--accent);
+  border-radius:50%;width:26px;height:26px;line-height:26px;text-align:center;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+/* 手札 */
+#hand{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.piece{position:relative;cursor:pointer;border:3px solid var(--line);border-radius:12px;padding:7px;background:#fff;transition:transform .1s, border-color .1s}
+.piece:hover{transform:translateY(-3px)}
+.piece.sel{border-color:var(--accent);box-shadow:0 0 0 3px rgba(122,74,214,.3);transform:translateY(-4px)}
+.piece.done{opacity:.35;cursor:default;transform:none}
+.piece .pg{display:grid;grid-template-columns:repeat(2,30px);grid-template-rows:repeat(2,30px);gap:2px;transition:transform .25s}
+.piece .pc{border-radius:4px;position:relative}
+.piece .pc::after{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;opacity:.55;color:#fff;font-weight:900}
+.pc.c0{background:var(--c0)} .pc.c1{background:var(--c1)} .pc.c2{background:var(--c2)} .pc.c3{background:var(--c3)}
+.pc.c0::after{content:'●'} .pc.c1::after{content:'▲'} .pc.c2::after{content:'■'} .pc.c3::after{content:'★'}
+.piece .rot{position:absolute;top:-11px;right:-11px;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:#fff;
+  font-size:13px;cursor:pointer;font-weight:900;z-index:2}
+.piece .rot:hover{border-color:var(--accent);color:var(--accent)}
+.piece .okmark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;z-index:3}
+/* プレイヤーリスト */
+.plist .prow{display:flex;align-items:center;gap:8px;background:#f7f9ff;border:2px solid var(--line);border-radius:12px;padding:7px 11px;margin-top:7px;font-weight:900;font-size:13.5px}
+.prow.me{border-color:var(--accent)}
+.prow.fin{background:#eefaf3;border-color:#9fd8b4}
+.prow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .prog{display:flex;gap:3px}
+.prow .dot{width:12px;height:12px;border-radius:50%;background:#d9dfec}
+.prow .dot.on{background:var(--accent)}
+.prow .rankchip{background:#e8871a;color:#fff;border-radius:99px;padding:1px 10px;font-size:12px}
+/* 観戦パネル */
+#spectate .shand{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f7f9ff;border:2px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:8px}
+#spectate .sp{display:grid;grid-template-columns:repeat(2,14px);grid-template-rows:repeat(2,14px);gap:1px;border-radius:3px;position:relative}
+#spectate .sp.done{opacity:.25}
+#spectate .spc{border-radius:2px}
+#spectate .snm{font-weight:900;font-size:12.5px;width:100%;color:#6a7488}
+/* 結果 */
+table.rank{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;font-weight:700}
+table.rank th,table.rank td{border-bottom:1px solid var(--line);padding:7px 4px;text-align:center}
+table.rank th{color:#6a7488;font-size:11.5px}
+.overlay{position:fixed;inset:0;background:rgba(30,34,46,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:14px}
+.panel{background:#fff;border-radius:20px;padding:24px;max-width:520px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);max-height:90vh;overflow:auto}
+.modalrule{text-align:left;font-size:13px;font-weight:700;line-height:1.9}
+.modalrule h3{margin-top:12px;color:var(--accent)}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(42,49,64,.9);color:#fff;
+  font-weight:900;font-size:14px;border-radius:99px;padding:8px 22px;opacity:0;transition:opacity .25s;pointer-events:none}
+.backlink{display:block;text-align:center;margin-top:20px;font-size:12.5px;font-weight:900;color:#8a94a8;text-decoration:none}
+@media (max-width:640px){ .piece .pg{grid-template-columns:repeat(2,26px);grid-template-rows:repeat(2,26px)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>クアドルカラー</h1>
+  <p class="sub">🟥🟦🟨🟩 4マスの境目を探せ! 2×2パターン早はめレース(1〜10人)</p>
+
+  <!-- ══ ホーム ══ -->
+  <div id="vHome" class="card">
+    <label>なまえ(10文字まで)</label>
+    <input id="inName" type="text" maxlength="10" placeholder="なまえ">
+    <div class="row" style="margin-top:16px">
+      <button class="btn" id="btnCreate">部屋を作る</button>
+      <button class="btn green" id="btnCpu">CPUと対戦</button>
+    </div>
+    <label style="margin-top:18px">招待コードで参加</label>
+    <div class="row">
+      <input id="inCode" type="text" maxlength="5" placeholder="Q○○○○" style="width:130px;text-transform:uppercase">
+      <button class="btn blue" id="btnJoin">参加する</button>
+    </div>
+    <div class="err" id="homeErr"></div>
+    <button class="btn gray small" id="btnRule" style="margin-top:10px">📜 ルールを読む</button>
+    <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+  </div>
+
+  <!-- ══ ロビー ══ -->
+  <div id="vLobby" class="card hidden">
+    <div style="text-align:center">
+      <div style="font-weight:900;color:#6a7488;font-size:13px">招待コード</div>
+      <div class="codebox" id="lbCode">-----</div>
+      <div style="margin-top:8px"><button class="btn blue small" id="btnCopy">📋 コードをコピー</button></div>
+      <p class="note">最大10人で同時プレイ!</p>
+    </div>
+    <div id="lbSeats"></div>
+    <div id="lbHostArea">
+      <label>🔲 盤面の大きさ</label>
+      <div class="optrow" id="optSize">
+        <button class="pill" data-v="6">6×6(36マス)</button>
+        <button class="pill" data-v="8">8×8(64マス)</button>
+      </div>
+      <label>🀄 手持ちのピース数</label>
+      <div class="optrow" id="optPieces">
+        <button class="pill" data-v="3">3枚</button>
+        <button class="pill" data-v="4">4枚</button>
+        <button class="pill" data-v="5">5枚</button>
+      </div>
+      <label>⏱ 制限時間</label>
+      <div class="optrow" id="optMinutes">
+        <button class="pill" data-v="3">3分</button>
+        <button class="pill" data-v="4">4分</button>
+        <button class="pill" data-v="5">5分</button>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn green" id="btnAddCpu">CPUを追加</button>
+        <button class="btn gray hidden" id="btnRemoveCpu">CPUを削除</button>
+        <button class="btn" id="btnStart">スタート!</button>
+      </div>
+    </div>
+    <div id="lbGuestArea" class="hidden"><p class="note" style="text-align:center" id="guestOpts"></p></div>
+    <div class="err" id="lbErr"></div>
+  </div>
+
+  <!-- ══ ゲーム ══ -->
+  <div id="vGame" class="hidden">
+    <div class="timerbig" id="gTimer"></div>
+    <div id="game">
+      <div id="leftCol" class="card" style="padding:14px">
+        <div style="text-align:center;font-weight:900;font-size:14px" id="gMsg">ピースを選んで、はまる交点をタップ!</div>
+        <div id="boardWrap">
+          <div id="board"></div>
+        </div>
+        <div id="hand"></div>
+        <div id="doneMsg" class="hidden" style="text-align:center;font-weight:900;font-size:18px;color:#2fae6e;margin-top:12px"></div>
+      </div>
+      <div id="rightCol">
+        <div class="card" style="padding:14px">
+          <div style="font-weight:900;font-size:14px">👥 みんなの進み具合</div>
+          <div class="plist" id="plist"></div>
+        </div>
+        <div class="card hidden" id="spectate" style="padding:14px">
+          <div style="font-weight:900;font-size:14px">👀 観戦モード — みんなの手札</div>
+          <p class="note" style="margin-top:2px">抜けた人だけが見えるヒミツ画面。応援しよう!</p>
+          <div id="spectateList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 結果 ══ -->
+  <div id="vEnd" class="card hidden">
+    <div style="text-align:center;font-size:38px" id="endEmoji">🏁</div>
+    <div style="text-align:center;font-size:24px;font-weight:900" id="endTitle"></div>
+    <p class="note" style="text-align:center" id="endReason"></p>
+    <table class="rank" id="endTable"></table>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn blue" id="btnAgain">ロビーにもどる</button>
+      <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ルール -->
+<div id="ovRule" class="overlay hidden">
+  <div class="panel modalrule">
+    <h2 style="text-align:center">📜 クアドルカラーのルール</h2>
+    <h3>🎮 あそびかた(1〜10人 / 3〜5分)</h3>
+    ・4色のマスが敷き詰められた盤面は<b>全員共通</b>。<br>
+    ・各自に<b>2×2の色パターンピース</b>が配られる(3〜5枚・他の人には見えない)。<br>
+    ・自分のピースと同じ色の並びになっている<b>「4マスの境目(交点)」</b>を盤面から探して、ピース選択→交点タップではめる!<br>
+    ・<b>回転してはまる場所でもOK</b>(ピースの↻ボタンで回して見比べられる)。<br>
+    ・全部はめたら「抜け」! 抜けた順に順位がつき、みんなに知らされる。
+    <h3>⚠ お手つき</h3>
+    ・はまらない場所を選ぶと<b>2秒間</b>操作できない。連打作戦は通用しないぞ。
+    <h3>👀 観戦</h3>
+    ・抜けた人は<b>ほかの人の手札が見える</b>ようになる。声援や実況で盛り上げよう。<br>
+    ・最後の1人が終わるか、制限時間(3〜5分)が来たらゲーム終了。<br>
+    ・時間切れの人は<b>残り枚数が少ない順</b>(同数ならお手つきが少ない順)で順位がつく。
+    <div style="text-align:center;margin-top:16px"><button class="btn" onclick="document.getElementById('ovRule').classList.add('hidden')">とじる</button></div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+'use strict';
+const socket = io();
+const $ = id => document.getElementById(id);
+
+/* ── 効果音 ── */
+let AC = null;
+function se(freq, dur = 0.07, type = 'square', vol = 0.2, slide = 0) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, AC.currentTime + dur);
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const seClick = () => se(600, 0.05, 'square', 0.12);
+const sePick  = () => se(880, 0.07, 'triangle', 0.2);
+const seOk    = () => { se(880, 0.07, 'triangle', 0.22); setTimeout(() => se(1319, 0.1, 'triangle', 0.22), 70); };
+const seMiss  = () => se(180, 0.28, 'sawtooth', 0.2, 90);
+const seFin   = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.16, 'triangle', 0.24), i * 110));
+const seOthers= () => se(740, 0.12, 'triangle', 0.15);
+const seTick  = () => se(1100, 0.05, 'square', 0.1);
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.btn, .pill')) seClick(); });
+
+let S = null, deadline = null, selPiece = null, rotSteps = {}, lockedUntil = 0, lastTickSec = -1;
+const MEDALS = ['🥇','🥈','🥉'];
+
+function show(view){ ['vHome','vLobby','vGame','vEnd'].forEach(v => $(v).classList.toggle('hidden', v !== view)); }
+function esc(s){ const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg; t.style.opacity = 1;
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => { t.style.opacity = 0; }, 1800);
+}
+function fmtTime(ms){
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+/* タイマー表示(残り10秒でカウント音) */
+setInterval(() => {
+  const el = $('gTimer');
+  if (!deadline || !S || S.pub.phase !== 'play'){ if (el) el.textContent = ''; return; }
+  const remain = Math.max(0, deadline - Date.now());
+  const sec = Math.ceil(remain / 1000);
+  el.textContent = '⏱ ' + fmtTime(remain);
+  el.classList.toggle('calm', sec > 30);
+  if (sec <= 10 && sec !== lastTickSec && sec > 0){ lastTickSec = sec; seTick(); }
+}, 200);
+
+/* ══ ホーム/ロビー ══ */
+$('btnRule').onclick = () => $('ovRule').classList.remove('hidden');
+function myName(){ return $('inName').value.trim() || 'ゲスト'; }
+$('btnCreate').onclick = () => socket.emit('qc:createRoom', {name: myName()}, r => { if(!r.ok) $('homeErr').textContent = r.error; });
+$('btnCpu').onclick = () => socket.emit('qc:createRoom', {name: myName()}, r => {
+  if(!r.ok) return $('homeErr').textContent = r.error;
+  socket.emit('qc:addCpu', {}, ()=>{}); socket.emit('qc:addCpu', {}, ()=>{});
+});
+$('btnJoin').onclick = () => socket.emit('qc:joinRoom', {code: $('inCode').value, name: myName()}, r => { if(!r.ok) $('homeErr').textContent = r.error; });
+$('btnAddCpu').onclick = () => socket.emit('qc:addCpu', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnRemoveCpu').onclick = () => socket.emit('qc:removeCpu', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnStart').onclick = () => socket.emit('qc:start', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnAgain').onclick = () => { if (S && S.pub.isHost) socket.emit('qc:backToLobby', {}, ()=>{}); else location.reload(); };
+$('btnCopy').onclick = () => {
+  const code = $('lbCode').textContent;
+  const done = ok => { $('btnCopy').textContent = ok ? '✅ コピーしました!' : '❌ コピー失敗'; setTimeout(() => { $('btnCopy').textContent = '📋 コードをコピー'; }, 1600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(() => done(true)).catch(() => done(fallbackCopy(code)));
+  else done(fallbackCopy(code));
+};
+function fallbackCopy(text){
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove(); return ok;
+  } catch(e){ return false; }
+}
+/* 設定ピル */
+[['optSize','size'],['optPieces','pieces'],['optMinutes','minutes']].forEach(([elId, key]) => {
+  $(elId).querySelectorAll('.pill').forEach(b => b.onclick = () => {
+    socket.emit('qc:setOpts', { [key]: Number(b.dataset.v) }, r => { if (r && !r.ok) $('lbErr').textContent = r.error; });
+  });
+});
+
+/* ══ 状態描画 ══ */
+socket.on('qc:state', st => {
+  S = st;
+  const p = st.pub;
+  deadline = p.phase === 'play' ? p.deadline : null;
+  if (p.phase === 'lobby') renderLobby(p);
+  else if (p.phase === 'play') renderGame(p, st.priv);
+  /* ended は qc:end で描画 */
+});
+
+function renderLobby(p){
+  show('vLobby');
+  selPiece = null; rotSteps = {}; lastTickSec = -1;
+  $('lbCode').textContent = p.code;
+  $('lbSeats').innerHTML = p.seats.map((s,i) =>
+    `<div class="seat">${s.isCpu?'🤖':'🙂'} ${esc(s.name)} ${i===0?'<span class="tag">ホスト</span>':''}${!s.connected?'<span class="tag">切断</span>':''}</div>`
+  ).join('') + (p.seats.length < 10 ? `<div class="seat" style="opacity:.5">💺 あと${10-p.seats.length}人入れる</div>` : '');
+  $('lbHostArea').classList.toggle('hidden', !p.isHost);
+  $('lbGuestArea').classList.toggle('hidden', p.isHost);
+  if (p.isHost){
+    setPills('optSize', p.opts.size);
+    setPills('optPieces', p.opts.pieces);
+    setPills('optMinutes', p.opts.minutes);
+    const hasCpu = p.seats.some(s => s.isCpu);
+    $('btnAddCpu').classList.toggle('hidden', p.seats.length >= 10);
+    $('btnRemoveCpu').classList.toggle('hidden', !hasCpu);
+    $('btnStart').disabled = p.seats.length < 1;
+  } else {
+    $('guestOpts').innerHTML = `盤面 <b>${p.opts.size}×${p.opts.size}</b> / 手持ち <b>${p.opts.pieces}枚</b> / 制限 <b>${p.opts.minutes}分</b><br>ホストの開始を待っています…`;
+  }
+}
+function setPills(elId, v){
+  $(elId).querySelectorAll('.pill').forEach(b => b.classList.toggle('on', Number(b.dataset.v) === v));
+}
+
+function renderGame(p, priv){
+  show('vGame');
+  lockedUntil = priv.lockedUntil || 0;
+  renderBoard(p, priv);
+  renderHand(p, priv);
+  renderPlist(p, priv);
+  renderSpectate(p, priv);
+  const fin = priv.finished;
+  $('gMsg').classList.toggle('hidden', fin);
+  $('doneMsg').classList.toggle('hidden', !fin);
+  if (fin){
+    const me = p.seats[priv.myIdx];
+    $('doneMsg').textContent = `🎉 ${me.rank}位で抜けた!(${fmtTime(me.timeMs || 0)}) みんなを待とう…`;
+  }
+}
+
+/* 盤面: セル+交点ボタン */
+function renderBoard(p, priv){
+  const n = p.size;
+  const board = p.board;
+  const wrap = $('boardWrap');
+  const bw = Math.min(520, Math.max(280, window.innerWidth - 80));
+  const cell = Math.floor(bw / n);
+  const bd = $('board');
+  bd.style.gridTemplateColumns = `repeat(${n}, ${cell}px)`;
+  bd.style.gridTemplateRows = `repeat(${n}, ${cell}px)`;
+  bd.style.width = (cell * n) + 'px';
+  wrap.style.width = (cell * n + 8) + 'px';
+  bd.innerHTML = board.flat().map(c => `<div class="cell c${c}"></div>`).join('');
+  // 交点ボタン(既存を消して張り直し)
+  wrap.querySelectorAll('.xdot, .xmark').forEach(e => e.remove());
+  const myDone = priv.myHand ? priv.myHand.filter(x => x.placed) : [];
+  for (let r = 0; r <= n - 2; r++) {
+    for (let c = 0; c <= n - 2; c++) {
+      const px = (c + 1) * cell + 4, py = (r + 1) * cell + 4;
+      // 自分がはめた場所はマークで表示
+      const mine = myDone.findIndex(x => x.placedAt && x.placedAt[0] === r && x.placedAt[1] === c);
+      if (mine >= 0) {
+        const m = document.createElement('div');
+        m.className = 'xmark';
+        m.textContent = '✓';
+        m.style.left = px + 'px'; m.style.top = py + 'px';
+        wrap.appendChild(m);
+        continue;
+      }
+      if (priv.finished) continue; // 抜けた人は置けない
+      const b = document.createElement('button');
+      b.className = 'xdot' + (selPiece !== null ? ' armed' : '');
+      b.style.left = px + 'px'; b.style.top = py + 'px';
+      b.onclick = () => tryPlace(r, c);
+      wrap.appendChild(b);
+    }
+  }
+}
+function tryPlace(r, c){
+  if (selPiece === null){ toast('先に下のピースを選んでね'); return; }
+  if (Date.now() < lockedUntil){ toast('お手つき中…ちょっと待って!'); seMiss(); return; }
+  socket.emit('qc:place', { pieceIdx: selPiece, r, c }, res => {
+    if (res.ok){
+      seOk();
+      selPiece = null;
+      if (res.finished){ seFin(); toast(`🎉 ${res.rank}位で抜けた!!`); }
+    } else if (res.miss){
+      lockedUntil = res.lockedUntil || (Date.now() + 2000);
+      seMiss();
+      toast('💦 そこじゃない! 2秒お手つき');
+    } else {
+      toast(res.error || 'エラー');
+    }
+  });
+}
+
+/* 手札 */
+function renderHand(p, priv){
+  const hand = priv.myHand || [];
+  $('hand').innerHTML = hand.map((x, i) => {
+    const rot = (rotSteps[i] || 0);
+    // 表示回転: pattern[tl,tr,bl,br] を rot 回だけ時計回りに
+    let pat = x.pattern.slice();
+    for (let k = 0; k < rot; k++) pat = [pat[2], pat[0], pat[3], pat[1]];
+    const cells = [pat[0], pat[1], pat[2], pat[3]].map(cc => `<div class="pc c${cc}"></div>`).join('');
+    return `<div class="piece ${selPiece === i ? 'sel' : ''} ${x.placed ? 'done' : ''}" data-i="${i}">
+      ${x.placed ? '<div class="okmark">✅</div>' : `<button class="rot" data-i="${i}" title="回転">↻</button>`}
+      <div class="pg">${cells}</div>
+    </div>`;
+  }).join('');
+  $('hand').querySelectorAll('.piece:not(.done)').forEach(el => {
+    el.onclick = ev => {
+      if (ev.target.classList.contains('rot')) return;
+      const i = Number(el.dataset.i);
+      selPiece = selPiece === i ? null : i;
+      sePick();
+      renderGame(S.pub, S.priv);
+    };
+  });
+  $('hand').querySelectorAll('.rot').forEach(b => {
+    b.onclick = ev => {
+      ev.stopPropagation();
+      const i = Number(b.dataset.i);
+      rotSteps[i] = ((rotSteps[i] || 0) + 1) % 4;
+      seClick();
+      renderGame(S.pub, S.priv);
+    };
+  });
+}
+
+/* プレイヤーリスト(全員に見える進捗・抜け表示) */
+function renderPlist(p, priv){
+  $('plist').innerHTML = p.seats.map((s, i) => {
+    const dots = Array.from({ length: s.total }, (_, k) =>
+      `<span class="dot ${k < s.total - s.remaining ? 'on' : ''}"></span>`).join('');
+    const chip = s.finished
+      ? `<span class="rankchip">${MEDALS[s.rank-1] || s.rank + '位'} ${s.timeMs !== null ? fmtTime(s.timeMs) : ''}抜け!</span>`
+      : `<span class="prog">${dots}</span>`;
+    return `<div class="prow ${i === priv.myIdx ? 'me' : ''} ${s.finished ? 'fin' : ''}">
+      <span>${s.isCpu ? '🤖' : '🙂'}</span><span class="nm">${esc(s.name)}${i === priv.myIdx ? '(あなた)' : ''}${!s.connected ? ' ⚠' : ''}</span>${chip}</div>`;
+  }).join('');
+}
+
+/* 観戦パネル(抜けた人だけ) */
+function renderSpectate(p, priv){
+  const sp = $('spectate');
+  if (!priv.allHands || !priv.finished){ sp.classList.add('hidden'); return; }
+  sp.classList.remove('hidden');
+  $('spectateList').innerHTML = priv.allHands
+    .filter(h => h.p !== priv.myIdx)
+    .map(h => {
+      const minis = h.pieces.map(x => {
+        const cells = x.pattern.map(cc => `<div class="spc" style="background:var(--c${cc})"></div>`).join('');
+        return `<div class="sp ${x.placed ? 'done' : ''}">${cells}</div>`;
+      }).join('');
+      return `<div class="shand"><span class="snm">${esc(h.name)}${p.seats[h.p].finished ? ' ✅' : ''}</span>${minis}</div>`;
+    }).join('');
+}
+
+/* ══ イベント通知 ══ */
+socket.on('qc:solved', ev => {
+  if (S && ev.p !== S.priv.myIdx) seOthers();
+});
+socket.on('qc:finished', ev => {
+  if (!S) return;
+  const name = S.pub.seats[ev.p] ? S.pub.seats[ev.p].name : '?';
+  if (ev.p !== S.priv.myIdx){
+    toast(`🚩 ${name} が ${MEDALS[ev.rank-1] || ev.rank + '位'} で抜けた!(${fmtTime(ev.timeMs)})`);
+    seFin();
+  }
+});
+
+/* ══ 結果 ══ */
+socket.on('qc:end', e => {
+  deadline = null;
+  show('vEnd');
+  const myIdx = S ? S.priv.myIdx : -1;
+  const top = e.ranks[0];
+  const iWon = top && top.p === myIdx;
+  $('endEmoji').textContent = iWon ? '🏆' : '🏁';
+  $('endTitle').textContent = `${top ? esc(top.name) : '?'} の優勝!` + (iWon ? ' 🎉' : '');
+  $('endReason').textContent = e.reason === 'time' ? '⏱ 時間切れで終了(未完の人は残り枚数順)' : '全員が仕分け完了!';
+  $('endTable').innerHTML = '<tr><th>順位</th><th>なまえ</th><th>タイム</th><th>残り</th><th>お手つき</th></tr>' +
+    e.ranks.map(r2 => `<tr>
+      <td style="font-size:17px">${MEDALS[r2.rank-1] || r2.rank + '位'}</td>
+      <td style="text-align:left"><b>${esc(r2.name)}${r2.p === myIdx ? '(あなた)' : ''}</b></td>
+      <td>${r2.finished ? fmtTime(r2.timeMs) : '—'}</td>
+      <td>${r2.finished ? '0枚' : r2.remaining + '枚'}</td>
+      <td>${r2.misses}回</td>
+    </tr>`).join('');
+  (iWon ? seFin : seOthers)();
+});
+</script>
+</body>
+</html>
