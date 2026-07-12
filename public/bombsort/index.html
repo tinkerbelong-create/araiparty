@@ -37,6 +37,8 @@ body{
 #hud .lives{color:var(--red);letter-spacing:1px}
 #btnClear{position:fixed;right:12px;bottom:12px;z-index:20;border:2px solid #dde5f0;background:rgba(255,255,255,.9);
   font-family:inherit;font-weight:900;font-size:13px;border-radius:12px;padding:8px 14px;cursor:pointer}
+#btnPin{position:fixed;right:12px;bottom:58px;z-index:20;border:2px solid #dde5f0;background:rgba(255,255,255,.9);
+  font-family:inherit;font-weight:900;font-size:13px;border-radius:12px;padding:8px 14px;cursor:pointer}
 #cv{position:fixed;inset:0;z-index:1;cursor:crosshair}
 #toast{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:22;background:rgba(42,49,64,.88);color:#fff;
   font-weight:900;font-size:13px;border-radius:99px;padding:6px 18px;opacity:0;transition:opacity .25s;pointer-events:none}
@@ -49,12 +51,15 @@ body{
   <h1>ボムわけ!</h1>
   <div class="demo">💣　✏️〰️　⚫🔴</div>
   <div class="rule">
-    <p>上から降ってくる爆弾を、<b>線を描いてころがして</b>仕分けよう!<br>
-    ✏️ <b>左クリックを押しながら</b>マウスを動かすと線が描ける(<b>最大3本</b>)<br>
-    🖱 <b>右クリック</b>で線を消せる(スマホ: 指で描く/🧹ボタンで全消し)<br>
+    <p>上から降ってくる爆弾を、<b>線でころがして</b>仕分けよう!<br>
+    ✏️ <b>左クリック長押し</b>で線を描く。描いている間だけ<b>実体化</b>して爆弾を受け止める<br>
+    💨 そのまま離すと線は<b>消える</b>/離す前に<b>右クリック</b>すると<b>固定</b>(最大3本)<br>
+    🖱 固定した線は(描いていないときに)<b>右クリック</b>で消せる<br>
+    ⏰ 爆弾は画面に<b>10秒</b>いると爆発してライフ−1! ためこみ厳禁<br>
     ⚫ くろい爆弾は<b>左の釜</b>へ、🔴 あかい爆弾は<b>右の釜</b>へ<br>
-    💥 <b>下に落とす</b>か<b>違う釜</b>に入れるとライフ−1(ライフは<b>5つ</b>)<br>
-    ✨ <b>金の爆弾</b>を釜に入れると<b>+5点&ライフ+1</b>!</p>
+    💥 <b>下に落とす</b>/<b>違う釜</b>もライフ−1(ライフは<b>5つ</b>)<br>
+    ✨ <b>金の爆弾</b>を釜に入れると<b>+5点&ライフ+1</b>!<br>
+    <span style="color:#98a2b8">スマホ: 指で描く+📌ボタンで固定/🧹で全消し</span></p>
   </div>
   <div class="hs" id="titleHs"></div>
   <button class="btn" id="btnStart" style="margin-top:14px">スタート!</button>
@@ -75,10 +80,11 @@ body{
 <canvas id="cv" class="hidden"></canvas>
 <div id="hud" class="hidden">
   <div class="box">💣 <span id="hScore">0</span></div>
-  <div class="box">✏️ <span id="hLines">3</span>本</div>
+  <div class="box">📌のこり <span id="hLines">3</span>本</div>
   <div class="box lives" id="hLives"></div>
 </div>
-<button id="btnClear" class="hidden">🧹 線を全消し</button>
+<button id="btnPin" class="hidden">📌 いまの線を固定</button>
+<button id="btnClear" class="hidden">🧹 固定線を全消し</button>
 <div id="toast"></div>
 
 <script>
@@ -116,6 +122,7 @@ function seNoise(dur = 0.4, vol = 0.3) {
   } catch (e) {}
 }
 const seDraw  = () => se(700, 0.04, 'triangle', 0.08);
+const seFix   = () => { se(523, 0.06, 'triangle', 0.2); setTimeout(() => se(784, 0.09, 'triangle', 0.2), 60); }; // 📌固定
 const seErase = () => se(300, 0.1, 'triangle', 0.15, 150);
 const seOk    = () => { se(880, 0.07, 'triangle', 0.2); setTimeout(() => se(1319, 0.1, 'triangle', 0.2), 60); };
 const seGold  = () => [988, 1319, 1568, 2093].forEach((f, i) => setTimeout(() => se(f, 0.09, 'triangle', 0.22), i * 70));
@@ -123,7 +130,8 @@ const seBoom  = () => { seNoise(0.45, 0.32); se(90, 0.4, 'sawtooth', 0.28, 40); 
 const seOver  = () => { seNoise(0.8, 0.4); [220, 185, 147, 110].forEach((f, i) => setTimeout(() => se(f, 0.22, 'square', 0.18), i * 160)); };
 
 /* ══ 定数 ══ */
-const MAX_LINES = 3;      // 描ける線の本数
+const MAX_LINES = 3;      // 固定できる線の本数
+const BOMB_LIFE = 10;     // 爆弾が画面にいられる秒数(超えると爆発)
 const START_LIVES = 5;    // 初期ライフ
 const MAX_LIVES = 9;
 const R = 16;             // 爆弾の半径
@@ -176,16 +184,19 @@ function evPos(ev) {
     y: Math.max(0, Math.min(GH, (ev.clientY - oy) / scale)),
   };
 }
+/* 左クリック長押しで描く。描いている間だけ実体化。
+ * 離すと消える/離す前に右クリック(buttonsのビット2でも検知)で固定(最大3本) */
 cv.addEventListener('pointerdown', ev => {
   if (!running) return;
-  if (ev.button === 2) return; // 右クリックはcontextmenuで処理
-  if (strokes.length >= MAX_LINES) { toast('線は3本まで! 右クリック(🧹)で消してね'); return; }
+  if (ev.button === 2) return; // 右クリックはcontextmenu/pointermoveで処理
   drawing = { pts: [evPos(ev)], color: STROKE_COLORS[strokes.length % STROKE_COLORS.length] };
   try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
   ev.preventDefault();
 });
 cv.addEventListener('pointermove', ev => {
   if (!running || !drawing) return;
+  // 左を押したまま右ボタンも押された → その場で固定!
+  if (ev.buttons & 2) { fixStroke(); ev.preventDefault(); return; }
   const p = evPos(ev);
   const last = drawing.pts[drawing.pts.length - 1];
   const dx = p.x - last.x, dy = p.y - last.y;
@@ -195,24 +206,34 @@ cv.addEventListener('pointermove', ev => {
   }
   ev.preventDefault();
 });
-function finishStroke() {
-  if (drawing && drawing.pts.length >= 2 && strokeLen(drawing) > 24) {
-    strokes.push(drawing);
-    updateHud();
-  }
-  drawing = null;
-}
-cv.addEventListener('pointerup', finishStroke);
+/* 固定せず離す → 線は消える */
+cv.addEventListener('pointerup', () => { drawing = null; });
 cv.addEventListener('pointercancel', () => { drawing = null; });
 function strokeLen(s) {
   let L = 0;
   for (let i = 1; i < s.pts.length; i++) L += Math.hypot(s.pts[i].x - s.pts[i-1].x, s.pts[i].y - s.pts[i-1].y);
   return L;
 }
-/* 右クリック: 近くの線を消す */
+/* いま描いている線をその場に固定する */
+function fixStroke() {
+  if (!drawing) return;
+  if (drawing.pts.length < 2 || strokeLen(drawing) <= 24) { drawing = null; return; } // 短すぎは不成立
+  if (strokes.length >= MAX_LINES) {
+    toast('固定できるのは3本まで! 右クリックで古い固定線を消してね');
+    seErase();
+    drawing = null;
+    return;
+  }
+  strokes.push(drawing);
+  drawing = null;
+  seFix();
+  updateHud();
+}
+/* 右クリック: 描いている最中なら固定 / そうでなければ近くの固定線を消す */
 cv.addEventListener('contextmenu', ev => {
   ev.preventDefault();
   if (!running) return;
+  if (drawing) { fixStroke(); return; }
   const p = evPos(ev);
   let bestI = -1, bestD = 28; // 28px以内(ゲーム領域基準)
   strokes.forEach((s, i) => {
@@ -223,6 +244,7 @@ cv.addEventListener('contextmenu', ev => {
   });
   if (bestI >= 0) { strokes.splice(bestI, 1); seErase(); updateHud(); }
 });
+$('btnPin').onclick = () => fixStroke(); // スマホ用: 描きながら📌で固定
 $('btnClear').onclick = () => { if (strokes.length) { strokes = []; seErase(); updateHud(); } };
 
 function distToSeg(p, a, b) {
@@ -241,12 +263,14 @@ function spawnBomb() {
     vx: (Math.random() - 0.5) * 30,
     vy: 0,
     color, angle: 0,
+    age: 0, // 10秒たつと爆発!
   });
 }
 
-/* ══ 物理: 円と線分の衝突 ══ */
+/* ══ 物理: 円と線分の衝突(固定線+描いている最中の線も実体) ══ */
 function collideStrokes(b) {
-  for (const s of strokes) {
+  const solids = drawing ? strokes.concat([drawing]) : strokes;
+  for (const s of solids) {
     for (let j = 1; j < s.pts.length; j++) {
       const a = s.pts[j-1], c = s.pts[j];
       const abx = c.x - a.x, aby = c.y - a.y;
@@ -290,6 +314,17 @@ function tick(ts) {
 
   const { L, R: RP } = pots();
   for (const b of bombs.slice()) {
+    // ⏰ 10秒たった爆弾はその場で爆発 → ライフ−1
+    b.age += dt;
+    if (b.age >= BOMB_LIFE) {
+      removeBomb(b);
+      lives--;
+      fx(b.x, b.y - 20, '💥じばく!', 'bad');
+      seBoom();
+      if (lives <= 0) return gameOver();
+      updateHud();
+      continue;
+    }
     b.vy += GRAV * dt;
     // 速度制限(すり抜け防止)
     const sp = Math.hypot(b.vx, b.vy);
@@ -372,8 +407,8 @@ function render() {
   // 釜
   drawPot(L, '#3a3a44', '⚫ くろ');
   drawPot(RP, '#e04545', '🔴 あか');
-  // 線
-  for (const s of strokes.concat(drawing ? [drawing] : [])) {
+  // 固定線(実線)
+  for (const s of strokes) {
     ctx.strokeStyle = s.color;
     ctx.lineWidth = 7;
     ctx.lineCap = 'round';
@@ -381,6 +416,18 @@ function render() {
     ctx.beginPath();
     s.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
     ctx.stroke();
+  }
+  // 描いている最中の線(半透明: 離すと消える、右クリックで固定)
+  if (drawing && drawing.pts.length > 1) {
+    ctx.globalAlpha = 0.65;
+    ctx.strokeStyle = drawing.color;
+    ctx.lineWidth = 7;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    drawing.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   }
   // 爆弾
   for (const b of bombs) drawBomb(b);
@@ -447,6 +494,21 @@ function drawBomb(b) {
   ctx.fillStyle = g;
   ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
   if (b.color === 'gold') { ctx.strokeStyle = '#fff3c4'; ctx.lineWidth = 2; ctx.stroke(); }
+  // ⏰ 残り3秒は赤リングが点滅+カウントダウン表示
+  const left = BOMB_LIFE - b.age;
+  if (left <= 3) {
+    if (Math.floor(b.age * 6) % 2 === 0) {
+      ctx.strokeStyle = 'rgba(214,69,93,.9)';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, 0, R + 4, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.rotate(-b.angle); // 数字は回転させない
+    ctx.font = "900 15px 'Zen Maru Gothic'";
+    ctx.fillStyle = '#d6455d';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(Math.max(1, Math.ceil(left))), 0, -R - 8);
+    ctx.rotate(b.angle);
+  }
   // 目
   ctx.fillStyle = '#fff';
   ctx.beginPath(); ctx.ellipse(-5, -2, 3, 4, 0, 0, Math.PI * 2); ctx.ellipse(5, -2, 3, 4, 0, 0, Math.PI * 2); ctx.fill();
@@ -479,6 +541,7 @@ function start() {
   $('ovOver').classList.add('hidden');
   $('hud').classList.remove('hidden');
   $('btnClear').classList.remove('hidden');
+  $('btnPin').classList.remove('hidden');
   cv.classList.remove('hidden');
   updateHud();
   requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(tick); });
@@ -499,6 +562,7 @@ function gameOver() {
     $('ovOver').classList.remove('hidden');
     $('hud').classList.add('hidden');
     $('btnClear').classList.add('hidden');
+    $('btnPin').classList.add('hidden');
   }, 700);
 }
 
