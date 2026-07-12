@@ -130,10 +130,14 @@ const R = 16;             // 爆弾の半径
 const GRAV = 640;         // 重力(px/s^2)
 const POT_W = 150;        // 釜の幅
 const POT_H = 110;        // 釜の高さ
+/* ゲーム領域は固定サイズ(ウィンドウ比率で難易度が変わらないように)。
+ * 画面には中央寄せ+スケーリングで表示する */
+const GW = 900;           // ゲーム領域の幅(論理px)
+const GH = 620;           // ゲーム領域の高さ(論理px)
 
 /* ══ 状態 ══ */
 const cv = $('cv'), ctx = cv.getContext('2d');
-let W = 0, H = 0;
+let W = 0, H = 0, scale = 1, ox = 0, oy = 0, dpr = 1;
 let bombs = [];           // {x,y,vx,vy,color,angle}
 let strokes = [];         // 線: [{pts:[{x,y}], color}]
 let drawing = null;       // 描画中の線
@@ -143,22 +147,34 @@ let spawnTimer = 1.2, lastTs = 0;
 let hiscore = 0;
 try { hiscore = Number(localStorage.getItem('bombsort_hiscore') || 0); } catch (e) {}
 
-function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  scale = Math.min(W / GW, H / GH) * 0.97; // 少し余白
+  ox = (W - GW * scale) / 2;
+  oy = (H - GH * scale) / 2;
+}
 window.addEventListener('resize', resize);
 resize();
 
-/* 釜の位置(左=黒 右=赤)。開口部は上向き */
+/* 釜の位置(左=黒 右=赤)。開口部は上向き。座標はすべてゲーム領域(GW×GH)基準 */
 function pots() {
   return {
-    L: { x: 8, y: H - POT_H - 6, w: POT_W, h: POT_H, color: 'black' },
-    R: { x: W - POT_W - 8, y: H - POT_H - 6, w: POT_W, h: POT_H, color: 'red' },
+    L: { x: 8, y: GH - POT_H - 6, w: POT_W, h: POT_H, color: 'black' },
+    R: { x: GW - POT_W - 8, y: GH - POT_H - 6, w: POT_W, h: POT_H, color: 'red' },
   };
 }
 
 /* ══ 入力: 線を描く/消す ══ */
 const STROKE_COLORS = ['#8a5a2a', '#4a7dd6', '#7a4ad6'];
 function evPos(ev) {
-  return { x: ev.clientX, y: ev.clientY };
+  // 画面座標 → ゲーム領域座標(はみ出しはクランプ)
+  return {
+    x: Math.max(0, Math.min(GW, (ev.clientX - ox) / scale)),
+    y: Math.max(0, Math.min(GH, (ev.clientY - oy) / scale)),
+  };
 }
 cv.addEventListener('pointerdown', ev => {
   if (!running) return;
@@ -197,8 +213,8 @@ function strokeLen(s) {
 cv.addEventListener('contextmenu', ev => {
   ev.preventDefault();
   if (!running) return;
-  const p = { x: ev.clientX, y: ev.clientY };
-  let bestI = -1, bestD = 28; // 28px以内
+  const p = evPos(ev);
+  let bestI = -1, bestD = 28; // 28px以内(ゲーム領域基準)
   strokes.forEach((s, i) => {
     for (let j = 1; j < s.pts.length; j++) {
       const d = distToSeg(p, s.pts[j-1], s.pts[j]);
@@ -220,7 +236,7 @@ function spawnBomb() {
   const gold = Math.random() < 0.08;
   const color = gold ? 'gold' : (Math.random() < 0.5 ? 'black' : 'red');
   bombs.push({
-    x: 60 + Math.random() * (W - 120),
+    x: 60 + Math.random() * (GW - 120),
     y: -30,
     vx: (Math.random() - 0.5) * 30,
     vy: 0,
@@ -285,7 +301,7 @@ function tick(ts) {
     collideStrokes(b); // 2回で安定
     // 左右の壁は反射
     if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx) * 0.6; }
-    if (b.x > W - R) { b.x = W - R; b.vx = -Math.abs(b.vx) * 0.6; }
+    if (b.x > GW - R) { b.x = GW - R; b.vx = -Math.abs(b.vx) * 0.6; }
     // 釜に入った?(釜の口より下に中心が入ったら判定)
     const pot = (b.x > L.x && b.x < L.x + L.w && b.y > L.y + 14) ? L
               : (b.x > RP.x && b.x < RP.x + RP.w && b.y > RP.y + 14) ? RP : null;
@@ -310,10 +326,10 @@ function tick(ts) {
       continue;
     }
     // 下に落ちた → ライフ−1
-    if (b.y > H + R) {
+    if (b.y > GH + R) {
       removeBomb(b);
       lives--;
-      fx(b.x, H - 40, '💥おとした!', 'bad');
+      fx(b.x, GH - 40, '💥おとした!', 'bad');
       seBoom();
       if (lives <= 0) return gameOver();
       updateHud();
@@ -332,13 +348,26 @@ function fx(x, y, txt, cls) { fxs.push({ x, y, txt, cls, t: 0, life: 0.8 }); }
 
 /* ══ 描画 ══ */
 function render() {
+  // 全画面クリア(実ピクセル基準)
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
+  // ゲーム領域のパネル(白地+枠)。この外側は遊び場ではない
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.strokeStyle = '#b9c4dd';
+  ctx.lineWidth = 3;
+  roundRectPath(ox - 6, oy - 6, GW * scale + 12, GH * scale + 12, 14);
+  ctx.fill(); ctx.stroke();
+  // 以降はゲーム領域座標(GW×GH)で描画+はみ出しクリップ
+  ctx.save();
+  roundRectPath(ox - 2, oy - 2, GW * scale + 4, GH * scale + 4, 12);
+  ctx.clip();
+  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy);
   const { L, R: RP } = pots();
   // 地面ライン(落とすと危険な領域)
   ctx.strokeStyle = 'rgba(214,69,93,.5)';
   ctx.setLineDash([10, 8]);
   ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(0, H - 4); ctx.lineTo(W, H - 4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, GH - 4); ctx.lineTo(GW, GH - 4); ctx.stroke();
   ctx.setLineDash([]);
   // 釜
   drawPot(L, '#3a3a44', '⚫ くろ');
@@ -365,6 +394,17 @@ function render() {
     ctx.fillText(f.txt, f.x, f.y - f.t * 40);
     ctx.globalAlpha = 1;
   }
+  ctx.restore(); // クリップ解除
+}
+/* 角丸長方形のパス(実ピクセル座標で使用) */
+function roundRectPath(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 function drawPot(p, color, label) {
   ctx.fillStyle = color;
