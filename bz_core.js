@@ -6,7 +6,7 @@
  * 【ルール概要】2〜4人 / 10ラウンド / 約8分
  *  - 毎ラウンド、人数分の品物(コイン/宝石/ドロボウ)が市場に並ぶ
  *  - 全員が手持ちの値札(1〜5、使い切り・5ラウンドで一巡)から1枚を同時に出す
- *  - 高い値札の人から順に、残っている一番良い品物を自動で取る
+ *  - 高い値札の人から順に、残っている品物から「好きなもの」を自分で選んで取る
  *  - 同じ数字を出した人同士は「ケンカ」になり何も取れない(品物は流れる)
  *  - ドロボウ(マイナス点)は最後まで残るので、一番安い値札の人に押し付けられがち
  *    → わざとケンカを狙ってドロボウを回避する読み合いが核
@@ -77,6 +77,7 @@ class BZEngine {
     this.thieves = Array.from({ length: playerCount }, () => 0); // 食らったドロボウ枚数
     this.tokens = Array.from({ length: playerCount }, () => TOKENS.slice()); // 残り値札
     this.items = [];              // 今ラウンドの市場
+    this.pending = null;          // 選択フェーズの進行状態
     this.log = [];
     this.dealItems();
   }
@@ -86,59 +87,94 @@ class BZEngine {
   get finished() { return this.round > ROUNDS; }
   legalTokens(p) { return this.tokens[p].slice(); }
 
-  /* 全員の提出(token配列)を受けてラウンドを解決する */
-  resolve(subs) {
+  /* ── ラウンド解決(2段階) ──
+   * 1) beginResolve(subs): 値札を公開・消費し、取得順(高札順)とケンカを確定
+   * 2) pickItem(p, itemId): 手番の人が好きな品物を選んで取る(itemId=null なら自動で最良)
+   *    全員取り終わるとラウンドが締まり rec が返る */
+  beginResolve(subs) {
+    if (this.pending) throw new Error('解決中です');
     if (subs.length !== this.n) throw new Error('提出数が不正です');
     subs.forEach((t, p) => {
       if (!this.tokens[p].includes(t)) throw new Error(`P${p}: 値札${t}は使用済みです`);
     });
-    // 値札を消費
     subs.forEach((t, p) => { this.tokens[p] = this.tokens[p].filter(x => x !== t); });
-    // バッティング判定
     const count = {};
     subs.forEach(t => { count[t] = (count[t] || 0) + 1; });
-    const uniquePlayers = subs.map((t, p) => ({ t, p })).filter(x => count[x.t] === 1)
-      .sort((a, b) => b.t - a.t); // 高い値札から
+    const order = subs.map((t, p) => ({ t, p })).filter(x => count[x.t] === 1)
+      .sort((a, b) => b.t - a.t); // 高い値札から選ぶ
     const clashed = subs.map((t, p) => ({ t, p })).filter(x => count[x.t] > 1).map(x => x.p);
-    // 優先順に「その人にとって一番良い品」を自動取得
-    const remaining = this.items.slice();
-    const gains = []; // {p, token, item, points, setDone}
-    for (const { t, p } of uniquePlayers) {
-      let best = 0;
-      for (let i = 1; i < remaining.length; i++)
-        if (evalItem(remaining[i], this.gems[p]) > evalItem(remaining[best], this.gems[p])) best = i;
-      const item = remaining.splice(best, 1)[0];
-      let points = 0, setDone = false;
-      if (item.t === 'coin') points = item.v;
-      else if (item.t === 'thief') { points = item.v; this.thieves[p]++; }
-      else { // gem
-        const before = Math.min(this.gems[p].R, this.gems[p].G, this.gems[p].B);
-        this.gems[p][item.c]++;
-        const after = Math.min(this.gems[p].R, this.gems[p].G, this.gems[p].B);
-        points = GEM_VALUE;
-        if (after > before) { points += SET_BONUS; setDone = true; this.sets[p] = after; }
-      }
-      this.scores[p] += points;
-      gains.push({ p, token: t, item, points, setDone });
+    this.pending = {
+      subs: subs.slice(), order, idx: 0,
+      remaining: this.items.slice(), gains: [], clashed,
+    };
+    // 全員ケンカなら選ぶ人がいない → 即ラウンド確定
+    const rec = order.length === 0 ? this.finishRound() : null;
+    return { subs: subs.slice(), order, clashed, rec };
+  }
+  get currentPicker() {
+    if (!this.pending || this.pending.idx >= this.pending.order.length) return null;
+    return this.pending.order[this.pending.idx].p;
+  }
+  /* 手番の品物選択。itemId=null なら evalItem 最良を自動選択(CPU/時間切れ用) */
+  pickItem(p, itemId = null) {
+    if (!this.pending) throw new Error('選択フェーズではありません');
+    if (this.currentPicker !== p) throw new Error('あなたの選ぶ番ではありません');
+    const P = this.pending;
+    let idx = -1;
+    if (itemId === null || itemId === undefined) {
+      idx = 0;
+      for (let i = 1; i < P.remaining.length; i++)
+        if (evalItem(P.remaining[i], this.gems[p]) > evalItem(P.remaining[idx], this.gems[p])) idx = i;
+    } else {
+      idx = P.remaining.findIndex(it => it.id === itemId);
+      if (idx < 0) throw new Error('その品物はもうありません');
     }
+    const item = P.remaining.splice(idx, 1)[0];
+    const token = P.order[P.idx].t;
+    let points = 0, setDone = false;
+    if (item.t === 'coin') points = item.v;
+    else if (item.t === 'thief') { points = item.v; this.thieves[p]++; }
+    else { // gem
+      const before = Math.min(this.gems[p].R, this.gems[p].G, this.gems[p].B);
+      this.gems[p][item.c]++;
+      const after = Math.min(this.gems[p].R, this.gems[p].G, this.gems[p].B);
+      points = GEM_VALUE;
+      if (after > before) { points += SET_BONUS; setDone = true; this.sets[p] = after; }
+    }
+    this.scores[p] += points;
+    const gain = { p, token, item, points, setDone };
+    P.gains.push(gain);
+    P.idx++;
+    const rec = P.idx >= P.order.length ? this.finishRound() : null;
+    return { gain, rec };
+  }
+  finishRound() {
+    const P = this.pending;
     const rec = {
       round: this.round,
-      subs: subs.slice(),
-      gains,
-      clashed,                 // ケンカで何も取れなかった人
-      discarded: remaining,    // 流れた品物(ケンカ分)
+      subs: P.subs,
+      gains: P.gains,
+      clashed: P.clashed,              // ケンカで何も取れなかった人
+      discarded: P.remaining.slice(),  // 流れた品物(ケンカ分)
       scores: this.scores.slice(),
       tokensLeft: this.tokens.map(t => t.slice()),
     };
     this.log.push(rec);
-    // 次ラウンドへ
+    this.pending = null;
     this.round++;
     if (!this.finished) {
-      // 値札一巡(全員使い切ったら補充)
       if (this.tokens.every(t => t.length === 0))
-        this.tokens = this.tokens.map(() => TOKENS.slice());
+        this.tokens = this.tokens.map(() => TOKENS.slice()); // 値札一巡
       this.dealItems();
     }
+    return rec;
+  }
+  /* 互換用: 全員分を自動選択で一気に解決(テスト・シミュレーション用) */
+  resolve(subs) {
+    const b = this.beginResolve(subs);
+    if (b.rec) return b.rec;
+    let rec = null;
+    while (this.pending) rec = this.pickItem(this.currentPicker, null).rec;
     return rec;
   }
 

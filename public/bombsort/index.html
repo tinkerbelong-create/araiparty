@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ボムわけ! 💣 — 1人用</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{ --ink:#2a3140; --red:#e04545; --black:#3a3a44; --gold:#e8b40a; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--ink);
+  background:linear-gradient(#cfe8ff,#eaf6e2);
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.hidden{display:none!important}
+.btn{display:inline-block;border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#fff;border-radius:14px;padding:13px 34px;font-size:17px;
+  background:linear-gradient(135deg,#e04545,#b62f2f);box-shadow:0 5px 0 #8f2424;transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #8f2424}
+.btn.gray{background:#98a2b8;box-shadow:0 5px 0 #6f7a90}
+
+/* ══ タイトル/オーバー画面 ══ */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:30;padding:20px;
+  background:rgba(255,255,255,.86);backdrop-filter:blur(3px)}
+.screen h1{font-size:44px;font-weight:900;letter-spacing:.05em;
+  background:linear-gradient(135deg,#e04545,#3a3a44);-webkit-background-clip:text;background-clip:text;color:transparent}
+.screen .demo{font-size:44px;margin:8px 0}
+.screen p{font-weight:700;color:#5a647a;line-height:2;font-size:13.5px;margin-top:10px}
+.screen .hs{font-weight:900;color:#e8871a;font-size:16px;margin-top:10px}
+.backlink{margin-top:22px;font-size:12.5px;font-weight:900;color:#8a94a8;text-decoration:none}
+#ovTitle .rule{background:#fff;border:2px solid #dde5f0;border-radius:14px;padding:10px 18px;margin-top:12px;max-width:430px}
+
+/* ══ ゲーム画面 ══ */
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-weight:900;pointer-events:none}
+#hud .box{background:rgba(255,255,255,.9);border:2px solid #dde5f0;border-radius:12px;padding:4px 14px;font-size:15px}
+#hud .lives{color:var(--red);letter-spacing:2px}
+#meter{position:fixed;top:46px;left:50%;transform:translateX(-50%);z-index:20;width:180px;height:12px;background:rgba(255,255,255,.85);
+  border:2px solid #dde5f0;border-radius:99px;overflow:hidden;pointer-events:none}
+#meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2fae6e,#e8b40a,#e04545);transition:width .25s}
+#meter.warn{animation:blinkbg .5s infinite}
+@keyframes blinkbg{50%{border-color:var(--red)}}
+
+#field{position:fixed;inset:0;z-index:1}
+.zone{position:absolute;top:0;bottom:0;width:22%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+#zoneL{left:0;background:linear-gradient(90deg,rgba(58,58,68,.92),rgba(58,58,68,.55));border-right:4px dashed #2a2a33}
+#zoneR{right:0;background:linear-gradient(-90deg,rgba(224,69,69,.92),rgba(224,69,69,.55));border-left:4px dashed #a83232}
+.zone .zlbl{writing-mode:vertical-rl;letter-spacing:6px;font-size:20px;opacity:.95}
+.zone.pulse{animation:zpulse .35s}
+@keyframes zpulse{50%{filter:brightness(1.4)}}
+
+/* ── 爆弾くん(オリジナルキャラ・CSS描画) ── */
+.bomb{position:absolute;width:52px;height:60px;z-index:5;cursor:grab;will-change:transform;filter:drop-shadow(0 3px 3px rgba(0,0,0,.25))}
+.bomb.drag{z-index:15;cursor:grabbing;transform-origin:center;filter:drop-shadow(0 10px 8px rgba(0,0,0,.3))}
+.bomb .body{position:absolute;left:2px;top:10px;width:48px;height:48px;border-radius:50%}
+.bomb.c-black .body{background:radial-gradient(circle at 32% 30%, #6a6a78, #3a3a44 60%, #24242c)}
+.bomb.c-red .body{background:radial-gradient(circle at 32% 30%, #ff8a7a, #e04545 60%, #b62f2f)}
+.bomb.c-gold .body{background:radial-gradient(circle at 32% 30%, #ffe27a, #e8b40a 60%, #c4920a)}
+.bomb .fuse{position:absolute;left:24px;top:1px;width:4px;height:12px;background:#8a6a3a;border-radius:2px}
+.bomb .spark{position:absolute;left:19px;top:-9px;font-size:13px;animation:spark .5s infinite}
+@keyframes spark{50%{transform:scale(1.35);opacity:.6}}
+.bomb .eye{position:absolute;top:28px;width:7px;height:9px;background:#fff;border-radius:50%}
+.bomb .eye.l{left:15px}.bomb .eye.r{left:30px}
+.bomb .eye::after{content:'';position:absolute;left:1.5px;top:3px;width:4px;height:4px;background:#111;border-radius:50%}
+.bomb .feet{position:absolute;bottom:-2px;left:10px;font-size:11px;letter-spacing:8px}
+.bomb.walk .feet{animation:steps .3s infinite}
+@keyframes steps{50%{transform:translateY(-2px)}}
+.bomb.c-gold{animation:goldglow 1s infinite}
+@keyframes goldglow{50%{filter:drop-shadow(0 0 10px #ffd75e)}}
+
+/* ── エフェクト ── */
+.poof{position:absolute;z-index:14;font-size:34px;pointer-events:none;animation:poof .5s forwards}
+@keyframes poof{from{transform:scale(.5);opacity:1}to{transform:scale(1.7);opacity:0}}
+.boom{position:absolute;z-index:16;font-size:56px;pointer-events:none;animation:boom .6s forwards}
+@keyframes boom{0%{transform:scale(.4);opacity:1}60%{transform:scale(1.6)}100%{transform:scale(2.1);opacity:0}}
+.fscore{position:absolute;z-index:14;font-weight:900;font-size:20px;color:#2fae6e;pointer-events:none;animation:frise .7s forwards}
+.fscore.gold{color:#e8871a;font-size:24px}
+@keyframes frise{from{transform:translateY(0);opacity:1}to{transform:translateY(-46px);opacity:0}}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:25}
+#flash.on{animation:flashan .35s}
+@keyframes flashan{0%{opacity:.9}100%{opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- ══ タイトル ══ -->
+<div id="ovTitle" class="screen">
+  <h1>ボムわけ!</h1>
+  <div class="demo">💣➡️⬛ 🔴⬅️💣</div>
+  <div class="rule">
+    <p><b>くろい爆弾は左へ、あかい爆弾は右へ</b>、ドラッグして仕分けよう!<br>
+    ・まちがえると爆発💥(ライフ3つ)<br>
+    ・まん中に<b>15個</b>たまっても大爆発でおしまい<br>
+    ・✨金の爆弾はどちらに入れても<b>+5</b>!</p>
+  </div>
+  <div class="hs" id="titleHs"></div>
+  <button class="btn" id="btnStart" style="margin-top:16px">スタート!</button>
+  <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+</div>
+
+<!-- ══ ゲームオーバー ══ -->
+<div id="ovOver" class="screen hidden">
+  <div class="demo" id="overEmoji">💥</div>
+  <h1 style="font-size:34px" id="overTitle">ドッカーン!</h1>
+  <p id="overReason"></p>
+  <p style="font-size:22px;font-weight:900;color:var(--ink)">仕分けた数: <span id="overScore" style="font-size:34px;color:var(--red)">0</span></p>
+  <div class="hs" id="overHs"></div>
+  <button class="btn" id="btnRetry" style="margin-top:14px">もういちど!</button>
+  <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+</div>
+
+<!-- ══ ゲーム ══ -->
+<div id="hud" class="hidden">
+  <div class="box">💣 <span id="hScore">0</span></div>
+  <div class="box lives" id="hLives">❤❤❤</div>
+</div>
+<div id="meter" class="hidden"><i id="meterBar"></i></div>
+<div id="field" class="hidden">
+  <div class="zone" id="zoneL"><span class="zlbl">くろ の くに</span></div>
+  <div class="zone" id="zoneR"><span class="zlbl">あか の くに</span></div>
+</div>
+<div id="flash"></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* ── 効果音(WebAudio) ── */
+let AC = null;
+function se(freq, dur = 0.07, type = 'square', vol = 0.2, slide = 0) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, AC.currentTime + dur);
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+function seNoise(dur = 0.4, vol = 0.3) { // 爆発音
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const n = AC.createBufferSource(), g = AC.createGain();
+    const buf = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    n.buffer = buf;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    n.connect(g); g.connect(AC.destination);
+    n.start();
+  } catch (e) {}
+}
+const seGrab = () => se(500, 0.05, 'triangle', 0.15);
+const seOk   = () => { se(880, 0.07, 'triangle', 0.2); setTimeout(() => se(1319, 0.1, 'triangle', 0.2), 60); };
+const seGold = () => [988, 1319, 1568, 2093].forEach((f, i) => setTimeout(() => se(f, 0.09, 'triangle', 0.22), i * 70));
+const seBoom = () => { seNoise(0.5, 0.35); se(90, 0.4, 'sawtooth', 0.3, 40); };
+const seOver = () => { seNoise(0.8, 0.4); [220, 185, 147, 110].forEach((f, i) => setTimeout(() => se(f, 0.22, 'square', 0.18), i * 160)); };
+
+/* ══ ゲーム状態 ══ */
+const MAX_PEN = 15;        // まん中に置ける上限(超えたら大爆発)
+const ZONE_W = 0.22;       // 左右ゾーンの幅(画面比)
+let bombs = [];            // {el, x, y, vx, vy, color, dragging, pointerId, tChange}
+let score = 0, lives = 3, running = false;
+let spawnTimer = 0, lastTs = 0, bombSeq = 0;
+let hiscore = 0;
+try { hiscore = Number(localStorage.getItem('bombsort_hiscore') || 0); } catch (e) {}
+
+const field = $('field');
+function fw() { return window.innerWidth; }
+function fh() { return window.innerHeight; }
+function penLeft() { return fw() * ZONE_W; }
+function penRight() { return fw() * (1 - ZONE_W); }
+
+/* ── 爆弾生成 ── */
+function spawnBomb() {
+  if (!running) return;
+  const gold = Math.random() < 0.06;
+  const color = gold ? 'gold' : (Math.random() < 0.5 ? 'black' : 'red');
+  const el = document.createElement('div');
+  el.className = `bomb walk c-${color}`;
+  el.innerHTML = `<div class="fuse"></div><div class="spark">✨</div><div class="body"></div>
+    <div class="eye l"></div><div class="eye r"></div><div class="feet">👟👟</div>`;
+  const x = penLeft() + 30 + Math.random() * (penRight() - penLeft() - 112);
+  const b = {
+    id: bombSeq++, el, color,
+    x, y: -70,
+    vx: (Math.random() - 0.5) * 40,
+    vy: 55 + Math.random() * 30,
+    dragging: false, pointerId: null,
+    tChange: 1 + Math.random() * 2,
+    entering: true,
+  };
+  el.addEventListener('pointerdown', ev => grab(b, ev));
+  field.appendChild(el);
+  bombs.push(b);
+  moveEl(b);
+  updateMeter();
+}
+function moveEl(b) { b.el.style.transform = `translate(${b.x}px, ${b.y}px)${b.dragging ? ' scale(1.15)' : ''}`; }
+
+/* ── ドラッグ操作(マルチタッチ対応) ── */
+function grab(b, ev) {
+  if (!running || b.dragging) return;
+  b.dragging = true;
+  b.pointerId = ev.pointerId;
+  b.el.classList.add('drag');
+  b.el.classList.remove('walk');
+  try { b.el.setPointerCapture(ev.pointerId); } catch (e) {}
+  seGrab();
+  ev.preventDefault();
+}
+document.addEventListener('pointermove', ev => {
+  const b = bombs.find(x => x.dragging && x.pointerId === ev.pointerId);
+  if (!b) return;
+  b.x = ev.clientX - 26;
+  b.y = ev.clientY - 34;
+  moveEl(b);
+  ev.preventDefault();
+}, { passive: false });
+document.addEventListener('pointerup', ev => {
+  const b = bombs.find(x => x.dragging && x.pointerId === ev.pointerId);
+  if (!b) return;
+  b.dragging = false;
+  b.pointerId = null;
+  b.el.classList.remove('drag');
+  const cx = b.x + 26;
+  if (cx < penLeft()) drop(b, 'black', $('zoneL'));
+  else if (cx > penRight()) drop(b, 'red', $('zoneR'));
+  else {
+    // まん中に戻す(場外にはみ出してたら戻す)
+    b.el.classList.add('walk');
+    b.x = Math.max(penLeft() + 4, Math.min(penRight() - 56, b.x));
+    b.y = Math.max(60, Math.min(fh() - 70, b.y));
+    moveEl(b);
+  }
+});
+
+/* ── 仕分け判定 ── */
+function drop(b, zoneColor, zoneEl) {
+  removeBomb(b);
+  zoneEl.classList.remove('pulse'); void zoneEl.offsetWidth; zoneEl.classList.add('pulse');
+  if (b.color === 'gold') {
+    score += 5;
+    fx(b.x, b.y, 'fscore gold', '+5✨');
+    fx(b.x, b.y, 'poof', '💨');
+    seGold();
+  } else if (b.color === zoneColor) {
+    score += 1;
+    fx(b.x, b.y, 'fscore', '+1');
+    fx(b.x, b.y, 'poof', '💨');
+    seOk();
+  } else {
+    // ミス! 爆発してライフが減る
+    lives--;
+    fx(b.x - 10, b.y - 10, 'boom', '💥');
+    seBoom();
+    flash();
+    if (lives <= 0) return gameOver('miss');
+  }
+  updateHud();
+  updateMeter();
+}
+function removeBomb(b) {
+  b.el.remove();
+  bombs = bombs.filter(x => x !== b);
+}
+function fx(x, y, cls, txt) {
+  const e = document.createElement('div');
+  e.className = cls;
+  e.textContent = txt;
+  e.style.left = x + 'px';
+  e.style.top = y + 'px';
+  field.appendChild(e);
+  setTimeout(() => e.remove(), 800);
+}
+function flash() { const f = $('flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
+
+/* ── HUD ── */
+function updateHud() {
+  $('hScore').textContent = score;
+  $('hLives').textContent = '❤'.repeat(Math.max(0, lives)) + '♡'.repeat(3 - Math.max(0, lives));
+}
+function updateMeter() {
+  const n = bombs.length;
+  $('meterBar').style.width = Math.min(100, n / MAX_PEN * 100) + '%';
+  $('meter').classList.toggle('warn', n >= MAX_PEN - 3);
+}
+
+/* ── メインループ ── */
+function tick(ts) {
+  if (!running) return;
+  const dt = Math.min(0.05, (ts - lastTs) / 1000 || 0);
+  lastTs = ts;
+  // 出現(スコアが上がるほど速く)
+  spawnTimer -= dt;
+  if (spawnTimer <= 0) {
+    spawnBomb();
+    const interval = Math.max(0.55, 2.0 - score * 0.03);
+    spawnTimer = interval * (0.7 + Math.random() * 0.6);
+  }
+  // 歩行
+  const speedUp = 1 + Math.min(1, score / 60); // 難易度で歩きも速く
+  for (const b of bombs) {
+    if (b.dragging) continue;
+    if (b.entering) {
+      b.y += b.vy * dt * speedUp;
+      if (b.y > 70) { b.entering = false; b.vy = (Math.random() - 0.5) * 50; }
+    } else {
+      b.tChange -= dt;
+      if (b.tChange <= 0) {
+        b.vx = (Math.random() - 0.5) * 60 * speedUp;
+        b.vy = (Math.random() - 0.5) * 50 * speedUp;
+        b.tChange = 0.8 + Math.random() * 1.6;
+      }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      // まん中エリアで反射
+      if (b.x < penLeft() + 4) { b.x = penLeft() + 4; b.vx = Math.abs(b.vx); }
+      if (b.x > penRight() - 56) { b.x = penRight() - 56; b.vx = -Math.abs(b.vx); }
+      if (b.y < 58) { b.y = 58; b.vy = Math.abs(b.vy); }
+      if (b.y > fh() - 68) { b.y = fh() - 68; b.vy = -Math.abs(b.vy); }
+    }
+    moveEl(b);
+  }
+  // 溢れ判定(本家同様: まん中が満杯で大爆発)
+  if (bombs.length > MAX_PEN) return gameOver('full');
+  requestAnimationFrame(tick);
+}
+
+/* ── 開始/終了 ── */
+function start() {
+  bombs.forEach(b => b.el.remove());
+  bombs = [];
+  score = 0; lives = 3; spawnTimer = 0.3; lastTs = 0;
+  running = true;
+  $('ovTitle').classList.add('hidden');
+  $('ovOver').classList.add('hidden');
+  $('hud').classList.remove('hidden');
+  $('meter').classList.remove('hidden');
+  field.classList.remove('hidden');
+  updateHud(); updateMeter();
+  requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(tick); });
+}
+function gameOver(reason) {
+  running = false;
+  seOver();
+  flash();
+  // 全部ドカン演出
+  bombs.forEach((b, i) => setTimeout(() => { fx(b.x - 10, b.y - 10, 'boom', '💥'); b.el.remove(); }, i * 60));
+  const old = bombs; bombs = [];
+  setTimeout(() => {
+    $('overEmoji').textContent = reason === 'full' ? '🌋' : '💥';
+    $('overTitle').textContent = reason === 'full' ? 'あふれて大爆発!!' : 'ドッカーン!';
+    $('overReason').textContent = reason === 'full' ? 'まん中に爆弾がたまりすぎた…' : 'ライフがなくなった…';
+    $('overScore').textContent = score;
+    if (score > hiscore) {
+      hiscore = score;
+      try { localStorage.setItem('bombsort_hiscore', String(hiscore)); } catch (e) {}
+      $('overHs').textContent = `🎉 ハイスコア更新! ${hiscore}`;
+    } else {
+      $('overHs').textContent = `ハイスコア: ${hiscore}`;
+    }
+    $('ovOver').classList.remove('hidden');
+    $('hud').classList.add('hidden');
+    $('meter').classList.add('hidden');
+  }, Math.min(1600, old.length * 60 + 500));
+}
+
+$('btnStart').onclick = start;
+$('btnRetry').onclick = start;
+$('titleHs').textContent = hiscore > 0 ? `ハイスコア: ${hiscore}` : '';
+</script>
+</body>
+</html>

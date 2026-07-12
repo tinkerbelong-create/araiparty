@@ -144,5 +144,43 @@ function ok(cond, msg) { if (cond) pass++; else { fail++; console.log('  ✗ ' +
   for (const n of [2, 3, 4]) console.log(`  ${n}人戦: [${winsBySeat[n].join(', ')}]`);
 }
 
+/* ── 9. 手動選択(好きな品物を自分で取る) ── */
+{
+  const E = new BZ.BZEngine(4, 10);
+  E.items = [
+    { id: 200, t: 'coin', v: 8 }, { id: 201, t: 'coin', v: 5 },
+    { id: 202, t: 'coin', v: 2 }, { id: 203, t: 'thief', v: -4 },
+  ];
+  const b = E.beginResolve([5, 3, 1, 2]);
+  ok(b.rec === null, '選択待ちでは rec はまだ無い');
+  ok(E.currentPicker === 0, '最高札P0から選ぶ');
+  let threw = false;
+  try { E.pickItem(1, 201); } catch (e) { threw = true; }
+  ok(threw, '手番でない人の選択はエラー');
+  threw = false;
+  try { E.pickItem(0, 999); } catch (e) { threw = true; }
+  ok(threw, '存在しない品物はエラー');
+  // P0があえて2点コインを取る(自由選択)
+  let r = E.pickItem(0, 202);
+  ok(r.gain.item.v === 2 && E.scores[0] === 2, 'P0は好きな品(2点)を取れる');
+  ok(E.currentPicker === 1, '次はP1(札3)');
+  r = E.pickItem(1, 203); // あえてドロボウを取ることもできる
+  ok(r.gain.points === -4 && E.thieves[1] === 1, 'P1はあえてドロボウも取れる');
+  r = E.pickItem(3, null); // 自動(最良=8点)
+  ok(r.gain.item.v === 8, '自動選択は最良品');
+  ok(E.currentPicker === 2, '最後はP2(札1)');
+  r = E.pickItem(2, 201);
+  ok(r.rec !== null, '全員選び終わるとラウンド確定');
+  ok(r.rec.gains.length === 4 && r.rec.discarded.length === 0, 'rec整合');
+  ok(E.pending === null && E.round === 2, '次ラウンドへ進行');
+  // 取り残し(ケンカあり)の場合
+  const E2 = new BZ.BZEngine(3, 11);
+  E2.items = [{ id: 1, t: 'coin', v: 8 }, { id: 2, t: 'coin', v: 5 }, { id: 3, t: 'thief', v: -4 }];
+  const b2 = E2.beginResolve([4, 4, 2]); // P0,P1ケンカ → P2だけ選ぶ
+  ok(b2.rec === null && E2.currentPicker === 2, 'ユニーク1人だけが選ぶ');
+  const r2 = E2.pickItem(2, 1);
+  ok(r2.rec !== null && r2.rec.discarded.length === 2, '残り2品は流れる');
+}
+
 console.log(`\n結果: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

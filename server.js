@@ -401,6 +401,7 @@ require('./cf_server.js')(io, {
 
 require('./bz_server.js')(io, {
   playMs: (parseFloat(process.env.BZ_PLAY_SECONDS) || 25) * 1000,
+  pickMs: (parseFloat(process.env.BZ_PICK_SECONDS) || 20) * 1000,
   gapMs: parseFloat(process.env.BZ_GAP_MS) || 6500,
 });
 

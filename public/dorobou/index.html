@@ -70,7 +70,12 @@ label{font-size:12.5px;font-weight:900;color:#7a7260;display:block;margin:12px 0
 .item.gem-B{border-color:#4a7dd6;background:#eef4ff}
 .item.thief{border-color:#5a4a6a;background:#f1ecf7}
 .item .takenby{position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);font-size:10px;color:#fff;border-radius:99px;padding:1px 8px;white-space:nowrap;max-width:140%;overflow:hidden;text-overflow:ellipsis}
-.item.gone{opacity:.35;filter:grayscale(.8)}
+.item.gone{opacity:.4;filter:grayscale(.7)}
+.item.pickable{cursor:pointer;box-shadow:0 0 0 3px rgba(232,135,26,.4);transition:transform .08s}
+.item.pickable:hover{transform:translateY(-6px) scale(1.05);box-shadow:0 0 0 3px var(--amber)}
+.pcard .tokplayed{position:absolute;top:-9px;right:8px;background:var(--ink);color:#ffd75e;font-size:11px;font-weight:900;border-radius:99px;padding:2px 9px}
+.pcard .pickingchip{position:absolute;top:-9px;right:8px;background:var(--amber);color:#fff;font-size:10px;font-weight:900;border-radius:99px;padding:2px 9px;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
 /* ── 値札 ── */
 .mytoks{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .mytok{width:64px;height:82px;border-radius:12px;border:3px solid #c9bfa8;background:#fff;font-family:inherit;font-size:30px;font-weight:900;cursor:pointer;
@@ -155,6 +160,7 @@ table.log th{color:#7a7260;font-size:11px}
         <div class="mytoks" id="mytoks"></div>
       </div>
       <div id="waitArea" class="wait hidden"><div class="big">🤫</div>ほかの人が値札を選んでいます…</div>
+      <div id="pickInfo" class="wait hidden"></div>
     </div>
   </div>
 
@@ -181,7 +187,7 @@ table.log th{color:#7a7260;font-size:11px}
     <h3>🎮 流れ(2〜4人 / 10ラウンド / 約8分)</h3>
     ・毎ラウンド、人数と同じ数の品物が市場に並ぶ。<br>
     ・全員、手持ちの<b>値札1〜5</b>から1枚を<b>同時に</b>出す。<br>
-    ・<b>高い値札の人から順に</b>、残っている一番良い品物を取る(自動)。<br>
+    ・<b>高い値札の人から順に</b>、残っている品物から<b>好きなものを自分で選んで</b>取る(1人20秒、切れたら自動)。<br>
     ・<b>同じ数字を出した人同士は「ケンカ」</b>。何も取れず、その分の品物は流れる。<br>
     ・使った値札は戻らない。5ラウンドで全部使い切ると、また1〜5がそろう(計2周)。
     <h3>🦹 ドロボウのおしつけ</h3>
@@ -275,11 +281,11 @@ function fallbackCopy(text){
 socket.on('bz:state', st => {
   S = st;
   const p = st.pub;
-  deadline = p.phase === 'play' ? p.deadline : null;
+  deadline = (p.phase === 'play' || p.phase === 'pick') ? p.deadline : null;
   if (revealing && (p.phase === 'reveal' || p.phase === 'ended')) return; // 演出中
   if (p.phase !== 'reveal' && p.phase !== 'ended') $('ovResult').classList.add('hidden');
   if (p.phase === 'lobby') renderLobby(p);
-  else if (p.phase === 'play' || p.phase === 'reveal') renderGame(p, st.priv);
+  else if (p.phase === 'play' || p.phase === 'pick' || p.phase === 'reveal') renderGame(p, st.priv);
   /* ended は bz:end イベントで描画 */
 });
 
@@ -306,17 +312,22 @@ function itemHTML(it, extraCls, takenBy){
   else if (it.t === 'gem'){ cls = 'gem-' + it.c; big = GEM_ICON[it.c]; v = '2点'; lbl = '宝石(3色で+7)'; }
   else { cls = 'thief'; big = '🦹'; v = it.v + '点'; lbl = 'ドロボウ!'; }
   const tb = takenBy ? `<span class="takenby" style="background:${takenBy.clash ? '#d6455d' : '#2fae6e'}">${esc(takenBy.name)}</span>` : '';
-  return `<div class="item ${cls} ${extraCls||''}">${tb}<div class="big">${big}</div><div class="v">${v}</div><div class="lbl">${lbl}</div></div>`;
+  return `<div class="item ${cls} ${extraCls||''}" data-id="${it.id}">${tb}<div class="big">${big}</div><div class="v">${v}</div><div class="lbl">${lbl}</div></div>`;
 }
 
 function renderGame(p, priv){
   show('vGame');
   $('gRound').textContent = `ラウンド ${p.round}/${p.rounds}`;
+  const pk = p.picking; // 品物選択フェーズの情報(値札は全公開)
   // プレイヤーHUD
   $('pgrid').innerHTML = p.seats.map((s, i) => {
     const you = i === priv.myIdx;
-    const chip = p.phase === 'play'
-      ? (s.submitted ? '<span class="subchip">✔ 出した</span>' : '<span class="thinkchip">考え中…</span>') : '';
+    let chip = '';
+    if (p.phase === 'play')
+      chip = s.submitted ? '<span class="subchip">✔ 出した</span>' : '<span class="thinkchip">考え中…</span>';
+    else if (pk)
+      chip = pk.currentPicker === i ? '<span class="pickingchip">👉 選択中…</span>'
+        : `<span class="tokplayed">札${pk.subs[i]}${pk.clashed.includes(i) ? '💥' : ''}</span>`;
     const toks = [1,2,3,4,5].map(t =>
       `<span class="tok ${s.tokensLeft.includes(t) ? '' : 'used'}">${t}</span>`).join('');
     const gems = `${GEM_ICON.R}${s.gems.R} ${GEM_ICON.G}${s.gems.G} ${GEM_ICON.B}${s.gems.B}` +
@@ -328,13 +339,33 @@ function renderGame(p, priv){
       <div class="gems">${gems}</div>
       <div class="toks">${toks}</div></div>`;
   }).join('');
-  // 市場
-  $('market').innerHTML = p.items.map(it => itemHTML(it)).join('');
-  // 値札
-  const me = p.seats[priv.myIdx];
+  // 市場(選択フェーズ: 取られた品はグレー+名前、自分の番なら残りが光る)
+  const myTurn = pk && pk.currentPicker === priv.myIdx;
+  $('market').innerHTML = p.items.map(it => {
+    if (!pk) return itemHTML(it);
+    const taken = pk.gains.find(g => g.itemId === it.id);
+    if (taken) return itemHTML(it, 'gone', { name: p.seats[taken.p].name });
+    return itemHTML(it, myTurn ? 'pickable' : '');
+  }).join('');
+  if (myTurn){
+    document.querySelectorAll('.item.pickable').forEach(el => el.onclick = () => {
+      sePick();
+      socket.emit('bz:pickItem', { itemId: Number(el.dataset.id) }, r => { if (!r.ok) alert(r.error); });
+    });
+  }
+  // 下部エリア: play=値札選択 / pick=案内
   const submitted = priv.mySub !== null && priv.mySub !== undefined;
   $('pickArea').classList.toggle('hidden', p.phase !== 'play' || submitted);
   $('waitArea').classList.toggle('hidden', !(p.phase === 'play' && submitted));
+  $('pickInfo').classList.toggle('hidden', !pk);
+  if (pk){
+    const cur = pk.currentPicker;
+    $('pickInfo').innerHTML = myTurn
+      ? '<div class="big">🫵</div><b style="color:var(--amber)">あなたの番! 上の市場から好きな品物をタップ!</b>'
+      : cur !== null
+        ? `<div class="big">🛒</div>${esc(p.seats[cur].name)} が品物を選んでいます…(値札${pk.order.find(o=>o.p===cur).t})`
+        : '';
+  }
   if (p.phase === 'play' && !submitted){
     $('mytoks').innerHTML = [1,2,3,4,5].map(t => {
       const usable = priv.myTokens.includes(t);
@@ -349,6 +380,13 @@ function renderGame(p, priv){
     });
   }
 }
+
+/* 誰かが品物を取った瞬間の効果音 */
+socket.on('bz:picked', ev => {
+  if (ev.item.t === 'thief') seThief();
+  else if (ev.setDone) seSet();
+  else seCoin();
+});
 
 /* ══ ラウンド公開演出 ══ */
 socket.on('bz:reveal', rec => {

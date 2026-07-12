@@ -4,6 +4,7 @@ const BZ = require('./bz_core.js');
 
 module.exports = function attach(io, opts = {}) {
   const PLAY_MS = opts.playMs || 25_000;   // 値札を選ぶ時間
+  const PICK_MS = opts.pickMs || 20_000;   // 品物を選ぶ時間(1人あたり)
   const GAP_MS  = opts.gapMs  || 6_500;    // 公開演出の間
   const rooms = new Map();
   const CPU_NAMES = ['CPUタヌキ', 'CPUキツネ', 'CPUイタチ'];
@@ -28,12 +29,21 @@ module.exports = function attach(io, opts = {}) {
     const E = room.engine;
     const pub = {
       code: room.code,
-      phase: room.phase, // lobby | play | reveal | ended
+      phase: room.phase, // lobby | play | pick | reveal | ended
       isHost: me === 0,
       round: E ? Math.min(E.round, BZ.ROUNDS) : 0,
       rounds: BZ.ROUNDS,
       items: E && !E.finished ? E.items : [],
       deadline: room.deadline,
+      // 品物選択フェーズの公開情報(値札は全公開)
+      picking: E && E.pending ? {
+        subs: E.pending.subs,
+        order: E.pending.order,
+        currentPicker: E.currentPicker,
+        remainingIds: E.pending.remaining.map(it => it.id),
+        gains: E.pending.gains.map(g => ({ p: g.p, token: g.token, itemId: g.item.id, points: g.points, setDone: g.setDone })),
+        clashed: E.pending.clashed,
+      } : null,
       seats: room.seats.map((s, i) => ({
         name: s.name, isCpu: s.isCpu, connected: s.connected,
         submitted: s.sub !== null && s.sub !== undefined,
@@ -92,9 +102,53 @@ module.exports = function attach(io, opts = {}) {
     if (room.seats.some(s => s.sub === null || s.sub === undefined)) return;
     clearTimer(room);
     const E = room.engine;
-    const rec = E.resolve(room.seats.map(s => s.sub));
+    const begin = E.beginResolve(room.seats.map(s => s.sub));
+    if (begin.rec) return showReveal(room, begin.rec); // 全員ケンカ → 即結果
+    room.phase = 'pick';
+    schedulePick(room);
+  }
+  /* 手番の人に品物を選ばせる(CPU/切断は自動、残り1品も自動) */
+  function schedulePick(room) {
+    clearTimer(room);
+    const E = room.engine;
+    if (!E.pending) return;
+    const p = E.currentPicker;
+    const seat = room.seats[p];
+    const onlyOne = E.pending.remaining.length === 1;
+    if (seat.isCpu || !seat.connected || onlyOne) {
+      broadcast(room);
+      setTimeout(() => {
+        if (!rooms.has(room.code) || room.phase !== 'pick' || E.currentPicker !== p) return;
+        doPick(room, p, null);
+      }, 1100);
+    } else {
+      room.deadline = Date.now() + PICK_MS;
+      room.timer = setTimeout(() => {
+        room.timer = null;
+        if (!rooms.has(room.code) || room.phase !== 'pick' || E.currentPicker !== p) return;
+        doPick(room, p, null); // 時間切れ: 自動で最良を取る
+      }, PICK_MS + 300);
+      broadcast(room);
+    }
+  }
+  function doPick(room, p, itemId) {
+    const E = room.engine;
+    const r = E.pickItem(p, itemId);
+    // 取った瞬間を全員に通知(演出用)
+    room.seats.forEach((s) => {
+      if (s.isCpu || !s.connected || !s.socketId) return;
+      io.to(s.socketId).emit('bz:picked', {
+        p, token: r.gain.token, item: r.gain.item, points: r.gain.points, setDone: r.gain.setDone,
+      });
+    });
+    if (r.rec) return showReveal(room, r.rec);
+    schedulePick(room);
+  }
+  function showReveal(room, rec) {
+    clearTimer(room);
+    const E = room.engine;
     room.phase = 'reveal';
-    room.seats.forEach((s, i) => {
+    room.seats.forEach((s) => {
       if (s.isCpu || !s.connected || !s.socketId) return;
       io.to(s.socketId).emit('bz:reveal', { ...rec, finished: E.finished });
     });
@@ -196,6 +250,18 @@ module.exports = function attach(io, opts = {}) {
       maybeResolve(room);
     });
 
+    socket.on('bz:pickItem', ({ itemId }, cb) => {
+      const room = roomOf(socket);
+      if (!room || !room.engine || room.phase !== 'pick') return cb && cb({ ok: false, error: '品物を選ぶタイミングではありません' });
+      const i = seatIdx(room, socket);
+      if (room.engine.currentPicker !== i) return cb && cb({ ok: false, error: 'あなたの選ぶ番ではありません' });
+      try {
+        clearTimer(room);
+        doPick(room, i, Number(itemId));
+      } catch (e) { schedulePick(room); return cb && cb({ ok: false, error: e.message }); }
+      cb && cb({ ok: true });
+    });
+
     socket.on('bz:backToLobby', (_, cb) => {
       const room = roomOf(socket);
       if (!room || seatIdx(room, socket) !== 0) return;
@@ -226,6 +292,8 @@ module.exports = function attach(io, opts = {}) {
       if (room.phase === 'play' && (s.sub === null || s.sub === undefined)) {
         s.sub = s.brain.choose(room.engine, i);
         maybeResolve(room);
+      } else if (room.phase === 'pick' && room.engine.currentPicker === i) {
+        schedulePick(room); // CPU化したので自動選択の分岐に入り直す
       }
       broadcast(room);
     });
