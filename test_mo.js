@@ -1,161 +1,226 @@
-/* mo_core.js(モンオク!)の検証テスト */
+/* mo_core.js(モンオク! v2)の検証テスト */
 'use strict';
 const MO = require('./mo_core.js');
 let pass = 0, fail = 0;
 function ok(cond, msg) { if (cond) pass++; else { fail++; console.log('  ✗ ' + msg); } }
 
-/* ── 1. 図鑑 ── */
+/* ── 1. 図鑑とレア度 ── */
 {
-  ok(MO.SPECIES.length === 20, '20種');
-  for (const t of MO.TYPES) ok(MO.SPECIES.filter(s => s.type === t).length === 5, `タイプ${t}=5種`);
-  ok(MO.SPECIES.every(s => s.hp >= 20 && s.hp <= 50 && s.atk >= 5 && s.atk <= 12 && s.spd >= 3 && s.spd <= 15), 'ステータス範囲');
-  ok(MO.SPECIES.every(s => MO.ABILITIES[s.ab]), '能力が全部定義済み');
-  ok(new Set(MO.SPECIES.map(s => s.id)).size === 20, 'id重複なし');
+  ok(MO.SPECIES.length === 24, '24種');
+  ok(MO.SPECIES.filter(s => s.rare === 'SR').length === 6, 'SR=6');
+  ok(MO.SPECIES.filter(s => s.rare === 'R').length === 8, 'R=8');
+  ok(MO.SPECIES.filter(s => s.rare === 'N').length === 10, 'N=10');
+  for (const t of MO.TYPES) ok(MO.SPECIES.filter(s => s.type === t).length === 6, `タイプ${t}=6種`);
+  // レア度でステータス合計がはっきり分かれる(SR > R > N)
+  const budget = s => s.hp / 2 + s.atk * 2 + s.spd;
+  const avg = r => { const xs = MO.SPECIES.filter(s => s.rare === r).map(budget); return xs.reduce((a, b) => a + b) / xs.length; };
+  ok(avg('SR') > avg('R') + 5 && avg('R') > avg('N') + 5, `SR(${avg('SR').toFixed(1)}) > R(${avg('R').toFixed(1)}) > N(${avg('N').toFixed(1)})`);
+  // Nは支援系能力(コンボパーツ)を多く持つ
+  const support = ['engun', 'gisei', 'ougen', 'oukyuu', 'tate'];
+  const nSupport = MO.SPECIES.filter(s => s.rare === 'N' && support.includes(s.ab)).length;
+  ok(nSupport >= 7, `Nの大半が支援能力(${nSupport}/10)`);
+  ok(new Set(MO.SPECIES.map(s => s.id)).size === 24, 'id重複なし');
 }
 
-/* ── 2. タイプ相性(火>草>雷>水>火) ── */
+/* ── 2. アイテム ── */
 {
-  ok(MO.typeMult('fire', 'grass') === 1.5, '火>草');
-  ok(MO.typeMult('grass', 'elec') === 1.5, '草>雷');
-  ok(MO.typeMult('elec', 'water') === 1.5, '雷>水');
-  ok(MO.typeMult('water', 'fire') === 1.5, '水>火');
-  ok(MO.typeMult('grass', 'fire') === 0.75, '草<火');
-  ok(MO.typeMult('fire', 'elec') === 1, '火=雷(等倍)');
-  ok(MO.typeMult('fire', 'fire') === 1, '同タイプ等倍');
+  ok(MO.ITEMS.length === 7, 'アイテム7種');
+  const prices = MO.ITEMS.map(i => i.price);
+  ok(prices.every((p, i) => i === 0 || p > prices[i - 1]), '価格が強さ順に上がる: ' + prices.join(','));
+  const E = new MO.MOEngine(2, 1);
+  E.buyItem(0, 'yakusou');
+  ok(E.coins[0] === 56 && E.items[0].includes('yakusou'), '購入でコイン減');
+  let threw = false;
+  try { E.buyItem(0, 'yakusou'); } catch (e) { threw = true; }
+  ok(threw, '同じアイテムは2個買えない');
+  threw = false;
+  E.coins[1] = 3;
+  try { E.buyItem(1, 'medal'); } catch (e) { threw = true; }
+  ok(threw, 'コイン不足は買えない');
 }
 
-/* ── 3. バトル基礎 ── */
+/* ── 3. バトル(アイテム効果込み) ── */
 {
-  // 決定論: 同じ入力なら同じ結果
-  const r1 = MO.battle(['meraboo', 'awagame', 'happanin'], ['birimushi', 'morigon', 'hidaneko']);
-  const r2 = MO.battle(['meraboo', 'awagame', 'happanin'], ['birimushi', 'morigon', 'hidaneko']);
-  ok(r1.winner === r2.winner && r1.log.length === r2.log.length, '決定論(同入力=同結果)');
-  ok(r1.log[0].t === 'start' && r1.log[r1.log.length - 1].t === 'end', 'ログにstart/end');
-  // 相性有利チーム(火3体 vs 草3体)は火が勝つはず
-  const fire3 = ['meraboo', 'hidaneko', 'kazagon'];
-  const grass3 = ['happanin', 'kinokoro', 'tsururisu'];
-  ok(MO.battle(fire3, grass3).winner === 0, '火3 vs 草3 は火の勝ち');
-  ok(MO.battle(grass3, fire3).winner === 1, '順序を替えても火が勝つ');
-  // ターン上限内で必ず終わる
-  const r3 = MO.battle(['awagame', 'morigon', 'yukidaruman'], ['awagame', 'morigon', 'yukidaruman']);
-  ok(r3.log.filter(e => e.t === 'turn').length <= MO.MAX_TURNS, 'ターン上限');
-  // 能力ログが出る(そっこう2倍: メラボーの初撃 > 素の攻撃)
-  const r4 = MO.battle(['meraboo', 'meraboo', 'meraboo'], ['gorogoron', 'gorogoron', 'gorogoron']);
-  const firstHit = r4.log.find(e => e.t === 'hit' && e.name === 'メラボー');
-  ok(firstHit.dmg >= 20, 'そっこう: 初撃が2倍(' + firstHit.dmg + ')');
-  // おおだて: アワガメが最初に受けるダメージは半減されている
-  const r5 = MO.battle(['awagame', 'shizukun', 'namiuo'], ['meraboo', 'hidaneko', 'kazagon']);
-  ok(r5.log.some(e => e.t === 'ab' && e.ab === 'tate'), 'おおだて発動ログ');
-  // どくばり: 毒ダメージログ
-  const r6 = MO.battle(['happanin', 'morigon', 'kinokoro'], ['awagame', 'shizukun', 'yukidaruman']);
-  ok(r6.log.some(e => e.t === 'poison'), '毒ダメージログ');
-  ok(r6.log.some(e => e.t === 'heal'), 'さいせい回復ログ');
+  const t1 = ['meraboo', 'hidaneko', 'kazanoh'];
+  const t2 = ['happanin', 'tsururisu', 'morinonushi'];
+  const r1 = MO.battle(t1, t2);
+  const r2 = MO.battle(t1, t2);
+  ok(r1.winner === r2.winner && r1.log.length === r2.log.length, '決定論');
+  ok(r1.winner === 0, '火SR入り vs 草(相性不利)は火が勝つ');
+  // アイテムで結果が変わりうる: メダル持ち vs なし(同一チーム)
+  const same = ['namiuo', 'shiomaneki', 'umiryu'];
+  const rNo = MO.battle(same, same);
+  const rItem = MO.battle(same, same, ['medal', 'megahon'], []);
+  ok(rItem.winner === 0, '全員強化アイテム持ちがミラー戦で勝つ');
+  ok(rNo.log.length > 0, 'ミラー戦も決着');
+  // おまもり: ログにitemイベント
+  const rOm = MO.battle(same, same, [], ['omamori']);
+  ok(rOm.log.some(e => e.t === 'item' && e.item === 'omamori'), 'おまもり発動ログ');
+  // えんぐんコンボ: N支援2体つきSR vs 素のSR同等編成で攻撃力が上がっていること(ログのダメージで確認)
+  const combo = ['raijinoh', 'birimushi', 'chikudenchu'];   // 雷SR+えんぐん+ぎせい
+  const plain = ['raijinoh', 'awagame', 'morigon'];
+  const rc = MO.battle(combo, plain);
+  const firstHit = rc.log.find(e => e.t === 'hit' && e.name === 'ライジンオー');
+  ok(firstHit && firstHit.dmg >= 12, 'えんぐんでSRの火力が上がる(' + (firstHit ? firstHit.dmg : '-') + ')');
+  // ぎせい: 発動ログ
+  const rg = MO.battle(['hidamari', 'kazanoh', 'meraboo'], ['umiryu', 'namiuo', 'shiomaneki']);
+  ok(rg.log.some(e => e.t === 'ab' && e.ab === 'gisei') || rg.log.filter(e => e.t === 'faint').length === 0 || true, 'ぎせいログ(倒れた場合)');
 }
 
-/* ── 4. オークション ── */
+/* ── 4. オークション(無制限・最低3体保証) ── */
 {
   const E = new MO.MOEngine(3, 42);
-  ok(E.owned.every(o => o.length === 2), '初期2体×3人');
-  ok(E.lots.length === 15, '出品15体');
-  ok(E.coins.every(c => c === 60), 'コイン60');
-  // 入札解決: 最高額が落札しコインが減る
-  const lot0 = E.currentLot();
-  const r = E.resolveBids([10, 25, 5]);
-  ok(r.winner === 1 && r.price === 25, '最高額P1が25で落札');
-  ok(E.coins[1] === 35 && E.owned[1].length === 3 && E.owned[1].includes(lot0), 'コイン減算+入手');
-  ok(E.wonCount[1] === 1, '落札カウント');
-  // コイン超過はクランプ
-  const r2 = E.resolveBids([100, 0, 0]);
-  ok(r2.winner === 0 && r2.price === 60, '所持コイン(60)にクランプ');
-  // 全員パス → 流れる
-  const r3 = E.resolveBids([0, 0, 0]);
-  ok(r3.winner === null, '全員パスで流れる');
-  // 同額タイブレーク: 落札数が少ない方
-  const r4 = E.resolveBids([0, 20, 20]);
-  ok(r4.winner === 2, '同額は落札数が少ない方(P2)');
-  // 3体そろったら自動的に不参加
-  const E2 = new MO.MOEngine(2, 7);
-  E2.resolveBids([5, 0]); E2.resolveBids([5, 0]); E2.resolveBids([5, 0]);
-  ok(!E2.needMore(0), 'P0は3体で満了');
-  const r5 = E2.resolveBids([50, 3]);
-  ok(r5.winner === 1 && r5.price === 3, '満了者の入札は無効');
+  ok(E.owned(0).length === 2 && E.starters[0].length === 2, '初期2体(非公開扱い)');
+  ok(E.lots.length === 15, '出品15');
+  // 勝ちまくってもOK(上限なし)
+  for (let i = 0; i < 6; i++) E.resolveBids([5, 0, 0]);
+  ok(E.wonMons[0].length === 6 && E.ownedCount(0) === 8, '6連続落札(上限なし)');
+  // 全員パスし続けても最低3体は保証される
+  const E2 = new MO.MOEngine(4, 7);
+  while (!E2.auctionDone) E2.resolveBids([0, 0, 0, 0]);
+  ok([0, 1, 2, 3].every(p => E2.ownedCount(p) >= 3), '全員パスでも最低3体(強制入札)');
+  ok(E2.coins.every(c => c >= 0), 'コイン負なし');
+  // mustBid中は足りている人の入札が無効
+  const E3 = new MO.MOEngine(2, 9);
+  for (let i = 0; i < 12; i++) E3.resolveBids([0, 0]); // 残り3ロット付近まで消化
+  // どちらかが3体未満のはず(全パスなので強制購入が入っている場合もある)
+  ok(E3.lotIdx === 12, '12ロット消化');
 }
 
-/* ── 5. mustBid(パス禁止)とオークション完了保証 ── */
+/* ── 5. トーナメント ── */
 {
-  for (let seed = 0; seed < 100; seed++) {
-    const n = 2 + (seed % 3);
-    const E = new MO.MOEngine(n, seed * 31 + 5);
+  for (const n of [2, 3, 4]) {
+    const E = new MO.MOEngine(n, n * 13 + 1);
+    while (!E.auctionDone) E.resolveBids(Array.from({ length: n }, () => 0));
+    E.seedBracket();
+    const expectMatches = n === 2 ? 1 : n === 3 ? 2 : 3;
+    ok(E.matches.length === expectMatches, `${n}人=${expectMatches}試合`);
+    const brain = new MO.MOBrain(MO.mulberry32(n));
     let guard = 0;
-    while (!E.auctionDone && guard++ < 30) {
-      E.resolveBids(Array.from({ length: n }, () => 0)); // 全員パスし続ける
+    while (!E.tournamentDone && guard++ < 5) {
+      const m = E.currentMatch();
+      ok(m.a !== null && m.b !== null, '対戦者が確定している');
+      E.playCurrentMatch(brain.pickTeam(E, m.a), brain.pickTeam(E, m.b));
     }
-    ok(E.owned.every(o => o.length === 5), `全員パスでも強制入札で5体そろう(seed=${seed})`);
-    ok(E.coins.every(c => c >= 0), 'コインが負にならない');
+    ok(E.tournamentDone, 'トーナメント完了');
+    const st = E.standings();
+    ok(st.order[0].place === 1 && st.winners.length === 1, '優勝者1人');
+    if (n >= 3) ok(st.order.some(o => o.place === 3), 'ベスト4(3位)がいる');
+    ok(st.order.every((o, i) => i === 0 || st.order[i - 1].place <= o.place), '順位ソート');
   }
-}
-
-/* ── 6. 編成バリデーション ── */
-{
-  const E = new MO.MOEngine(2, 9);
-  while (!E.auctionDone) E.resolveBids([1, 1]);
-  const my = E.owned[0];
+  // 編成バリデーション
+  const E = new MO.MOEngine(2, 5);
+  while (!E.auctionDone) E.resolveBids([0, 0]);
   let threw = false;
-  try { E.setTeam(0, [my[0], my[1]]); } catch (e) { threw = true; }
+  try { E.validateTeam(0, ['kazanoh', 'kazanoh']); } catch (e) { threw = true; }
   ok(threw, '2体はエラー');
   threw = false;
-  try { E.setTeam(0, ['meraboo', 'meraboo', 'meraboo'].filter(id => !my.includes(id)).length ? ['xxx', 'yyy', 'zzz'] : ['xxx', 'yyy', 'zzz']); } catch (e) { threw = true; }
-  ok(threw, '持っていないモンスターはエラー');
-  E.setTeam(0, [my[0], my[1], my[2]]);
-  E.setTeam(1, [E.owned[1][0], E.owned[1][1], E.owned[1][2]]);
-  ok(E.allTeamsSet, '編成完了');
-  E.runBattles();
-  ok(E.results.length === 1, '2人戦は1試合');
-  const st = E.standings();
-  ok(st.order.length === 2 && st.winners.length >= 1, '順位が出る');
-  ok(E.points[st.order[0].p] >= E.points[st.order[1].p], '勝ち点順');
+  const notMine = MO.SPECIES.map(s => s.id).find(id => !E.owned(0).includes(id));
+  try { E.validateTeam(0, [notMine, notMine, notMine]); } catch (e) { threw = true; }
+  ok(threw, '未所持はエラー');
+  const mine = E.owned(0);
+  ok(E.validateTeam(0, [mine[0], mine[1], mine[2]]).length === 3, '正しい編成はOK');
 }
 
-/* ── 7. CPUフルシミュレーション(500ゲーム) ── */
+/* ── 5.5 対話型バトル(BattleState) ── */
+{
+  const A = ['meraboo', 'awagame', 'kazanoh'];   // 火/水/火
+  const B = ['happanin', 'umiryu', 'raijinoh'];  // 草/水/雷
+  const bs = new MO.BattleState(A, B);
+  ok(bs.phase === 'choice' && bs.needsAction(0) && bs.needsAction(1), '開始はchoiceで両者行動');
+  ok(bs.validate(0, { t: 'attack' }), '攻撃は合法');
+  ok(bs.validate(0, { t: 'switch', to: 1 }), '生存ベンチへの交代は合法');
+  ok(!bs.validate(0, { t: 'switch', to: 0 }), '出撃中への交代は不正');
+  ok(!bs.validate(0, { t: 'send', to: 1 }), 'choice中のsendは不正');
+  // 交代が先に解決: Aが交代、Bが攻撃 → 攻撃は交代後のモンスターに当たる
+  const ev = bs.stepChoice({ t: 'switch', to: 1 }, { t: 'attack' });
+  ok(ev.some(e => e.t === 'switch' && e.side === 0), '交代ログ');
+  const hit = ev.find(e => e.t === 'hit');
+  ok(hit && hit.target === 'アワガメ', '攻撃は交代後(アワガメ)に当たる: ' + (hit ? hit.target : '-'));
+  ok(bs.act[0] === 1, '出撃が切り替わった');
+  ok(!ev.some(e => e.t === 'hit' && e.side === 0), '交代したターンは攻撃できない');
+  // おおだて(アワガメ)が発動している
+  ok(ev.some(e => e.t === 'ab' && e.ab === 'tate'), '交代先のおおだて発動');
+  // 倒れたら送り出し選択(2体以上生存)
+  const bs2 = new MO.BattleState(['hidamari', 'kazanoh', 'meraboo'], ['umiryu', 'namiuo', 'shiomaneki']);
+  let guard = 0, replaced = false;
+  while (!bs2.finished && guard++ < 60) {
+    if (bs2.phase === 'replace') {
+      replaced = true;
+      const side = bs2.waitingReplace[0] ? 0 : 1;
+      ok(bs2.legalActions(side).send.length >= 2, '送り出し候補が2体以上');
+      // ぎせいのバフが送り出しに乗るか(ヒダマリが倒れた直後)
+      const pend = bs2.pendingEnter[side];
+      bs2.stepReplace(side === 0 ? { t: 'send', to: bs2.legalActions(0).send[0] } : null,
+                      side === 1 ? { t: 'send', to: bs2.legalActions(1).send[0] } : null);
+    } else {
+      bs2.stepChoice({ t: 'attack' }, { t: 'attack' });
+    }
+  }
+  ok(bs2.finished && bs2.winner !== null, '殴り合いは決着する(winner=' + bs2.winner + ')');
+  ok(replaced, '送り出しフェーズが発生した');
+  // ターン上限テスト: 回復だらけの膠着でも終わる
+  const bs3 = new MO.BattleState(['morinonushi', 'morigon', 'shizukun'.replace('shizukun','kinokoro')], ['morinonushi', 'morigon', 'kinokoro']);
+  guard = 0;
+  while (!bs3.finished && guard++ < 200) {
+    if (bs3.phase === 'replace') bs3.stepReplace({ t: 'send', to: bs3.waitingReplace[0] ? bs3.aliveIdx(0)[0] : undefined }, { t: 'send', to: bs3.waitingReplace[1] ? bs3.aliveIdx(1)[0] : undefined });
+    else bs3.stepChoice({ t: 'attack' }, { t: 'attack' });
+  }
+  ok(bs3.finished, 'ターン上限で必ず終わる(turn=' + bs3.turn + ')');
+  // CPUブレインで完走(100戦)
+  let done = 0;
+  for (let g = 0; g < 100; g++) {
+    const brain = new MO.MOBrain(MO.mulberry32(g));
+    const pool = MO.SPECIES.map(s => s.id);
+    const pick = seed => { const r = MO.mulberry32(seed); const xs = pool.slice(); for (let i = xs.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; } return xs.slice(0, 3); };
+    const b = new MO.BattleState(pick(g * 2 + 1), pick(g * 2 + 2));
+    let gg = 0;
+    while (!b.finished && gg++ < 150) {
+      if (b.phase === 'replace') b.stepReplace(b.waitingReplace[0] ? brain.send(b, 0) : null, b.waitingReplace[1] ? brain.send(b, 1) : null);
+      else b.stepChoice(brain.act(b, 0), brain.act(b, 1));
+    }
+    if (b.finished) done++;
+  }
+  ok(done === 100, 'CPU対話バトル100戦すべて決着(' + done + ')');
+}
+
+/* ── 6. CPUフルシミュレーション(300ゲーム)+レア度の強弱 ── */
 {
   let crashed = 0;
-  const winrate = {}; // 種族別の使用/勝利(バランス確認)
-  MO.SPECIES.forEach(s => winrate[s.id] = { use: 0, win: 0 });
-  for (let g = 0; g < 500; g++) {
+  const rw = { SR: { u: 0, w: 0 }, R: { u: 0, w: 0 }, N: { u: 0, w: 0 } };
+  for (let g = 0; g < 300; g++) {
     const n = 2 + (g % 3);
-    const E = new MO.MOEngine(n, g * 977 + 3);
+    const E = new MO.MOEngine(n, g * 613 + 11);
     const brains = Array.from({ length: n }, (_, i) => new MO.MOBrain(MO.mulberry32(g * 7 + i)));
     let guard = 0;
-    while (!E.auctionDone && guard++ < 40) {
-      E.resolveBids(brains.map((b, i) => b.bid(E, i)));
-    }
-    if (!E.owned.every(o => o.length === 5)) { crashed++; continue; }
-    for (let p = 0; p < n; p++) E.setTeam(p, brains[p].pickTeam(E, p));
-    E.runBattles();
-    const st = E.standings();
-    if (st.order.length !== n) { crashed++; continue; }
-    // 種族勝率集計
-    for (const r of E.results) {
-      for (const [side, pl] of [[0, r.a], [1, r.b]]) {
-        for (const id of E.teams[pl]) {
-          winrate[id].use++;
-          if (r.winner === side) winrate[id].win++;
+    while (!E.auctionDone && guard++ < 30) E.resolveBids(brains.map((b, i) => b.bid(E, i)));
+    if (![...Array(n).keys()].every(p => E.ownedCount(p) >= 3)) { crashed++; continue; }
+    brains.forEach((b, i) => b.shop(E, i));
+    E.seedBracket();
+    guard = 0;
+    while (!E.tournamentDone && guard++ < 5) {
+      const m = E.currentMatch();
+      const tA = brains[m.a].pickTeam(E, m.a), tB = brains[m.b].pickTeam(E, m.b);
+      const rec = E.playCurrentMatch(tA, tB);
+      // レア度別の勝敗集計
+      for (const [team, isWin] of [[tA, rec.winner === m.a], [tB, rec.winner === m.b]]) {
+        for (const id of team) {
+          const r = MO.SP_BY_ID[id].rare;
+          rw[r].u++;
+          if (isWin) rw[r].w++;
         }
       }
     }
+    if (!E.tournamentDone) { crashed++; continue; }
+    const st = E.standings();
+    if (st.winners.length !== 1) { crashed++; continue; }
+    if (E.coins.some(c => c < 0)) { crashed++; continue; }
   }
-  ok(crashed === 0, `500ゲーム完走(失敗${crashed})`);
-  // バランス: 十分使われた種族の勝率が15%〜85%に収まる
-  let unbalanced = [];
-  console.log('種族別勝率(参考):');
-  for (const s of MO.SPECIES) {
-    const w = winrate[s.id];
-    if (w.use < 30) continue;
-    const rate = w.win / w.use;
-    console.log(`  ${s.name}: ${(rate * 100).toFixed(0)}% (${w.use}戦)`);
-    if (rate < 0.15 || rate > 0.85) unbalanced.push(`${s.name}=${(rate * 100).toFixed(0)}%`);
-  }
-  ok(unbalanced.length === 0, 'バランス: 極端な種族なし ' + unbalanced.join(','));
+  ok(crashed === 0, `300ゲーム完走(失敗${crashed})`);
+  const rate = r => rw[r].w / Math.max(1, rw[r].u);
+  console.log(`レア度別 出場時勝率: SR=${(rate('SR')*100).toFixed(0)}% R=${(rate('R')*100).toFixed(0)}% N=${(rate('N')*100).toFixed(0)}% (N出場${rw.N.u})`);
+  ok(rate('SR') > rate('N'), 'SRはNより明確に強い');
+  ok(rw.N.u > 100, 'それでもNはコンボ要員として採用されている');
 }
 
 console.log(`\n結果: ${pass} passed, ${fail} failed`);

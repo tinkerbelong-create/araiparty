@@ -7,7 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{ --ink:#2a3140; --line:#dde8e4; --teal:#0ea5a0; --amber:#e8871a; --red:#d6455d; --purple:#8b5cf6;
-  --t-fire:#e35b5b; --t-water:#3f8fe0; --t-grass:#2fae6e; --t-elec:#e8b40a; }
+  --t-fire:#e35b5b; --t-water:#3f8fe0; --t-grass:#2fae6e; --t-elec:#d9a50a;
+  --r-sr:#e8b40a; --r-r:#4a7dd6; --r-n:#98a2b8; }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{
   font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
@@ -41,44 +42,72 @@ label{font-size:12.5px;font-weight:900;color:#5f7a72;display:block;margin:12px 0
 .seat .tag{font-size:11px;color:#fff;background:#95a8a2;border-radius:99px;padding:2px 10px}
 .note{font-size:12.5px;font-weight:700;color:#5f7a72;line-height:1.8;margin-top:8px}
 .timer{font-size:15px;font-weight:900;color:var(--red);text-align:center;margin-top:8px;min-height:20px}
-/* ── モンスターカード ── */
-.mon{width:118px;border:2px solid var(--line);border-radius:14px;background:#fff;padding:8px 6px;text-align:center;position:relative;flex:none}
+/* ── モンスターカード(レア度で枠色) ── */
+.mon{width:118px;border:2px solid var(--r-n);border-radius:14px;background:#fff;padding:8px 6px;text-align:center;position:relative;flex:none}
+.mon.r-R{border-color:var(--r-r)} .mon.r-SR{border-color:var(--r-sr);background:#fffdf2;box-shadow:0 0 8px rgba(232,180,10,.35)}
+.mon .rare{position:absolute;top:-9px;right:-6px;font-size:9.5px;font-weight:900;color:#fff;border-radius:99px;padding:1px 8px;background:var(--r-n)}
+.mon.r-R .rare{background:var(--r-r)} .mon.r-SR .rare{background:var(--r-sr)}
 .mon .me{font-size:32px;line-height:1.2}
 .mon .nm{font-size:12px;font-weight:900;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mon .tp{display:inline-block;font-size:10px;font-weight:900;color:#fff;border-radius:99px;padding:1px 9px;margin-top:2px}
 .mon .st{font-size:10.5px;font-weight:900;color:#5f7a72;margin-top:3px}
 .mon .abn{font-size:10px;font-weight:900;color:var(--purple);margin-top:2px;background:#f3edff;border-radius:6px;padding:1px 4px}
-.mon.mini{width:74px;padding:5px 3px}
+.mon.mini{width:76px;padding:5px 3px}
 .mon.mini .me{font-size:22px}
 .mon.mini .nm{font-size:9.5px}
 .mon.mini .st,.mon.mini .abn{display:none}
 .mon.mini .tp{font-size:8.5px;padding:0 6px}
-.mon.sel{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,165,160,.3)}
+.mon.mini .rare{font-size:8px;padding:0 6px}
+.mon.secret{border-style:dashed;opacity:.8}
+.mon.sel{outline:3px solid var(--teal);outline-offset:2px}
 .mon.pickable{cursor:pointer;transition:transform .1s}
 .mon.pickable:hover{transform:translateY(-4px)}
-.mon .ord{position:absolute;top:-10px;left:-8px;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-weight:900;line-height:26px;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.mon .ord{position:absolute;top:-10px;left:-8px;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-weight:900;line-height:26px;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:2}
 .tp-fire{background:var(--t-fire)} .tp-water{background:var(--t-water)} .tp-grass{background:var(--t-grass)} .tp-elec{background:var(--t-elec)}
 .monrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 /* ── オークション ── */
 .lotstrip{display:flex;gap:6px;overflow-x:auto;padding:6px 2px;margin-top:8px}
-.lotstrip .mon.done{opacity:.35}
-.lotstrip .mon.now{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,135,26,.35)}
+.lotstrip .mon.done{opacity:.3}
+.lotstrip .mon.now{outline:3px solid var(--amber);outline-offset:2px}
 .bigmon{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap}
 .bigmon .mon{width:150px}
 .bigmon .mon .me{font-size:46px}
-.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:10px}
 .pcard{background:#f4faf8;border:2px solid var(--line);border-radius:14px;padding:9px 12px;font-weight:900;font-size:13px;position:relative}
 .pcard.me{border-color:var(--teal)}
 .pcard .chip{position:absolute;top:-9px;right:8px;font-size:10px;color:#fff;border-radius:99px;padding:2px 9px;background:#95a8a2}
 .pcard .chip.ok{background:var(--teal)}
+/* ── ショップ ── */
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:10px}
+.item{border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff;font-weight:700;font-size:12.5px;position:relative}
+.item b{font-size:14px}
+.item .price{position:absolute;top:-10px;right:8px;background:var(--amber);color:#fff;font-weight:900;font-size:12px;border-radius:99px;padding:2px 12px}
+.item.bought{border-color:var(--teal);background:#e7f7f6}
+.item button{margin-top:6px}
+/* ── トーナメント ── */
+.bracket{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.bmatch{display:flex;align-items:center;gap:8px;background:#f4faf8;border:2px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:900;font-size:14px}
+.bmatch.now{border-color:var(--amber);box-shadow:0 0 0 2px rgba(232,135,26,.3)}
+.bmatch .rd{font-size:11px;color:#fff;background:#95a8a2;border-radius:99px;padding:2px 10px;flex:none}
+.bmatch.now .rd{background:var(--amber)}
+.bmatch .win{color:var(--teal)}
 /* ── バトルログ ── */
 #blog{background:#173029;color:#dff3ec;border-radius:14px;padding:12px 14px;margin-top:10px;font-size:13px;font-weight:700;
-  max-height:300px;overflow-y:auto;line-height:1.9}
+  max-height:240px;overflow-y:auto;line-height:1.9}
 #blog .w{color:#ffd75e} #blog .dmg{color:#ff9a8a} #blog .heal{color:#8af0c0} #blog .ab{color:#c9b1ff}
-.hpbars{display:flex;gap:14px;justify-content:center;margin-top:10px;flex-wrap:wrap}
-.hpbox{width:220px;background:#f4faf8;border:2px solid var(--line);border-radius:12px;padding:8px 10px;font-weight:900;font-size:13px}
-.hpbar{height:12px;background:#e2ebe7;border-radius:99px;overflow:hidden;margin-top:4px}
-.hpbar i{display:block;height:100%;background:linear-gradient(90deg,#2fae6e,#8ae0a8);transition:width .25s}
+/* ── バトル盤面 ── */
+.bteam{width:256px;background:#f4faf8;border:2px solid var(--line);border-radius:14px;padding:8px;flex:none}
+.bteam h4{font-size:12.5px;font-weight:900;text-align:center}
+.brow{display:flex;align-items:center;gap:6px;margin-top:6px;background:#fff;border:2px solid var(--line);border-radius:10px;padding:4px 8px;font-weight:900;font-size:12px}
+.brow.active{border-color:var(--amber);box-shadow:0 0 0 2px rgba(232,135,26,.3)}
+.brow.dead{opacity:.35;filter:grayscale(.8)}
+.brow .bemo{font-size:20px}
+.brow .bhp{flex:1;min-width:0}
+.brow .bnm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hpbar{height:9px;background:#e2ebe7;border-radius:99px;overflow:hidden;margin-top:2px}
+.hpbar i{display:block;height:100%;background:linear-gradient(90deg,#2fae6e,#8ae0a8);transition:width .3s}
+.hpbar i.low{background:linear-gradient(90deg,#d6455d,#f0a0ae)}
+.actbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
 .overlay{position:fixed;inset:0;background:rgba(20,40,34,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:14px}
 .panel{background:#fff;border-radius:20px;padding:24px;max-width:560px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);max-height:90vh;overflow:auto}
 table.rank{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;font-weight:700}
@@ -89,12 +118,22 @@ table.rank th{color:#5f7a72;font-size:11.5px}
 .backlink{display:block;text-align:center;margin-top:20px;font-size:12.5px;font-weight:900;color:#8aa39b;text-decoration:none}
 #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(23,48,41,.92);color:#fff;
   font-weight:900;font-size:14px;border-radius:99px;padding:8px 22px;opacity:0;transition:opacity .25s;pointer-events:none}
+/* ── 常時表示: 相性表&コンボ早見 ── */
+#cheat{position:fixed;right:10px;bottom:10px;z-index:40;width:250px;background:rgba(255,255,255,.96);
+  border:2px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(30,60,50,.18);font-size:11.5px;font-weight:700}
+#cheat .head{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;cursor:pointer;font-weight:900;font-size:12.5px}
+#cheat .typeline{text-align:center;font-weight:900;font-size:13px;padding:0 10px 7px}
+#cheat .body{max-height:270px;overflow-y:auto;padding:0 12px 10px;border-top:1px dashed var(--line)}
+#cheat .body h5{margin-top:8px;color:var(--teal);font-size:11.5px}
+#cheat .body div{margin-top:3px;line-height:1.55}
+#cheat .body b{color:var(--purple)}
+@media (max-width:700px){ #cheat{width:200px} }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>モンオク!</h1>
-  <p class="sub">🐾 モンスターを競り落として、コンボ編成で3体バトル!(2〜4人)</p>
+  <p class="sub">🐾 競り落として、買い物して、トーナメントでコンボバトル!(2〜4人)</p>
 
   <!-- ══ ホーム ══ -->
   <div id="vHome" class="card">
@@ -137,7 +176,7 @@ table.rank th{color:#5f7a72;font-size:11.5px}
   <div id="vAuction" class="hidden">
     <div class="timer" id="timer"></div>
     <div class="card" style="text-align:center">
-      <div style="font-weight:900;color:#5f7a72;font-size:13px" id="aLotNo">出品 1/15</div>
+      <div style="font-weight:900;color:#5f7a72;font-size:13px" id="aLotNo"></div>
       <div class="bigmon" id="aLot"></div>
       <div id="bidArea" style="margin-top:12px">
         <div class="row" style="justify-content:center">
@@ -147,48 +186,71 @@ table.rank th{color:#5f7a72;font-size:11.5px}
         </div>
         <p class="note" id="bidNote" style="text-align:center"></p>
       </div>
-      <div id="bidWait" class="note hidden" style="text-align:center;font-size:15px">✔ 入札した! みんなを待ってる…</div>
+      <div id="bidWait" class="note hidden" style="text-align:center;font-size:15px"></div>
       <div class="err" id="aErr"></div>
     </div>
     <div class="card">
-      <div style="font-weight:900;font-size:13px">📦 出品リスト(先を見て予算を配分しよう)</div>
+      <div style="font-weight:900;font-size:13px">🎒 あなたの所持モンスター <span class="note">(初期2体は相手に見えない!)</span></div>
+      <div class="monrow" id="aMine"></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:900;font-size:13px">📦 出品リスト(先を見て予算配分!)</div>
       <div class="lotstrip" id="lotStrip"></div>
     </div>
     <div class="card">
-      <div style="font-weight:900;font-size:13px">👥 みんなの状況(手持ちは公開)</div>
+      <div style="font-weight:900;font-size:13px">👥 みんなの状況(落札分だけ公開)</div>
       <div class="pgrid" id="aPlayers"></div>
     </div>
   </div>
 
-  <!-- ══ 編成 ══ -->
-  <div id="vPick" class="hidden">
-    <div class="timer" id="timer2"></div>
+  <!-- ══ ショップ ══ -->
+  <div id="vShop" class="hidden">
+    <div class="timer" id="timerShop"></div>
     <div class="card">
-      <div style="font-weight:900;text-align:center;font-size:16px">⚔ 出撃メンバーを3体えらぼう(クリック順=出撃順!)</div>
-      <p class="note" style="text-align:center">先頭から順番に戦う勝ち抜き戦。「せんじん」は先頭、「かたきうち」「エース」は後ろがオススメ!</p>
-      <div class="monrow" id="pickRow" style="justify-content:center"></div>
+      <div style="font-weight:900;text-align:center;font-size:16px">🛒 アイテムショップ(個人購入・各1個まで)</div>
+      <p class="note" style="text-align:center">残ったコインで装備を買おう。買わずに取っておいてもOK(順位が同じときはコインが多い方が上!)。<br>のこりコイン: <b id="shopCoins" style="color:var(--amber);font-size:16px"></b></p>
+      <div class="shopgrid" id="shopGrid"></div>
       <div style="text-align:center;margin-top:12px">
-        <button class="btn" id="btnTeam" disabled>この3体で出撃!(0/3)</button>
+        <button class="btn" id="btnShopDone">買い物おわり!</button>
       </div>
-      <div id="pickWait" class="note hidden" style="text-align:center;font-size:15px">✔ 編成完了! ほかのプレイヤーを待ってる…</div>
-      <div class="err" id="pErr"></div>
+      <div id="shopWait" class="note hidden" style="text-align:center">✔ ほかの人の買い物を待ってる…</div>
+      <div class="err" id="sErr"></div>
     </div>
     <div class="card">
-      <div style="font-weight:900;font-size:13px">👥 相手の手持ち(何を出してくるかは秘密)</div>
-      <div class="pgrid" id="pPlayers"></div>
+      <div style="font-weight:900;font-size:13px">👥 みんなの買い物(アイテムは公開)</div>
+      <div class="pgrid" id="sPlayers"></div>
     </div>
   </div>
 
-  <!-- ══ バトル ══ -->
-  <div id="vBattle" class="hidden">
+  <!-- ══ トーナメント ══ -->
+  <div id="vTour" class="hidden">
+    <div class="timer" id="timerTour"></div>
     <div class="card">
-      <div style="font-weight:900;text-align:center;font-size:17px" id="bTitle"></div>
-      <div class="hpbars" id="bTeams"></div>
-      <div id="blog"></div>
-      <div style="text-align:center;margin-top:12px">
-        <button class="btn gray small" id="btnSkip">⏩ スキップ</button>
-        <button class="btn hidden" id="btnNextMatch">つぎの試合へ ▶</button>
+      <div style="font-weight:900;text-align:center;font-size:16px">🏆 トーナメント</div>
+      <div class="bracket" id="bracket"></div>
+    </div>
+    <!-- 自分の試合: 編成 -->
+    <div class="card hidden" id="tourPick">
+      <div style="font-weight:900;text-align:center;font-size:15px" id="tpTitle"></div>
+      <p class="note" style="text-align:center">全所持モンスターから3体えらぶ(クリック順=出撃順)。<b>毎試合えらび直せる!</b></p>
+      <div class="monrow" id="tpRow" style="justify-content:center"></div>
+      <div style="text-align:center;margin-top:10px">
+        <button class="btn" id="btnTeam" disabled>この3体で出撃!(0/3)</button>
       </div>
+      <div id="tpWait" class="note hidden" style="text-align:center;font-size:14px">✔ 編成完了! 相手を待ってる…</div>
+      <div class="err" id="tErr"></div>
+    </div>
+    <!-- 待機 -->
+    <div class="card hidden" id="tourWait">
+      <div style="text-align:center;font-weight:900;font-size:15px;padding:16px 0" id="twMsg">⏳ ほかの試合が進行中… 待機しよう</div>
+    </div>
+    <!-- バトル(対戦者のみ・操作あり) -->
+    <div class="card hidden" id="tourBattle">
+      <div style="font-weight:900;text-align:center;font-size:16px" id="btTitle"></div>
+      <div class="row" style="justify-content:center;align-items:flex-start;margin-top:8px" id="btField"></div>
+      <div id="btActions" style="margin-top:6px"></div>
+      <div id="blog"></div>
+      <div class="err" id="btErr"></div>
     </div>
   </div>
 
@@ -196,8 +258,8 @@ table.rank th{color:#5f7a72;font-size:11.5px}
   <div id="vEnd" class="card hidden">
     <div style="text-align:center;font-size:38px">🏆</div>
     <div style="text-align:center;font-size:24px;font-weight:900" id="endTitle"></div>
+    <div class="bracket" id="endBracket"></div>
     <table class="rank" id="endTable"></table>
-    <div id="endTeams"></div>
     <div style="text-align:center;margin-top:16px">
       <button class="btn" id="btnAgain">ロビーにもどる</button>
       <a class="backlink" href="/">← あらいの遊び場にもどる</a>
@@ -211,17 +273,43 @@ table.rank th{color:#5f7a72;font-size:11.5px}
   <div class="panel modalrule">
     <h2 style="text-align:center">📜 モンオク!のルール</h2>
     <h3>🎮 流れ(2〜4人)</h3>
-    ・各自<b>コイン60</b>と<b>初期モンスター2体</b>(全員に公開)を持ってスタート。<br>
-    ・共有の<b>15体</b>が1体ずつ競りに出る。全員<b>同時にこっそり入札</b>(0=パス)。最高額の人が落札!<br>
-    ・<b>ちょうど3体</b>落札して手持ち5体にする(残りロットが少なくなるとパス禁止)。<br>
-    ・5体から<b>3体+出撃順</b>を秘密で選び、全員総当たりの自動バトル!
-    <h3>⚔ バトル(勝ち抜き3対3)</h3>
-    ・先頭同士が戦い、倒れたら次のモンスターが出る。すばやさが高い方が先に攻撃。<br>
-    ・タイプ相性: <b>🔥火&gt;🌿草&gt;⚡雷&gt;💧水&gt;🔥火</b>(有利1.5倍/不利0.75倍)。<br>
-    ・<b>能力コンボが命!</b> 例:「むれ」は同タイプ編成で強化、「おうえん」は全員強化、「かたきうち」は味方がやられると覚醒、「どくばり」+高HPで粘る…など。
-    <h3>🏆 勝敗</h3>
-    ・勝ち=3点、引き分け=1点。合計点で順位、同点は<b>残りコイン</b>が多い方(節約も戦略!)。
+    ・各自<b>コイン60</b>+<b>初期モンスター2体(ヒミツ!)</b>でスタート。<br>
+    ・共有15体を1体ずつ<b>同時にこっそり入札</b>。落札したモンスターは公開される。<br>
+    ・<b>何体でも集めてOK</b>(最低3体は必要。足りない人は終盤に優先購入タイムあり)。<br>
+    ・競りのあとは<b>アイテムショップ</b>(7種・個人購入・各1個)。<br>
+    ・最後は<b>トーナメント</b>! 毎試合、全所持から<b>3体+出撃順をえらび直して</b>戦う。
+    <h3>🎮 バトルの操作(対話型!)</h3>
+    ・毎ターン、両者が<b>同時に</b>「⚔こうげき」か「🔄こうたい」をえらぶ。<br>
+    ・こうたいは相手の攻撃より先に発動(そのターンは攻撃できない)。相性の悪い相手から逃げろ!<br>
+    ・モンスターが倒れたら<b>次に出すモンスターを自分でえらぶ</b>。<br>
+    ・行動は25秒以内(過ぎると自動でこうげき)。
+    <h3>⭐ レア度</h3>
+    ・<b style="color:var(--r-sr)">SR</b>=強い! / <b style="color:var(--r-r)">R</b>=ふつう / <b>N</b>=弱い…けど<b>コンボパーツ</b>(えんぐん/ぎせい/おうえん など味方を強くする能力持ち)。<br>
+    ・N2体で支えてSR1体を怪物にする、みたいな編成が強い!
+    <h3>⚔ バトル(自動・勝ち抜き3対3)</h3>
+    ・先頭同士が戦い、倒れたら次が出る。すばやさが高い方が先制。<br>
+    ・タイプ相性と能力コンボ、アイテムで火力が決まる(→右下の早見表をチェック!)。<br>
+    ・自分の試合以外は<b>待機</b>(結果だけ流れる)。
     <div style="text-align:center;margin-top:16px"><button class="btn" onclick="document.getElementById('ovRule').classList.add('hidden')">とじる</button></div>
+  </div>
+</div>
+
+<!-- ── 常時表示: 相性&コンボ早見表 ── -->
+<div id="cheat">
+  <div class="head" id="cheatHead"><span>📖 相性&コンボ早見表</span><span id="cheatToggle">▼</span></div>
+  <div class="typeline">🔥→🌿→⚡→💧→🔥 <span style="font-size:10px;color:#5f7a72">(左が右に1.5倍)</span></div>
+  <div class="body" id="cheatBody">
+    <h5>⭐ レア度</h5>
+    <div><b style="color:var(--r-sr)">SR</b>=つよい / <b style="color:var(--r-r)">R</b>=ふつう / N=よわいがコンボ要員</div>
+    <h5>✨ コンボのきほん</h5>
+    <div>・<b>えんぐん</b>×同タイプ / <b>むれ</b>×同タイプ3体</div>
+    <div>・<b>おうえん</b>/<b>ぎせい</b>/<b>おうきゅう</b>は2番手に置いてエースを支える</div>
+    <div>・<b>かたきうち</b>/<b>エース</b>は3番手で覚醒</div>
+    <div>・<b>せんじん</b>/<b>おおだて</b>/<b>そっこう</b>は先頭向き</div>
+    <h5>📚 能力いちらん</h5>
+    <div id="cheatAbs"></div>
+    <h5>🛒 アイテム</h5>
+    <div id="cheatItems"></div>
   </div>
 </div>
 
@@ -247,62 +335,78 @@ function se(freq, dur = 0.07, type = 'square', vol = 0.2, slide = 0) {
   } catch (e) {}
 }
 const seClick = () => se(600, 0.05, 'square', 0.12);
-const seBid   = () => { se(740, 0.06, 'triangle', 0.2); setTimeout(() => se(988, 0.08, 'triangle', 0.2), 60); };
-const seWinL  = () => [659, 880, 1175].forEach((f, i) => setTimeout(() => se(f, 0.1, 'triangle', 0.22), i * 80));
-const seHit   = () => se(220, 0.08, 'square', 0.15, 120);
+const seBid = () => { se(740, 0.06, 'triangle', 0.2); setTimeout(() => se(988, 0.08, 'triangle', 0.2), 60); };
+const seWinL = () => [659, 880, 1175].forEach((f, i) => setTimeout(() => se(f, 0.1, 'triangle', 0.22), i * 80));
+const seHit = () => se(220, 0.08, 'square', 0.15, 120);
 const seFaint = () => se(180, 0.3, 'sawtooth', 0.16, 70);
-const seWin   = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.18, 'triangle', 0.24), i * 120));
+const seWin = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.18, 'triangle', 0.24), i * 120));
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.btn')) seClick(); });
 
-/* 図鑑(表示用ミラー) */
-const TYPE_META = {
-  fire:  { name: 'ほのお', cls: 'tp-fire' },
-  grass: { name: 'くさ',   cls: 'tp-grass' },
-  elec:  { name: 'でんき', cls: 'tp-elec' },
-  water: { name: 'みず',   cls: 'tp-water' },
-};
-const ABILITIES = {
-  mure:'むれ', ougen:'おうえん', senjin:'せんじん', kataki:'かたきうち', tate:'おおだて', doku:'どくばり',
-  saisei:'さいせい', toushi:'とうし', sokko:'そっこう', ace:'エース', typeboost:'ぞくせい', oukyuu:'おうきゅう',
-};
-const AB_TEXT = {
-  mure:'同タイプの味方1体につき攻撃+3', ougen:'生きている間チーム全員攻撃+2', senjin:'先頭で出ると攻撃+4',
-  kataki:'味方が倒れるたび攻撃+5', tate:'最初に受けるダメージ半減', doku:'攻撃した相手を毒に(毎ターン3)',
-  saisei:'毎ターンHP+4', toushi:'行動するたび攻撃+1(最大+6)', sokko:'最初の攻撃はダメージ2倍',
-  ace:'最後の1体だと攻撃+6速+4', typeboost:'相性有利だと追加+4', oukyuu:'倒れたとき次の味方HP+8',
+/* 図鑑ミラー(表示用) */
+const TYPE_META = { fire:{name:'ほのお',cls:'tp-fire'}, grass:{name:'くさ',cls:'tp-grass'}, elec:{name:'でんき',cls:'tp-elec'}, water:{name:'みず',cls:'tp-water'} };
+const AB = {
+  mure:['むれ','同タイプ味方1体につき攻撃+3'], ougen:['おうえん','生存中チーム全員攻撃+2'], engun:['えんぐん','同タイプ味方(自分以外)の攻撃+3'],
+  gisei:['ぎせい','倒れたら次の味方の攻撃+4'], senjin:['せんじん','先頭だと攻撃+4'], kataki:['かたきうち','味方が倒れるたび攻撃+5'],
+  tate:['おおだて','最初のダメージ半減'], doku:['どくばり','攻撃相手を毒に(毎ターン3)'], saisei:['さいせい','毎ターンHP+4'],
+  toushi:['とうし','行動ごとに攻撃+1(最大+6)'], sokko:['そっこう','最初の攻撃2倍'], ace:['エース','最後の1体で攻+6速+4'],
+  typeboost:['ぞくせい','相性有利で+4'], oukyuu:['おうきゅう','倒れたら次の味方HP+8'],
 };
 const SPECIES = {};
-[['meraboo','メラボー','fire','🔥',30,10,9,'sokko'],['hidaneko','ヒダネコ','fire','😼',26,9,13,'senjin'],
-['kazagon','カザゴン','fire','🌋',40,8,5,'kataki'],['homuradori','ホムラドリ','fire','🐦',28,8,12,'typeboost'],
-['taimatsun','タイマッツン','fire','🕯️',32,7,8,'ougen'],['awagame','アワガメ','water','🐢',42,6,4,'tate'],
-['shizukun','シズックン','water','💧',30,8,9,'saisei'],['namiuo','ナミウオ','water','🐟',28,9,11,'toushi'],
-['shiomaneki','シオマネキング','water','🦀',34,9,6,'mure'],['yukidaruman','ユキダルマン','water','☃️',36,7,7,'oukyuu'],
-['happanin','ハッパニン','grass','🍃',28,9,12,'doku'],['morigon','モリゴン','grass','🌳',40,7,6,'saisei'],
-['kinokoro','キノコロ','grass','🍄',32,7,9,'ougen'],['tsururisu','ツルリス','grass','🐿️',26,9,13,'mure'],
-['togebouzu','トゲボウズ','grass','🌵',34,8,7,'typeboost'],['birimushi','ビリムシ','elec','🐛',24,10,13,'toushi'],
-['gorogoron','ゴロゴロン','elec','🌩️',36,8,6,'kataki'],['chikudenchu','チクデンチュウ','elec','🔋',30,8,9,'oukyuu'],
-['inazumao','イナズマオー','elec','⚡',28,10,11,'ace'],['pikahane','ピカバネ','elec','🪶',30,7,10,'sokko'],
-].forEach(([id,name,type,emoji,hp,atk,spd,ab]) => SPECIES[id] = {id,name,type,emoji,hp,atk,spd,ab});
+[['kazanoh','カザンオー','fire','🌋','SR',44,11,7,'kataki'],['hinokagura','ヒノカグラ','fire','🎏','SR',34,12,11,'typeboost'],
+['umiryu','ウミリュウ','water','🐉','SR',40,10,10,'toushi'],['shinjuhime','シンジュヒメ','water','🦪','SR',38,9,9,'ougen'],
+['morinonushi','モリノヌシ','grass','🌲','SR',46,9,6,'saisei'],['raijinoh','ライジンオー','elec','🌩️','SR',36,12,12,'ace'],
+['meraboo','メラボー','fire','🔥','R',30,10,9,'sokko'],['hidaneko','ヒダネコ','fire','😼','R',26,9,13,'senjin'],
+['namiuo','ナミウオ','water','🐟','R',28,9,11,'toushi'],['shiomaneki','シオマネキング','water','🦀','R',34,9,6,'mure'],
+['happanin','ハッパニン','grass','🍃','R',28,9,12,'doku'],['tsururisu','ツルリス','grass','🐿️','R',26,9,13,'mure'],
+['inazumao','イナズマオー','elec','⚡','R',28,10,11,'typeboost'],['gorogoron','ゴロゴロン','elec','☁️','R',36,8,6,'kataki'],
+['taimatsun','タイマッツン','fire','🕯️','N',26,6,8,'engun'],['hidamari','ヒダマリ','fire','🐣','N',24,6,9,'gisei'],
+['awagame','アワガメ','water','🐢','N',34,5,4,'tate'],['yukidaruman','ユキダルマン','water','☃️','N',28,6,7,'oukyuu'],
+['kinokoro','キノコロ','grass','🍄','N',26,6,9,'ougen'],['morigon','モリゴン','grass','🌳','N',32,6,6,'gisei'],
+['togebouzu','トゲボウズ','grass','🌵','N',26,6,8,'doku'],['birimushi','ビリムシ','elec','🐛','N',22,7,13,'engun'],
+['chikudenchu','チクデンチュウ','elec','🔋','N',26,6,9,'gisei'],['pikahane','ピカバネ','elec','🪶','N',24,6,12,'sokko'],
+].forEach(([id,name,type,emoji,rare,hp,atk,spd,ab]) => SPECIES[id] = {id,name,type,emoji,rare,hp,atk,spd,ab});
+const ITEMS = [
+  ['yakusou','やくそう',4,'🌿','先頭のHP+6'],['omamori','かいがらのおまもり',6,'🐚','先頭の初被弾−3'],
+  ['spice','スピードスパイス',9,'🌶️','先頭のすばやさ+3'],['wrist','パワーリスト',12,'💪','先頭の攻撃+2'],
+  ['booster','タイプブースター',16,'🔮','相性有利ダメ+3(全員)'],['megahon','おうえんメガホン',20,'📣','全員の攻撃+1'],
+  ['medal','でんせつのメダル',28,'🏅','全員 攻+2 HP+4'],
+].map(([id,name,price,emoji,text]) => ({id,name,price,emoji,text}));
+const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 
-let S = null, deadline = null, pickOrder = [], battles = null, matchIdx = 0, playTimer = null;
-function show(v){ ['vHome','vLobby','vAuction','vPick','vBattle','vEnd'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+/* 早見表を埋める(常時表示) */
+$('cheatAbs').innerHTML = Object.entries(AB).map(([k, [n, t]]) => `<div><b>${n}</b>: ${t}</div>`).join('');
+$('cheatItems').innerHTML = ITEMS.map(i => `<div>${i.emoji}<b>${i.name}</b>(${i.price}): ${i.text}</div>`).join('');
+$('cheatHead').onclick = () => {
+  const b = $('cheatBody');
+  b.classList.toggle('hidden');
+  $('cheatToggle').textContent = b.classList.contains('hidden') ? '▲' : '▼';
+};
+
+let S = null, deadline = null, pickOrder = [], battleNames = null, battleRound = '';
+function show(v){ ['vHome','vLobby','vAuction','vShop','vTour','vEnd'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
 function esc(s){ const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function toast(m){ const t = $('toast'); t.textContent = m; t.style.opacity = 1; clearTimeout(t._t); t._t = setTimeout(() => t.style.opacity = 0, 1800); }
+function toast(m){ const t = $('toast'); t.textContent = m; t.style.opacity = 1; clearTimeout(t._t); t._t = setTimeout(() => t.style.opacity = 0, 2000); }
 function monHTML(id, opts = {}){
   const sp = SPECIES[id];
   if (!sp) return '';
   const tm = TYPE_META[sp.type];
-  return `<div class="mon ${opts.cls||''}" ${opts.data!==undefined?`data-i="${opts.data}"`:''} title="${ABILITIES[sp.ab]}: ${AB_TEXT[sp.ab]}">
+  return `<div class="mon r-${sp.rare} ${opts.cls||''}" ${opts.data!==undefined?`data-i="${opts.data}"`:''} title="${AB[sp.ab][0]}: ${AB[sp.ab][1]}">
+    <span class="rare">${sp.rare}</span>
     ${opts.ord ? `<div class="ord">${opts.ord}</div>` : ''}
     <div class="me">${sp.emoji}</div><div class="nm">${sp.name}</div>
     <span class="tp ${tm.cls}">${tm.name}</span>
     <div class="st">HP${sp.hp} 攻${sp.atk} 速${sp.spd}</div>
-    <div class="abn">${ABILITIES[sp.ab]}</div>
+    <div class="abn">${AB[sp.ab][0]}</div>
   </div>`;
+}
+function secretHTML(n){
+  let h = '';
+  for (let i = 0; i < n; i++) h += `<div class="mon mini secret"><span class="rare">?</span><div class="me">❓</div><div class="nm">ヒミツ</div></div>`;
+  return h;
 }
 
 setInterval(() => {
-  const els = [$('timer'), $('timer2')];
+  const els = [$('timer'), $('timerShop'), $('timerTour')];
   if (!deadline){ els.forEach(el => el && (el.textContent = '')); return; }
   const remain = Math.max(0, Math.ceil((deadline - Date.now())/1000));
   els.forEach(el => el && (el.textContent = remain > 0 ? `⏱ のこり ${remain} 秒` : ''));
@@ -333,16 +437,16 @@ $('btnCopy').onclick = () => {
 socket.on('mo:state', st => {
   S = st;
   const p = st.pub;
-  deadline = (p.phase === 'auction' || p.phase === 'pick') ? p.deadline : null;
+  deadline = (p.phase === 'auction' || p.phase === 'shop' || p.phase === 'matchPick' || p.phase === 'battle') ? p.deadline : null;
   if (p.phase === 'lobby') renderLobby(p);
   else if (p.phase === 'auction' || p.phase === 'lotReveal') renderAuction(p, st.priv);
-  else if (p.phase === 'pick') renderPick(p, st.priv);
-  /* battle/ended は mo:battles イベントで進める */
+  else if (p.phase === 'shop') renderShop(p, st.priv);
+  else if (p.phase === 'matchPick' || p.phase === 'battle' || p.phase === 'matchGap') renderTour(p, st.priv);
+  /* ended は mo:end で描画 */
 });
 
 function renderLobby(p){
   $('ovLot').classList.add('hidden');
-  battles = null;
   show('vLobby');
   $('lbCode').textContent = p.code;
   $('lbSeats').innerHTML = p.seats.map((s,i) =>
@@ -360,22 +464,26 @@ function renderAuction(p, priv){
   show('vAuction');
   pickOrder = [];
   const lot = p.lots[p.lotIdx];
-  $('aLotNo').textContent = `出品 ${Math.min(p.lotIdx+1, p.lots.length)}/${p.lots.length}` + (p.mustBid ? ' ⚠ パス禁止(残りが少ない!)' : '');
+  $('aLotNo').textContent = `出品 ${Math.min(p.lotIdx+1, p.lots.length)}/${p.lots.length}` + (p.mustBid ? ' ⚠ 足りない人の優先タイム!' : '');
   $('aLot').innerHTML = lot ? monHTML(lot) : '';
   $('lotStrip').innerHTML = p.lots.map((id, i) =>
     monHTML(id, { cls: 'mini ' + (i < p.lotIdx ? 'done' : i === p.lotIdx ? 'now' : '') })).join('');
+  $('aMine').innerHTML = priv.myMons.map(id => monHTML(id, {cls:'mini'})).join('');
   const me = p.seats[priv.myIdx];
-  const canBid = p.phase === 'auction' && me.won < 3 && priv.myBid === null;
+  const iNeed = me.ownedCount < 3;
+  const canBid = p.phase === 'auction' && priv.myBid === null && (!p.mustBid || iNeed);
   $('bidArea').classList.toggle('hidden', !canBid);
-  $('bidWait').classList.toggle('hidden', !(p.phase === 'auction' && (priv.myBid !== null || me.won >= 3)));
-  $('bidWait').textContent = me.won >= 3 ? '✔ 3体そろった! みんなの競りを見物…' : '✔ 入札した! みんなを待ってる…';
-  $('bidNote').textContent = `残りコイン ${me.coins} / あと${3-me.won}体落札する` + (p.mustBid ? '(1以上で入札!)' : '(0またはパスで見送り)');
+  $('bidWait').classList.toggle('hidden', !(p.phase === 'auction' && !canBid));
+  $('bidWait').textContent = priv.myBid !== null ? '✔ 入札した! みんなを待ってる…' : (p.mustBid && !iNeed ? '⚠ 足りない人の優先タイム(自動でパス)…' : '');
+  if (p.phase === 'auction' && p.mustBid && !iNeed && priv.myBid === null) socket.emit('mo:bid', { amount: 0 }, ()=>{});
+  $('bidNote').textContent = `残りコイン ${me.coins} / 所持 ${me.ownedCount}体` +
+    (iNeed ? ` ⚠ あと${3 - me.ownedCount}体は必要!` : '(何体でも集めてOK・アイテム用にコインを残すのもアリ)');
   $('aPlayers').innerHTML = p.seats.map((s, i) => `
     <div class="pcard ${i===priv.myIdx?'me':''}">
-      <span class="chip ${s.bidSubmitted || s.won>=3 ? 'ok':''}">${s.won>=3?'完了':s.bidSubmitted?'入札済':'考え中'}</span>
+      <span class="chip ${s.bidSubmitted ? 'ok':''}">${s.bidSubmitted?'入札済':'考え中'}</span>
       ${s.isCpu?'🤖':'🙂'} ${esc(s.name)}${i===priv.myIdx?'(あなた)':''}<br>
-      💰${s.coins} / 落札${s.won}/3
-      <div class="monrow">${s.owned.map(id => monHTML(id, {cls:'mini'})).join('')}</div>
+      💰${s.coins} / ${s.ownedCount}体所持
+      <div class="monrow">${secretHTML(2)}${s.wonMons.map(id => monHTML(id, {cls:'mini'})).join('')}</div>
     </div>`).join('');
 }
 $('btnBid').onclick = () => {
@@ -394,7 +502,6 @@ function sendBid(v){
 }
 socket.on('mo:lotResult', rec => {
   const names = S ? S.pub.seats.map(s => s.name) : [];
-  const sp = SPECIES[rec.lot];
   const bidLines = rec.bids.map((b, i) =>
     `<div style="font-weight:900;${i===rec.winner?'color:var(--amber)':''}">${esc(names[i]||'?')}: ${b > 0 ? b + 'コイン' : 'パス'}${i===rec.winner?' 🏆落札!':''}</div>`).join('');
   $('ovLotPanel').innerHTML = `
@@ -404,92 +511,217 @@ socket.on('mo:lotResult', rec => {
       ? `<div style="font-size:20px;font-weight:900;margin-top:10px">${esc(names[rec.winner]||'?')} が ${rec.price}コインで落札!</div>`
       : '<div style="font-size:18px;font-weight:900;margin-top:10px">だれも入札せず… 流れました</div>'}
     <div style="margin-top:10px">${bidLines}</div>
-    <div class="note">${rec.auctionDone ? 'オークション終了! 編成にすすみます…' : 'まもなく次の出品…'}</div>`;
+    <div class="note">${rec.auctionDone ? 'オークション終了! ショップへ…' : 'まもなく次の出品…'}</div>`;
   $('ovLot').classList.remove('hidden');
   if (rec.winner !== null) seWinL();
   setTimeout(() => $('ovLot').classList.add('hidden'), 3800);
 });
 
-/* ══ 編成 ══ */
-function renderPick(p, priv){
+/* ══ ショップ ══ */
+function renderShop(p, priv){
   $('ovLot').classList.add('hidden');
-  show('vPick');
+  show('vShop');
   const me = p.seats[priv.myIdx];
-  const done = priv.myTeam !== null && priv.myTeam !== undefined;
-  $('pickWait').classList.toggle('hidden', !done);
-  $('btnTeam').classList.toggle('hidden', done);
-  $('pickRow').innerHTML = me.owned.map((id, i) => {
-    const ord = pickOrder.indexOf(i);
-    return monHTML(id, { cls: (done ? '' : 'pickable ') + (ord >= 0 ? 'sel' : ''), data: i, ord: ord >= 0 ? ord + 1 : null });
+  $('shopCoins').textContent = me.coins + 'コイン';
+  const done = me.shopDone;
+  $('btnShopDone').classList.toggle('hidden', done);
+  $('shopWait').classList.toggle('hidden', !done);
+  $('shopGrid').innerHTML = ITEMS.map(it => {
+    const bought = priv.myItems.includes(it.id);
+    const afford = me.coins >= it.price;
+    return `<div class="item ${bought?'bought':''}">
+      <span class="price">💰${it.price}</span>
+      <b>${it.emoji} ${esc(it.name)}</b><br>${esc(it.text)}<br>
+      ${bought ? '<b style="color:var(--teal)">✔ 購入済み</b>' : done ? '' :
+        `<button class="btn small ${afford?'':'gray'}" data-buy="${it.id}" ${afford?'':'disabled'}>買う</button>`}
+    </div>`;
   }).join('');
-  if (!done) {
-    $('pickRow').querySelectorAll('.mon.pickable').forEach(el => el.onclick = () => {
-      const i = Number(el.dataset.i);
-      const at = pickOrder.indexOf(i);
-      if (at >= 0) pickOrder.splice(at, 1);
-      else if (pickOrder.length < 3) pickOrder.push(i);
-      seClick();
-      renderPick(S.pub, S.priv);
+  $('shopGrid').querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
+    socket.emit('mo:buy', { itemId: b.dataset.buy }, r => {
+      if (!r.ok) { $('sErr').textContent = r.error; return; }
+      $('sErr').textContent = '';
+      seBid();
     });
-    $('btnTeam').textContent = `この3体で出撃!(${pickOrder.length}/3)`;
-    $('btnTeam').disabled = pickOrder.length !== 3;
-    $('btnTeam').onclick = () => {
-      const ids = pickOrder.map(i => me.owned[i]);
-      socket.emit('mo:setTeam', { ids }, r => { if (!r.ok) $('pErr').textContent = r.error; });
-    };
-  }
-  $('pPlayers').innerHTML = p.seats.filter((_, i) => i !== priv.myIdx).map(s => `
-    <div class="pcard"><span class="chip ${s.teamSet?'ok':''}">${s.teamSet?'編成完了':'考え中'}</span>
-      ${s.isCpu?'🤖':'🙂'} ${esc(s.name)} 💰${s.coins}
-      <div class="monrow">${s.owned.map(id => monHTML(id, {cls:'mini'})).join('')}</div>
+  });
+  $('btnShopDone').onclick = () => socket.emit('mo:shopDone', {}, ()=>{});
+  $('sPlayers').innerHTML = p.seats.map((s, i) => `
+    <div class="pcard ${i===priv.myIdx?'me':''}">
+      <span class="chip ${s.shopDone?'ok':''}">${s.shopDone?'完了':'買い物中'}</span>
+      ${s.isCpu?'🤖':'🙂'} ${esc(s.name)} 💰${s.coins}<br>
+      ${s.items.length ? s.items.map(id => ITEM_BY_ID[id] ? ITEM_BY_ID[id].emoji + ITEM_BY_ID[id].name : id).join(' / ') : '(まだ何も買っていない)'}
     </div>`).join('');
 }
 
-/* ══ バトル再生 ══ */
-socket.on('mo:battles', data => {
-  battles = data;
-  matchIdx = 0;
-  playMatch();
-});
-function playMatch(){
-  clearInterval(playTimer);
-  if (!battles || matchIdx >= battles.results.length) return showEnd();
-  show('vBattle');
-  const r = battles.results[matchIdx];
-  const names = battles.names;
-  $('bTitle').textContent = `⚔ 第${matchIdx+1}試合: ${names[r.a]} VS ${names[r.b]}`;
-  $('bTeams').innerHTML = [r.a, r.b].map((pl, side) => `
-    <div class="hpbox">${esc(names[pl])}<div class="monrow">${battles.teams[pl].map(id => monHTML(id, {cls:'mini'})).join('')}</div></div>`).join('');
-  const blog = $('blog');
-  blog.innerHTML = '';
-  const lines = r.log.map(ev => logLine(ev, names[r.a], names[r.b])).filter(Boolean);
-  let li = 0;
-  $('btnNextMatch').classList.add('hidden');
-  $('btnSkip').classList.remove('hidden');
-  playTimer = setInterval(() => {
-    if (li >= lines.length) { finishMatch(); return; }
-    const { html, snd } = lines[li++];
-    const d = document.createElement('div');
-    d.innerHTML = html;
-    blog.appendChild(d);
-    blog.scrollTop = blog.scrollHeight;
-    if (snd === 'hit') seHit();
-    else if (snd === 'faint') seFaint();
-  }, 300);
-  $('btnSkip').onclick = () => {
-    clearInterval(playTimer);
-    while (li < lines.length) { const d = document.createElement('div'); d.innerHTML = lines[li++].html; blog.appendChild(d); }
-    blog.scrollTop = blog.scrollHeight;
-    finishMatch();
-  };
-  function finishMatch(){
-    clearInterval(playTimer);
-    $('btnSkip').classList.add('hidden');
-    $('btnNextMatch').classList.remove('hidden');
-    $('btnNextMatch').textContent = matchIdx + 1 < battles.results.length ? 'つぎの試合へ ▶' : '最終結果へ 🏆';
-    $('btnNextMatch').onclick = () => { matchIdx++; playMatch(); };
+/* ══ トーナメント ══ */
+function renderBracket(el, bracket, matchIdx, names, seats){
+  el.innerHTML = (bracket || []).map((m, i) => {
+    const nm = x => x === null ? '???' : esc(names ? names[x] : seats[x].name);
+    const win = m.winner;
+    return `<div class="bmatch ${i === matchIdx ? 'now' : ''}">
+      <span class="rd">${m.round}</span>
+      <span class="${win === m.a ? 'win' : ''}">${nm(m.a)}${win === m.a ? ' 🏆' : ''}</span>
+      <span style="color:#8aa39b">VS</span>
+      <span class="${win === m.b ? 'win' : ''}">${nm(m.b)}${win === m.b ? ' 🏆' : ''}</span>
+      ${i === matchIdx && win === null ? '<span style="margin-left:auto;color:var(--amber)">⚔ 進行中</span>' : ''}
+    </div>`;
+  }).join('');
+}
+function renderTour(p, priv){
+  show('vTour');
+  renderBracket($('bracket'), p.bracket, p.matchIdx, null, p.seats);
+  const m = p.match;
+  const meIn = m && (m.a === priv.myIdx || m.b === priv.myIdx);
+  // バトル中(自分が対戦者)
+  if (p.phase === 'battle' && priv.battle) {
+    $('tourPick').classList.add('hidden');
+    $('tourWait').classList.add('hidden');
+    $('tourBattle').classList.remove('hidden');
+    renderBattleUI(p, priv);
+    return;
+  }
+  $('tourBattle').classList.add('hidden');
+  if (p.phase === 'matchGap') {
+    $('tourPick').classList.add('hidden');
+    $('tourWait').classList.remove('hidden');
+    $('twMsg').textContent = '🏁 試合終了! まもなく次へ…';
+    return;
+  }
+  if (p.phase === 'battle' && !priv.battle) {
+    $('tourPick').classList.add('hidden');
+    $('tourWait').classList.remove('hidden');
+    const nm = x => x === null ? '???' : p.seats[x].name;
+    $('twMsg').textContent = m ? `⚔ ${m.round}(${nm(m.a)} VS ${nm(m.b)})が対戦中… 結果を待とう` : '⏳ 待機中…';
+    return;
+  }
+  if (p.phase === 'matchPick' && meIn) {
+    $('tourPick').classList.remove('hidden');
+    $('tourWait').classList.add('hidden');
+    const oppIdx = m.a === priv.myIdx ? m.b : m.a;
+    $('tpTitle').textContent = `⚔ ${m.round}: あなた VS ${p.seats[oppIdx].name}`;
+    const done = priv.myPick !== null && priv.myPick !== undefined;
+    $('tpWait').classList.toggle('hidden', !done);
+    $('btnTeam').classList.toggle('hidden', done);
+    $('tpRow').innerHTML = priv.myMons.map((id, i) => {
+      const ord = pickOrder.indexOf(i);
+      return monHTML(id, { cls: (done ? '' : 'pickable ') + (ord >= 0 ? 'sel' : ''), data: i, ord: ord >= 0 ? ord + 1 : null });
+    }).join('');
+    if (!done) {
+      $('tpRow').querySelectorAll('.mon.pickable').forEach(el => el.onclick = () => {
+        const i = Number(el.dataset.i);
+        const at = pickOrder.indexOf(i);
+        if (at >= 0) pickOrder.splice(at, 1);
+        else if (pickOrder.length < 3) pickOrder.push(i);
+        seClick();
+        renderTour(S.pub, S.priv);
+      });
+      $('btnTeam').textContent = `この3体で出撃!(${pickOrder.length}/3)`;
+      $('btnTeam').disabled = pickOrder.length !== 3;
+      $('btnTeam').onclick = () => {
+        const ids = pickOrder.map(i => priv.myMons[i]);
+        socket.emit('mo:pickTeam', { ids }, r => {
+          if (!r.ok) $('tErr').textContent = r.error;
+          else { pickOrder = []; $('tErr').textContent = ''; }
+        });
+      };
+    }
+  } else {
+    $('tourPick').classList.add('hidden');
+    $('tourWait').classList.remove('hidden');
+    if (m) {
+      const nm = x => x === null ? '???' : p.seats[x].name;
+      $('twMsg').textContent = p.phase === 'matchPick'
+        ? `⏳ ${m.round}(${nm(m.a)} VS ${nm(m.b)})の編成中… 待機しよう`
+        : `⚔ ${m.round}が対戦中… 結果を待とう`;
+    } else {
+      $('twMsg').textContent = '⏳ 待機中…';
+    }
   }
 }
+/* ══ バトル(対話型・対戦者だけ) ══ */
+socket.on('mo:battleStart', b => {
+  battleNames = b.names;
+  battleRound = b.round;
+  $('blog').innerHTML = '';
+  const d = document.createElement('div');
+  d.innerHTML = `<b class="w">⚔ ${esc(b.round)} かいし! ${esc(b.names[0])} VS ${esc(b.names[1])}</b>`;
+  $('blog').appendChild(d);
+});
+socket.on('mo:turn', t => {
+  const names = battleNames || ['A', 'B'];
+  const lines = t.events.map(ev => logLine(ev, names[0], names[1])).filter(Boolean);
+  const blog = $('blog');
+  lines.forEach((l, i) => {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.innerHTML = l.html;
+      blog.appendChild(d);
+      blog.scrollTop = blog.scrollHeight;
+      if (l.snd === 'hit') seHit(); else if (l.snd === 'faint') seFaint();
+    }, i * 160);
+  });
+});
+function renderBattleUI(p, priv){
+  const b = priv.battle;
+  const snap = b.snap;
+  const names = battleNames || [p.seats[p.match.a].name, p.seats[p.match.b].name];
+  $('btTitle').textContent = `⚔ ${p.match.round}: ${names[0]} VS ${names[1]} (ターン${snap.turn + 1})`;
+  // 盤面(自分側を左に)
+  const order = b.youAre === 0 ? [0, 1] : [1, 0];
+  $('btField').innerHTML = order.map(side => {
+    const rows = snap.teams[side].map((f, i) => {
+      const sp = SPECIES[f.id];
+      const pct = Math.round(f.hp / f.maxHp * 100);
+      return `<div class="brow ${i === snap.act[side] && f.hp > 0 ? 'active' : ''} ${f.hp <= 0 ? 'dead' : ''}">
+        <span class="bemo">${sp.emoji}</span>
+        <div class="bhp"><div class="bnm">${sp.name}${f.poisoned ? '☠' : ''}${f.atkBonus > 0 ? '⬆' : ''} ${f.hp}/${f.maxHp}</div>
+          <div class="hpbar"><i class="${pct <= 30 ? 'low' : ''}" style="width:${pct}%"></i></div></div>
+        ${i === snap.act[side] && f.hp > 0 ? '<span>⚔</span>' : ''}
+      </div>`;
+    }).join('');
+    return `<div class="bteam"><h4>${esc(names[side])}${b.youAre === side ? '(あなた)' : ''} ${(snap.items[side]||[]).map(id => ITEM_BY_ID[id]?ITEM_BY_ID[id].emoji:'').join('')}</h4>${rows}</div>`;
+  }).join('<div style="font-weight:900;align-self:center;padding:0 4px">VS</div>');
+  // 行動ボタン
+  const box = $('btActions');
+  if (b.needAction && !b.mySubmitted) {
+    if (snap.phase === 'replace') {
+      box.innerHTML = `<div style="text-align:center;font-weight:900;color:var(--red)">💀 たおれた! 次のモンスターをえらぼう</div>
+        <div class="actbtns">${(b.legal.send || []).map(i => {
+          const sp = SPECIES[snap.teams[b.youAre][i].id];
+          return `<button class="btn amber" data-send="${i}">${sp.emoji} ${sp.name}を出す</button>`;
+        }).join('')}</div>`;
+    } else {
+      box.innerHTML = `<div style="text-align:center;font-weight:900">どうする?</div>
+        <div class="actbtns">
+          <button class="btn" data-atk="1">⚔ こうげき</button>
+          ${(b.legal.switch || []).map(i => {
+            const sp = SPECIES[snap.teams[b.youAre][i].id];
+            return `<button class="btn gray" data-sw="${i}">🔄 ${sp.emoji}${sp.name}にこうたい</button>`;
+          }).join('')}
+        </div>`;
+    }
+    box.querySelectorAll('[data-atk]').forEach(el => el.onclick = () => sendAction({ t: 'attack' }));
+    box.querySelectorAll('[data-sw]').forEach(el => el.onclick = () => sendAction({ t: 'switch', to: Number(el.dataset.sw) }));
+    box.querySelectorAll('[data-send]').forEach(el => el.onclick = () => sendAction({ t: 'send', to: Number(el.dataset.send) }));
+  } else if (b.mySubmitted) {
+    box.innerHTML = '<div style="text-align:center;font-weight:900;color:#5f7a72">✔ 行動した! 相手を待ってる…</div>';
+  } else {
+    box.innerHTML = '<div style="text-align:center;font-weight:900;color:#5f7a72">相手が次のモンスターをえらんでいる…</div>';
+  }
+}
+function sendAction(a){
+  socket.emit('mo:action', a, r => {
+    if (!r.ok) { $('btErr').textContent = r.error; return; }
+    $('btErr').textContent = '';
+    seClick();
+  });
+}
+socket.on('mo:matchResult', r => {
+  if (!S) return;
+  const meIn = r.a === S.priv.myIdx || r.b === S.priv.myIdx;
+  if (!meIn) toast(`🏁 ${r.round}: ${r.names[r.winner]} の勝ち!`);
+  else if (r.winner !== S.priv.myIdx) toast('😢 まけた… でも最後まで見届けよう');
+  else { toast('🎉 かった!!'); seWinL(); }
+});
 function logLine(ev, nameA, nameB){
   const who = side => side === 0 ? nameA : nameB;
   switch (ev.t) {
@@ -497,29 +729,33 @@ function logLine(ev, nameA, nameB){
     case 'hit': return { html: `${esc(who(ev.side))}の <b>${esc(ev.name)}</b> のこうげき! ${esc(ev.target)}に <span class="dmg">${ev.dmg}ダメージ</span>${ev.mult>1?' <span class="w">効果バツグン!</span>':ev.mult<1?' いまひとつ…':''} (残りHP${ev.hp})`, snd: 'hit' };
     case 'faint': return { html: `💀 ${esc(who(ev.side))}の <b>${esc(ev.name)}</b> はたおれた!`, snd: 'faint' };
     case 'enter': return { html: `▶ ${esc(who(ev.side))}は <b>${esc(ev.name)}</b> をくりだした!` };
-    case 'ab': return { html: `<span class="ab">✨ ${esc(ev.name)} の「${ABILITIES[ev.ab]||ev.ab}」発動!</span>` };
+    case 'switch': return { html: `🔄 ${esc(who(ev.side))}は <b>${esc(ev.from)}</b> をひっこめた!` };
+    case 'ab': return { html: `<span class="ab">✨ ${esc(ev.name)} の「${(AB[ev.ab]||[ev.ab])[0]}」発動!</span>` };
+    case 'item': return { html: `<span class="ab">🐚 ${esc(ev.name)} のおまもりがダメージを防いだ!</span>` };
     case 'poison': return { html: `☠ ${esc(ev.name)} は毒で3ダメージ (残りHP${ev.hp})` };
     case 'heal': return { html: `<span class="heal">🌿 ${esc(ev.name)} はHPを回復 (HP${ev.hp})</span>` };
-    case 'end': return { html: `<b class="w">${ev.winner === null ? '引き分け!' : (ev.winner === 0 ? nameA : nameB) + ' の勝ち!!'}</b>` };
+    case 'end': return { html: `<b class="w">${(ev.winner === 0 ? nameA : nameB)} の勝ち!!</b>` };
     default: return null;
   }
 }
-function showEnd(){
+
+/* ══ 結果 ══ */
+socket.on('mo:end', e => {
+  deadline = null;
   show('vEnd');
-  const st = battles.standings;
-  const names = battles.names;
   const myIdx = S ? S.priv.myIdx : -1;
-  const MED = ['🥇','🥈','🥉','4位'];
-  $('endTitle').textContent = st.winners.map(w => names[w]).join(' と ') + ' の優勝!' + (st.winners.includes(myIdx) ? ' 🎉' : '');
-  if (st.winners.includes(myIdx)) seWin();
-  $('endTable').innerHTML = '<tr><th>順位</th><th>なまえ</th><th>勝ち点</th><th>残りコイン</th></tr>' +
-    st.order.map((e, i) => `<tr><td style="font-size:16px">${MED[i]||i+1+'位'}</td>
-      <td style="text-align:left"><b>${esc(names[e.p])}${e.p===myIdx?'(あなた)':''}</b></td>
-      <td><b>${e.points}</b></td><td>💰${e.coins}</td></tr>`).join('');
-  $('endTeams').innerHTML = '<div class="note" style="font-weight:900;margin-top:12px">みんなの出撃メンバー(出た順)</div>' +
-    battles.teams.map((t, p) => `<div class="row" style="margin-top:6px"><b style="width:110px">${esc(names[p])}</b>
-      <div class="monrow">${t.map(id => monHTML(id, {cls:'mini'})).join('')}</div></div>`).join('');
-}
+  const MED = { 1: '🥇優勝', 2: '🥈準優勝', 3: '🥉ベスト4' };
+  $('endTitle').textContent = e.standings.winners.map(w => e.names[w]).join(' と ') + ' の優勝!' + (e.standings.winners.includes(myIdx) ? ' 🎉' : '');
+  if (e.standings.winners.includes(myIdx)) seWin();
+  renderBracket($('endBracket'), e.bracket, -1, e.names, null);
+  $('endTable').innerHTML = '<tr><th>順位</th><th>なまえ</th><th>残りコイン</th><th>アイテム</th></tr>' +
+    e.standings.order.map(o => `<tr>
+      <td>${MED[o.place] || o.place + '位'}</td>
+      <td style="text-align:left"><b>${esc(e.names[o.p])}${o.p===myIdx?'(あなた)':''}</b></td>
+      <td>💰${o.coins}</td>
+      <td>${o.items.map(id => ITEM_BY_ID[id]?ITEM_BY_ID[id].emoji:'').join('') || '—'}</td>
+    </tr>`).join('');
+});
 </script>
 <script src="/bgm.js"></script>
 <script>AraiBGM.init('dorobou');</script>
