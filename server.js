@@ -69,7 +69,7 @@ function publicState(room) {
       return {
         idx: i, name: s.name, isCpu: s.isCpu, connected: s.connected,
         chosen: !!s.myId, submitted: !!s.sub,
-        money: p ? p.money : 10, eval: p ? p.eval : 3,
+        money: p ? p.money : 10, eval: p ? p.eval : 6,
         lastRank: p ? p.lastRank : null,
         lastLabel: s.lastLabel || null,
         revealed: p ? p.revealed : false,

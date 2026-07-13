@@ -265,8 +265,8 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
         <summary>📜 ルールを読む</summary>
         <div class="rb">
           <b>目的:</b> 合計ちょうど3.0%のお酒を最初に造る。<br>
-          <b>準備:</b> 24食材に度数(0.0〜2.8%)がランダムに配られる(非公開)。各自マイ食材を1つ選び、その度数だけ自分に見える。初期値は $10・評価5。<br>
-          <b>毎ラウンド:</b> 食材を3つ選んで醸造(同じ食材は2つまで)。使用料は同じ食材を買うたびに $1→$2→$3…と値上がり(自分だけ)。金欠なら休憩(+$5、評価−1)。<br>
+          <b>準備:</b> 24食材に度数(0.0〜2.8%)がランダムに配られる(非公開)。各自マイ食材を1つ選び、その度数だけ自分に見える。初期値は $10・評価6。<br>
+          <b>毎ラウンド:</b> 食材を3つ選んで醸造(同じ食材は2つまで)。使用料は同じ食材を買うたびに $1→$2→$3…と値上がり(自分だけ)。金欠なら休憩(+$6、評価−1)。<br>
           <b>時間制限:</b> 1ラウンドの考慮時間は1分。超過すると賞金なし・評価−1。<br>
           <b>公開:</b> 全員同時公開。見えるのは順位だけ。<br>
           <b>採点:</b> 3.1%以上は失敗(評価−1・所持金半減)。それ以外は度数の高い順に賞金(1位$10/2位$6/3位$4/4位$3/5位以下$2)。1位は評価+1。失敗者がいないラウンドは最下位が評価−1。<br>
@@ -326,7 +326,7 @@ details.rules .rb{font-size:14px;line-height:1.8;margin-top:8px}
         <div id="benchinfo"></div>
         <div style="flex:1"></div>
         <button class="btn" id="btn-brew" onclick="submitBrew()">🍺 醸造する!</button>
-        <button class="btn ghost" id="btn-rest" onclick="submitRest()">😴 休憩 (+$5 / 評価−1)</button>
+        <button class="btn ghost" id="btn-rest" onclick="submitRest()">😴 休憩 (+$6 / 評価−1)</button>
       </div>
       <p id="waitmsg" class="hidden"></p>
     </div>
@@ -824,7 +824,7 @@ socket.on('reveal', (rv) => {
     // お金の表記: 収支ではなく「もらった賞金」を表示(失敗のみ損失を表示)
     let moneyTxt;
     if (res.winner) moneyTxt = '';
-    else if (res.type === 'rest') moneyTxt = `<span class="plus">+$5</span>`;
+    else if (res.type === 'rest') moneyTxt = `<span class="plus">+$${res.moneyDelta ?? 6}</span>`;
     else if (res.type === 'timeout') moneyTxt = `<span class="minus">賞金なし</span>`;
     else if (res.failed) moneyTxt = `<span class="minus">−$${Math.abs(res.moneyDelta)}</span>`;
     else moneyTxt = `<span class="plus">賞金 +$${res.pay || 0}</span>`;
@@ -850,8 +850,8 @@ socket.on('reveal', (rv) => {
     ms.innerHTML = `⏰ 時間切れ… (賞金なし / 評価−1)`;
     logLine(`R${rv.roundNo}: あなたは時間切れ (評価−1)`);
   } else {
-    ms.innerHTML = `あなたは休憩しました (+$5 / 評価−1)`;
-    logLine(`R${rv.roundNo}: あなたは休憩 (+$5 / 評価−1)`);
+    ms.innerHTML = `あなたは休憩しました (+$6 / 評価−1)`;
+    logLine(`R${rv.roundNo}: あなたは休憩 (+$6 / 評価−1)`);
   }
   document.getElementById('ov-next').textContent = rv.ended ? '結果を見る 🏆' : 'つぎのラウンドへ ▶';
   document.getElementById('overlay').classList.add('show');

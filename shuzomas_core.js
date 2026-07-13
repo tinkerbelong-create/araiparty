@@ -128,7 +128,7 @@ class Engine {
     this.winnerIdxs = null; // 勝者(複数可)
     this.endReason = null;  // 'exact' | 'survivor' | 'draw'
     this.players = Array.from({ length: playerCount }, (_, i) => ({
-      idx: i, money: 10, eval: 5, myIngredientId: null,
+      idx: i, money: 10, eval: 6, myIngredientId: null,
       revealed: false, buyCount: {}, restedLastRound: false,
       lastSakeDos: null, lastRank: null,
     }));
@@ -178,11 +178,11 @@ class Engine {
         results[i] = { type: 'timeout', moneyDelta: 0, evalDelta: -1 };
       } else if (s.type === 'rest') {
         if (this.canAffordAnyBrew(p)) throw new Error(`P${i}: 休憩条件を満たしていない`);
-        p.money += 5;
+        p.money += 6;
         p.eval = Math.max(0, p.eval - 1);
         p.restedLastRound = true;
         p.lastSakeDos = null;
-        results[i] = { type: 'rest', moneyDelta: +5, evalDelta: -1 };
+        results[i] = { type: 'rest', moneyDelta: +6, evalDelta: -1 };
       } else {
         if (!isValidPicks(s.picks)) throw new Error(`P${i}: 不正な選択`);
         const cost = pickCost(p.buyCount, s.picks);
