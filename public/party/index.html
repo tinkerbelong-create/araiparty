@@ -92,6 +92,35 @@ label{display:block;text-align:left;color:var(--muted);font-size:13px;font-weigh
 .gbar-name{width:120px;font-weight:900;text-align:right;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:5px;align-items:center;justify-content:flex-end}
 .gbar-track{flex:1;background:var(--soft);border-radius:999px;height:30px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.06)}
 .gbar-fill{height:100%;border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1);display:flex;align-items:center;justify-content:flex-end;color:#fff;font-weight:900;font-size:14px;padding-right:10px;min-width:40px}
+
+/* シュゾマス(パーティ内) */
+.sz-hud{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.sz-seat{flex:1;min-width:150px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 10px}
+.sz-seat.sub{border-color:var(--green)}
+.sz-seat .nm{font-weight:900}
+.sz-seat .stt{display:flex;gap:8px;margin-top:4px;font-weight:700;color:#6a7488;font-size:13px}
+.sz-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
+@media(max-width:560px){.sz-grid{grid-template-columns:repeat(4,1fr)}}
+.sz-ing{background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 2px 10px;text-align:center;cursor:pointer;position:relative;user-select:none}
+.sz-ing.sel{border-color:var(--accent);background:#eef1ff;box-shadow:0 0 0 2px var(--accent)}
+.sz-ing.sel2{border-color:#3d4ed6;background:#e0e5ff;box-shadow:0 0 0 3px #3d4ed6}
+.sz-ing.dim{opacity:.4;cursor:not-allowed}
+.sz-ing .emo{font-size:24px}.sz-ing .no{font-size:10px;color:#8a94a8;font-weight:700}.sz-ing .pr{font-size:11px;font-weight:900;color:var(--green)}
+.sz-ing .at{position:absolute;top:-6px;right:-4px;width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:900;line-height:20px;border:2px solid #fff}
+.sz-ing .kd{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);background:var(--ink);color:#ffd23f;font-size:10px;font-weight:900;border-radius:7px;padding:0 6px;white-space:nowrap}
+.a-A{background:#8e5bbf}.a-B{background:#2aa8a0}.a-C{background:#e07b28}.a-D{background:#b04a4a}
+.sz-bench{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.sz-slot{width:64px;height:64px;border:2px dashed var(--line);border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative}
+.sz-slot.filled{border-style:solid;background:#fff}
+.sz-slot .x{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;font-weight:900;line-height:18px;text-align:center;cursor:pointer;border:2px solid #fff}
+.sz-info{font-weight:900}.sz-info .over{color:var(--red)}.sz-info .ok{color:var(--green)}
+.sz-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.sz-chip{background:#fff;border:2px solid var(--line);border-radius:7px;font-size:12px;font-weight:900;padding:2px 8px;color:#6a7488}
+.sz-rrow{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 12px;margin-top:8px}
+.sz-rrow.me{outline:3px solid var(--accent)}
+.sz-rrow .md{font-size:24px;width:34px;text-align:center}.sz-rrow .rn{flex:1;font-weight:900}.sz-rrow .dl{font-weight:900;font-size:13px;text-align:right}
+.sz-rrow .plus{color:var(--green)}.sz-rrow .minus{color:var(--red)}
+.sakechip{display:inline-block;background:var(--ink);color:#ffd23f;border-radius:7px;padding:0 8px;font-size:12px;font-weight:900}
 </style>
 </head>
 <body>
@@ -106,16 +135,16 @@ function renderHostExternal(){
     : Object.values(state.players).sort((a,b)=>a.order-b.order).map((p,i)=>({id:p.id,name:p.name,color:TEAMCOL[i%TEAMCOL.length]}));
   root.className='';
   if(g.ranked){
-    root.innerHTML=`<div class="wrap"><div class="center" style="min-height:auto;gap:6px"><div style="font-size:54px">${state.curGameIcon}</div><h1>${esc(state.curGameName)} 結果</h1></div>
+    root.innerHTML=`<div class="wrap"><div class="center" style="min-height:auto;gap:6px"><div style="font-size:54px">${curIcon()}</div><h1>${esc(curName())} 結果</h1></div>
       <div class="card">${(g.ranking||[]).map(r=>`<div class="row" style="justify-content:space-between;padding:10px 4px;border-bottom:2px solid var(--soft)"><b>${r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':r.rank+'位'} ${esc(r.name)}</b><b style="color:var(--green)">+${r.gained}pt</b></div>`).join('')}</div>
       ${scoreboardHTML()}
       <div class="center" style="min-height:auto"><button id="nextm" class="green">▶ 次の試合へ</button></div></div>`;
     el('nextm').onclick=()=>socket.emit('pt:endMatch'); return;
   }
   const remaining=units.filter(u=>!extOrder.includes(u.id));
-  root.innerHTML=`<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">${state.curGameIcon} ${esc(state.curGameName)} <span class="pill">第${state.session.index+1}戦・別画面</span></h2></div>${scoreboardHTML()}<div style="height:10px"></div>
+  root.innerHTML=`<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">${curIcon()} ${esc(curName())} <span class="pill">第${state.session.index+1}戦・別画面</span></h2></div>${scoreboardHTML()}<div style="height:10px"></div>
     <div class="card" style="text-align:center"><p class="sub">このゲームは別画面であそびます。ホストが下のボタンで開き、みんなはそのゲームの合言葉で参加してください。</p>
-      <button class="secondary" id="openg" style="margin-top:8px">▶ ${esc(state.curGameName)}を開く</button></div>
+      <button class="secondary" id="openg" style="margin-top:8px">▶ ${esc(curName())}を開く</button></div>
     <div class="card"><h3>遊び終わったら「順位」を入力（1位から順にタップ）</h3>
       <div class="row" style="margin-top:6px">${remaining.length?remaining.map(u=>`<button class="ghost" data-u="${u.id}" style="border-color:${u.color}">${esc(u.name)}</button>`).join(''):'<span class="sub">全員入力しました</span>'}</div>
       <div style="margin-top:10px">${extOrder.map((id,i)=>{const u=units.find(x=>x.id===id);return `<div class="row" style="justify-content:space-between;padding:6px 4px"><b>${i+1===1?'🥇':i+1===2?'🥈':i+1===3?'🥉':(i+1)+'位'} ${esc(u?u.name:'')} <small class="sub">(+${rankPtsClient(i+1)}pt)</small></b></div>`;}).join('')}</div>
@@ -129,14 +158,129 @@ function renderPlayerExternal(){
   const g=state.game, me=state.players[priv.youId]; if(!me){ sessionStorage.removeItem('pt_player'); renderHome('部屋から外れました'); return; }
   root.className='';
   if(g.ranked){ const e=scoreEntries();
-    root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:52px">${state.curGameIcon}</div><h1 style="font-size:24px">結果が入りました！</h1></div>
+    root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:52px">${curIcon()}</div><h1 style="font-size:24px">結果が入りました！</h1></div>
       <div class="card">${e.map((x,i)=>`<div class="row" style="justify-content:space-between;padding:6px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'👑 ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
       <p class="status">ホストが次に進むのを待ってね📺</p></div>`; return;
   }
-  root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:72px">${state.curGameIcon}</div><h1 style="font-size:26px">${esc(state.curGameName)}</h1><p class="my-slot">このゲームは別画面であそびます</p></div>
-    <div class="card" style="text-align:center"><button class="secondary" style="width:100%" id="openg">▶ ${esc(state.curGameName)}を開く</button>
+  root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:72px">${curIcon()}</div><h1 style="font-size:26px">${esc(curName())}</h1><p class="my-slot">このゲームは別画面であそびます</p></div>
+    <div class="card" style="text-align:center"><button class="secondary" style="width:100%" id="openg">▶ ${esc(curName())}を開く</button>
       <p class="status" style="margin-top:10px">ホストが作った合言葉で参加してね。<br>終わったらこの画面に戻って、結果入力を待ちます。</p></div></div>`;
   el('openg').onclick=()=>window.open(state.curGameUrl||'/','_blank');
+}
+
+/* 個人戦=クイズ: 1人で答えを全文字入力 */
+function renderSoloQuiz(g, slots){
+  const ordered=slots.slice().sort((a,b)=>a.index-b.index);
+  const cur=ordered.map(s=>s.char||'').join('');
+  const locked=ordered.every(s=>s.locked);
+  root.className='';
+  root.innerHTML=`<div class="phone"><div style="text-align:center"><div class="pill" style="background:var(--gold);color:#4a2f10;border:none">あなたの番！（クイズ）</div><p class="my-slot">問題：${esc(g.question.text)}</p></div>
+    <div class="card"><label>答え（${g.length}文字）</label>
+      <input class="big-input" id="soloans" maxlength="${g.length}" ${locked?'disabled':''} value="${esc(cur)}" placeholder="こたえ">
+      <div style="height:10px"></div>
+      <button id="sololock" style="width:100%" class="${locked?'pink':'green'}">${locked?'🔓 ロック解除':'🔒 これで決定（ロック）'}</button></div>
+    <p class="status">カタカナ／ひらがなどちらでもOK</p></div>`;
+  el('soloans').oninput=()=>{ const v=Array.from(el('soloans').value); for(let i=0;i<g.length;i++) socket.emit('pt:np:input',{index:i,char:v[i]||''}); };
+  el('sololock').onclick=()=>{ const willLock=!locked; ordered.forEach(s=>socket.emit('pt:np:lock',{index:s.index,locked:willLock})); };
+}
+
+/* ══════════ シュゾマス(パーティ内) ══════════ */
+const SZ_EMOJI=['🍇','🍈','🍉','🍊','🍋','🍌','🍍','🥭','🍎','🍏','🍐','🍑','🍒','🍓','🫐','🥝','🍅','🥥','🌰','🫒','🍆','🥕','🌽','🫑'];
+const SZ_ATTR={A:'薫',B:'爽',C:'醇',D:'熟'}; const SZ_SPECIAL={D:'花',C:'鳥',B:'風',A:'月'};
+const SZ_STARS={1:'楽勝',2:'簡単',3:'普通',4:'難しい',5:'激ムズ'};
+const dosStr=d=>(d/10).toFixed(1)+'%';
+function szStar(n){return '★'.repeat(n)+'☆'.repeat(5-n)+' '+SZ_STARS[n];}
+function szSake(a){const c={A:0,B:0,C:0,D:0};a.forEach(x=>c[x]++);const m=Math.max(c.A,c.B,c.C,c.D);if(m===1)return SZ_SPECIAL[['A','B','C','D'].find(k=>c[k]===0)];return SZ_ATTR[['A','B','C','D'].find(k=>c[k]===m)]+'酒';}
+function szCostC(bc,p){const t={};let c=0;for(const id of p){t[id]=(t[id]??(bc[id]||0))+1;c+=t[id];}return c;}
+function szValidC(p){if(!p||p.length!==3)return false;const c={};p.forEach(id=>c[id]=(c[id]||0)+1);return Math.max(...Object.values(c))<=2;}
+function szAttr(id){const g=state.game.ingredients.find(x=>x.id===id);return g?g.attr:'A';}
+function szKnownDos(id){const sz=priv.sz;if(sz&&sz.myId===id)return sz.myDos;for(const s of state.game.seats)if(s.openMyId===id)return s.openMyDos;return null;}
+function szBuildGrid(make){const box=document.createElement('div');box.className='sz-grid';state.game.ingredients.slice().sort((a,b)=>a.id-b.id).forEach(g=>box.appendChild(make(g)));return box;}
+function szHeaderHost(){ return `<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center">
+  <h2 style="margin:0">🍺 シュゾマス <span class="pill">第${state.session.index+1}戦</span></h2>
+  <button class="warn" id="endm">この試合を終える ▶ 次へ</button></div>${scoreboardHTML()}<div style="height:10px"></div>`; }
+function szWireEnd(){ if(el('endm')) el('endm').onclick=()=>{ if(confirm('この試合を終えて次へ進みますか？（途中の場合は加点なし）')) socket.emit('pt:endMatch'); }; }
+
+function renderHostShuzomas(){
+  const g=state.game; if(!g) return; root.className='';
+  if(szReveal){ return szRevealPanel(true); }
+  if(g.sub==='ended'){ root.innerHTML=szHeaderHost()+szEndedHTML(true)+`</div>`; szWireEnd(); if(el('szNextM')) el('szNextM').onclick=()=>socket.emit('pt:endMatch'); return; }
+  let h=szHeaderHost();
+  h+=`<div class="card"><div class="row" style="justify-content:space-between"><div class="pill">${g.sub==='myselect'?'マイ食材えらび':'第 '+(g.round+1)+' ラウンド'}</div><div class="pill">難易度 ${esc(szStar(g.stars))}</div></div>`;
+  h+=`<div class="sz-hud">`+g.seats.map(sm=>`<div class="sz-seat ${sm.submitted?'sub':''}"><div class="nm">${esc(sm.name)}${!sm.connected?' ⚠':''}</div>
+      <div class="stt"><span>💰 $${sm.money}</span><span>⭐ ${sm.eval}</span><span>${g.sub==='myselect'?(sm.chosen?'✔選択':'選択中'):(sm.submitted?'✔提出':'考え中')}</span></div>
+      ${sm.revealed?`<div class="stt">🔍 No.${sm.openMyId}=${dosStr(sm.openMyDos)}</div>`:''}</div>`).join('')+`</div>`;
+  h+=`<div style="margin-top:6px"><b style="font-size:13px;color:#6a7488">🌡 今回の24食材の度数(昇順・どれがどれかは秘密)</b><div class="sz-chips">`+g.dosSet.map(d=>`<span class="sz-chip">${dosStr(d)}</span>`).join('')+`</div></div>`;
+  h+=`<p class="waiting" style="margin-top:10px">${g.sub==='myselect'?'各自スマホでマイ食材を選んでいます…':'各自スマホで醸造中…（全員そろうと結果が出ます）'}</p></div></div>`;
+  root.innerHTML=h; szWireEnd();
+}
+
+function renderPlayerShuzomas(){
+  const g=state.game, sz=priv.sz; root.className='';
+  if(szReveal){ return szRevealPanel(false); }
+  if(!sz){ root.innerHTML=`<div class="phone"><p class="status">読み込み中…</p></div>`; return; }
+  if(g.sub==='ended'){ root.innerHTML=`<div class="phone">`+szEndedHTML(false)+`</div>`; return; }
+  if(g.sub==='myselect'){
+    const chosen=!!sz.myId; const wrap=document.createElement('div'); wrap.className='phone';
+    wrap.innerHTML=`<div style="text-align:center"><div class="pill">マイ食材をえらぶ</div><p class="my-slot">好きな食材を1つ。その度数だけ、あなたにこっそり見えます（早い者勝ち）</p></div>`;
+    wrap.appendChild(szBuildGrid(ing=>{ const taken=g.takenMyIds.includes(ing.id); const d=document.createElement('div');
+      d.className='sz-ing'+(taken?' dim':'')+(sz.myId===ing.id?' sel2':'');
+      d.innerHTML=`<span class="at a-${ing.attr}">${SZ_ATTR[ing.attr]}</span><div class="emo">${SZ_EMOJI[ing.id-1]}</div><div class="no">No.${ing.id}</div>`+(sz.myId===ing.id?`<span class="kd">${dosStr(sz.myDos)}</span>`:'');
+      if(!taken&&!chosen) d.onclick=()=>socket.emit('pt:sz:chooseMy',{ingId:ing.id}); return d; }));
+    if(chosen){ const p=document.createElement('p'); p.className='status'; p.textContent='選びました。他のプレイヤーを待っています…'; wrap.appendChild(p); }
+    root.innerHTML=''; root.appendChild(wrap); return;
+  }
+  const me=g.seats[sz.myIdx]; const wrap=document.createElement('div'); wrap.className='phone';
+  wrap.innerHTML=`<div style="text-align:center"><div class="pill">第 ${g.round+1} ラウンド</div><p class="my-slot">マイ食材 No.${sz.myId} = <b>${dosStr(sz.myDos)}</b> ｜ 💰$${me.money} ⭐${me.eval}</p></div>`;
+  if(sz.submitted){ const w=g.seats.filter(x=>x.connected&&!x.submitted).map(x=>x.name); wrap.innerHTML+=`<div class="card"><p class="status">✔ 提出しました。他のプレイヤーを待っています…<br>${w.length?'待ち: '+esc(w.join('・')):''}</p></div>`; root.innerHTML=''; root.appendChild(wrap); return; }
+  const card=document.createElement('div'); card.className='card';
+  card.innerHTML=`<h3 style="margin:0 0 4px">🍶 食材を3つえらぶ</h3><div class="sub">同じ食材は2つまで／値札はあなた専用価格</div>`;
+  card.appendChild(szBuildGrid(ing=>{ const cnt=szPicks.filter(x=>x===ing.id).length; const d=document.createElement('div');
+    d.className='sz-ing'+(cnt===1?' sel':cnt===2?' sel2':'')+((cnt>=2&&szPicks.length<3)?' dim':'');
+    const price=(sz.buyCount[ing.id]||0)+cnt+1; const kd=szKnownDos(ing.id);
+    d.innerHTML=`<span class="at a-${ing.attr}">${SZ_ATTR[ing.attr]}</span>${sz.myId===ing.id?'<span class="kd" style="top:-7px;bottom:auto;background:#5b6cff">マイ</span>':''}<div class="emo">${SZ_EMOJI[ing.id-1]}</div><div class="no">No.${ing.id}</div><div class="pr">$${price}</div>`+(kd!==null?`<span class="kd">${dosStr(kd)}</span>`:'');
+    d.onclick=()=>{ const c=szPicks.filter(x=>x===ing.id).length; if(szPicks.length<3&&c<2)szPicks.push(ing.id); else if(c>0)szPicks.splice(szPicks.indexOf(ing.id),1); render(); }; return d; }));
+  const bench=document.createElement('div'); bench.className='sz-bench';
+  for(let i=0;i<3;i++){ const id=szPicks[i]; const sl=document.createElement('div'); sl.className='sz-slot'+(id?' filled':''); if(id){ sl.innerHTML=`<div class="emo">${SZ_EMOJI[id-1]}</div><span class="x">✕</span>`; sl.querySelector('.x').onclick=()=>{szPicks.splice(i,1);render();}; } else sl.textContent='＋'; bench.appendChild(sl); }
+  card.appendChild(bench);
+  const info=document.createElement('div'); info.className='sz-info'; info.style.marginTop='8px';
+  if(szPicks.length===3){ const cst=szCostC(sz.buyCount,szPicks); const ok=szValidC(szPicks)&&cst<=me.money; info.innerHTML=`使用料 <span class="${cst>me.money?'over':'ok'}">$${cst}</span> / 所持金 $${me.money} → ${szSake(szPicks.map(szAttr))}`; card._ok=ok; }
+  else { info.textContent=szPicks.length===0?'食材をタップして選ぼう':`あと${3-szPicks.length}つ`; card._ok=false; }
+  card.appendChild(info);
+  const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='10px';
+  const brew=document.createElement('button'); brew.className='green'; brew.textContent='🍺 醸造する'; brew.disabled=!card._ok; brew.onclick=()=>socket.emit('pt:sz:submit',{type:'brew',picks:[...szPicks]});
+  const rest=document.createElement('button'); rest.className='ghost'; rest.textContent='😴 休憩(+$6/評価−1)'; rest.disabled=!sz.canRest; rest.onclick=()=>socket.emit('pt:sz:submit',{type:'rest'});
+  btns.appendChild(brew); btns.appendChild(rest); card.appendChild(btns); wrap.appendChild(card);
+  root.innerHTML=''; root.appendChild(wrap);
+}
+
+function szRevealPanel(isHost){
+  const rv=szReveal, g=state.game, seats=g.seats; const medals={1:'🥇',2:'🥈',3:'🥉'};
+  const order=[...rv.results].sort((a,b)=>(a.rank??9)-(b.rank??9)||(a.failed?1:0)-(b.failed?1:0));
+  const rows=order.map(res=>{ const sm=seats[res.idx]; let md,note='';
+    if(res.type==='rest'){md='😴';note='休憩';} else if(res.type==='timeout'){md='⏰';note='時間切れ';}
+    else if(res.winner){md='🏆';note='ちょうど3.0%!';} else if(res.failed){md='💥';note='失敗(3.1%以上)';}
+    else if(res.rank){md=medals[res.rank]||(res.rank+'位');} else md='🍺';
+    const isMe=!isHost&&priv.sz&&res.idx===priv.sz.myIdx;
+    let money=res.winner?'':res.type==='rest'?`<span class="plus">+$${res.moneyDelta}</span>`:res.type==='timeout'?`<span class="minus">賞金なし</span>`:res.failed?`<span class="minus">−$${Math.abs(res.moneyDelta)}</span>`:`<span class="plus">賞金+$${res.pay||0}</span>`;
+    const ev=res.evalDelta?`<span class="${res.evalDelta>0?'plus':'minus'}">⭐${res.evalDelta>0?'+':''}${res.evalDelta}</span>`:'';
+    const lab=res.label?`<span class="sakechip">${res.label}</span>`:''; const od=res.openDos!==null?` <small>🔍${dosStr(res.openDos)}</small>`:'';
+    return `<div class="sz-rrow ${isMe?'me':''}"><div class="md">${md}</div><div class="rn">${esc(sm.name)} ${lab} <small style="color:#8a94a8">${note}</small>${od}</div><div class="dl">${money} ${ev}</div></div>`;}).join('');
+  let mine='';
+  if(!isHost&&rv.mine){ if(rv.mine.type==='brew') mine=`<div class="card" style="text-align:center">あなたのお酒(あなただけ): <b style="color:#5b6cff">${rv.mine.label} ${dosStr(rv.mine.dos)}</b></div>`; else if(rv.mine.type==='rest') mine=`<div class="card" style="text-align:center">あなたは休憩(+$6/評価−1)</div>`; }
+  const cont=`<div class="row" style="justify-content:center;margin-top:12px"><button id="szNext" class="green">${rv.ended?'結果を見る 🏆':'つぎのラウンドへ ▶'}</button></div>`;
+  const inner=`<div style="text-align:center"><h2>🍻 第${rv.roundNo}ラウンド 公開!</h2></div>${rows}${mine}${cont}`;
+  root.className=''; root.innerHTML=isHost?`<div class="wrap"><div class="card">${inner}</div></div>`:`<div class="phone"><div class="card">${inner}</div></div>`;
+  el('szNext').onclick=()=>{ szReveal=null; render(); };
+}
+function szEndedHTML(isHost){
+  const g=state.game, e=g.endInfo; if(!e) return '<div class="card"><p class="waiting">集計中…</p></div>';
+  const winTxt=e.reason==='draw'?'引き分け':(e.winners&&e.winners.length? e.winners.map(wi=>{const f=e.final.find(x=>x.idx===wi);return f?f.name:'';}).join('・')+' の勝ち!':'終了');
+  const rows=e.final.map(f=>`<div class="sz-rrow"><div class="md">${f.rank===1?'🥇':f.rank===2?'🥈':f.rank===3?'🥉':f.rank+'位'}</div><div class="rn">${esc(f.name)}${f.team?` <small style="color:#8a94a8">(${esc(f.team)})</small>`:''} <small style="color:#8a94a8">💰$${f.money} ⭐${f.eval} / マイNo.${f.myId}=${dosStr(f.myDos)}</small></div><div class="dl"><span class="plus">+${f.gained}pt</span></div></div>`).join('');
+  return `<div class="card"><div style="text-align:center"><div style="font-size:34px">🏆🍻</div><h2>${esc(winTxt)}</h2>
+    <p class="sub">正解(3.0%になる組み合わせ)は ${e.patterns} 通り／難易度 ${esc(szStar(e.stars))}</p></div>${rows}
+    <p class="sub" style="text-align:center;margin-top:10px">順位に応じてチームに加点しました（1位+30 / 2位+20 / 3位+10）</p>
+    ${isHost?`<div class="row" style="justify-content:center;margin-top:10px"><button id="szNextM" class="green">▶ 次の試合へ</button></div>`:`<p class="status">ホストの操作を待っています…</p>`}</div>`;
 }
 </script>
 <script>
@@ -145,11 +289,13 @@ const GENRES = ['一般常識','生活・雑学','エンタメ','歴史・地理
 const TEAMCOL=['#ff5a5f','#3a9bff','#ffb23e','#37c86b','#a86cff','#2ad2c9','#ff7ac0','#ff8f3e'];
 const TEAMCOLD=['#d6454a','#2b74c4','#e0912a','#28a355','#8a52d6','#1fa89f','#d65fa0','#e0692a'];
 const root = document.getElementById('root');
-let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='', extOrder=[];
+let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='', extOrder=[], szPicks=[], szReveal=null;
 const qs = new URLSearchParams(location.search);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const chars = s => Array.from(s||'');
 const el = id => document.getElementById(id);
+const curName=()=> (state&&state.curGame==='nepleague'&&state.mode==='individual')?'クイズ':(state?state['curGameName']:null);
+const curIcon=()=> (state&&state.curGame==='nepleague'&&state.mode==='individual')?'🧠':(state?state['curGameIcon']:null);
 
 socket.on('connect', () => {
   const h=sessionStorage.getItem('pt_host'), p=sessionStorage.getItem('pt_player');
@@ -157,7 +303,8 @@ socket.on('connect', () => {
   if(p){ try{const {code,name}=JSON.parse(p); socket.emit('pt:joinRoom',{code,name},r=>{ if(!r||!r.ok){sessionStorage.removeItem('pt_player');renderHome();} });}catch(e){renderHome();} return; }
   renderHome();
 });
-socket.on('pt:state', ({pub,priv:pv}) => { state=pub; priv=pv; render(); });
+socket.on('pt:state', ({pub,priv:pv}) => { state=pub; priv=pv; if(pub.curGame!=='shuzomas') szReveal=null; render(); });
+socket.on('pt:sz:reveal', rv=>{ szReveal=rv; szPicks=[]; render(); });
 
 function renderHome(err){
   state=null; const code=(qs.get('code')||'').toUpperCase();
@@ -195,7 +342,7 @@ function renderHost(){
   if(state.phase==='setup') return renderHostSetup();
   if(state.phase==='eyecatch') return renderHostEyecatch();
   if(state.phase==='result') return renderHostResult();
-  if(state.phase==='ingame'){ if(state.curGameExternal) return renderHostExternal(); if(state.curGame==='nepleague') return renderHostNep(); }
+  if(state.phase==='ingame'){ if(state.curGameExternal) return renderHostExternal(); if(state.curGame==='shuzomas') return renderHostShuzomas(); if(state.curGame==='nepleague') return renderHostNep(); }
   root.innerHTML='<div class="wrap"><div class="card"><p class="waiting">読み込み中…</p></div></div>';
 }
 
@@ -273,8 +420,8 @@ function renderHostEyecatch(){
   } else { panels=scoreboardHTML(); }
   root.innerHTML=`<div class="eye">
     <div class="stage">第 ${state.session.index+1} 戦 / 全 ${state.config.matchCount} 戦</div>${dotsHTML()}
-    <div class="big">${state.curGameIcon||'🎲'}</div><div class="sub">つぎのゲームは…</div>
-    <div class="gname">${esc(state.curGameName||'')}</div>
+    <div class="big">${curIcon()||'🎲'}</div><div class="sub">つぎのゲームは…</div>
+    <div class="gname">${esc(curName()||'')}</div>
     <div class="fmt ${cap?'cap':'all'}">${cap?'⚔ 大将戦（各チーム代表1人）':'👥 全員参加'}</div>
     ${state.curGameExternal?'<div class="pill">※このゲームは別画面であそびます</div>':''}
     ${cap?'<div class="pill">▼ 各チームの代表（大将）を決めてください</div>':''}
@@ -290,7 +437,7 @@ function renderHostNep(){
   const g=state.game; if(!g) return;
   const units=state.mode==='team'?orderedTeams().map(t=>({id:t.id,name:t.name})):Object.values(state.players).sort((a,b)=>a.order-b.order).map(p=>({id:p.id,name:p.name}));
   let h=`<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center">
-    <h2 style="margin:0">${state.curGameIcon} ${esc(state.curGameName)} <span class="pill">第${state.session.index+1}戦・${state.curFormat==='captain'?'⚔大将戦':'全員参加'}</span></h2>
+    <h2 style="margin:0">${curIcon()} ${esc(curName())} <span class="pill">第${state.session.index+1}戦・${state.curFormat==='captain'?'⚔大将戦':'全員参加'}</span></h2>
     <button class="warn" id="endm">この試合を終える ▶ 次へ</button></div>${scoreboardHTML()}<div style="height:10px"></div>`;
   h+=`<div class="card"><label>手番を選ぶ（他は待機）</label><div class="row">`;
   h+= units.length?units.map(u=>`<button data-unit="${u.id}" class="${g.activeUnitId===u.id?'':'ghost'}">${esc(u.name)}${g.activeUnitId===u.id?' ▶':''}</button>`).join(''):'<span class="sub">参加者がいません</span>';
@@ -339,6 +486,7 @@ function renderHostResult(){
 /* ════ プレイヤー ════ */
 function renderPlayer(){
   if(state.phase==='ingame' && state.curGameExternal){ lastPlayerSig=''; return renderPlayerExternal(); }
+  if(state.phase==='ingame' && state.curGame==='shuzomas'){ lastPlayerSig=''; return renderPlayerShuzomas(); }
   if(state.phase==='ingame' && state.curGame==='nepleague'){ return renderPlayerNep(); }
   lastPlayerSig='';
   const me=state.players[priv.youId];
@@ -359,7 +507,7 @@ function renderPlayer(){
     if(cap&&myTeam){ capUI=`<div class="card"><p class="status">${isRep?'⚔ あなたが大将です！':'この試合は大将戦。代表になれる人は立候補できます'}</p>
       ${isRep?'':`<button class="warn" style="width:100%" id="vol">⚔ 大将に立候補する</button>`}</div>`; }
     root.innerHTML=`<div class="phone"><div style="text-align:center"><div class="pill">第${state.session.index+1}戦 / 全${state.config.matchCount}戦</div>
-      <div style="font-size:76px;margin:8px 0">${state.curGameIcon}</div><h1 style="font-size:28px">${esc(state.curGameName)}</h1>
+      <div style="font-size:76px;margin:8px 0">${curIcon()}</div><h1 style="font-size:28px">${esc(curName())}</h1>
       <div class="pill" style="margin-top:8px;color:#fff;background:${cap?'var(--warn)':'var(--green)'};border:none">${cap?'⚔ 大将戦':'👥 全員参加'}</div>
       ${myTeam?`<div class="pill" style="margin-top:8px;border-color:${teamColor(myTeam)};color:${teamColor(myTeam)}">あなたのチーム: ${esc(myTeam.name)}</div>`:''}</div>
       <div class="card"><div class="sub" style="margin-bottom:4px">📊 現在のポイント</div>${scoreEntries().map((x,i)=>`<div class="row" style="justify-content:space-between;padding:5px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'👑 ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
@@ -387,6 +535,7 @@ function renderPlayerNep(){
       <p class="status">${esc(g.message)}</p></div></div>`; return;
   }
   if(slots.length&&g.question){
+    if(slots.length===g.slots.length && g.length>1){ return renderSoloQuiz(g,slots); }
     root.innerHTML=`<div class="phone"><div style="text-align:center"><div class="pill" style="background:var(--gold);color:#4a2f10;border:none">あなたの番！</div><p class="my-slot">問題：${esc(g.question.text)}</p></div>`
       +slots.map(s=>`<div class="card"><div class="my-slot">${g.length}文字のうち <b>${s.index+1}文字目</b> を担当</div>
         <input class="big-input" data-idx="${s.index}" maxlength="2" ${s.locked?'disabled':''} value="${esc(s.char||'')}" placeholder="？">
@@ -396,7 +545,7 @@ function renderPlayerNep(){
     root.querySelectorAll('button[data-lock]').forEach(b=>{const idx=parseInt(b.dataset.lock,10);b.onclick=()=>socket.emit('pt:np:lock',{index:idx,locked:!state.game.slots[idx].locked});});
     return;
   }
-  root.innerHTML=`<div class="phone"><div style="text-align:center"><h1 style="font-size:26px">${state.curGameIcon} ${esc(state.curGameName)}</h1>
+  root.innerHTML=`<div class="phone"><div style="text-align:center"><h1 style="font-size:26px">${curIcon()} ${esc(curName())}</h1>
     <div class="card"><p class="status">今は <b>${esc(g?g.activeUnitName:'')||'ほかのチーム'}</b> の番です。<br>あなたは待機中…📺</p></div></div>`;
 }
 </script>
