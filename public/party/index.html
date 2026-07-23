@@ -211,6 +211,8 @@ function dotsHTML(){ const n=state.config.matchCount, cur=state.session.index; l
 function renderHostEyecatch(){
   root.className=''; const cap=state.curFormat==='captain';
   const teams=orderedTeams(); const max=Math.max(0,...teams.map(t=>t.score));
+  const _se=scoreEntries(); const _leader=(_se[0]&&_se[0].score>0)?_se[0].name:null;
+  const _sorted=[...teams].sort((a,b)=>b.score-a.score); const _rank={}; _sorted.forEach((t,i)=>_rank[t.id]=i+1); const _lead=_sorted.length?_sorted[0].score:0;
   let panels='';
   if(state.mode==='team'){
     panels='<div class="vs">'+teams.map((t,idx)=>{
@@ -223,6 +225,7 @@ function renderHostEyecatch(){
       return `<div class="tpanel ${lead?'lead':''}">${lead?'<div class="crown">👑</div>':''}
         <div class="bar" style="background:${col}"><span>${esc(t.name)}</span><span>${mem.length}人</span></div>
         <div class="score" style="color:${col}">${t.score}<span style="font-size:16px;color:var(--muted)">pt</span></div>
+        <div style="text-align:center;font-weight:900;color:var(--muted);font-size:13px;margin-top:-2px">${_rank[t.id]}位・${_lead-t.score>0?'トップと −'+(_lead-t.score)+'pt':'トップ🔥'}</div>
         <div class="mem">${memHTML}</div>${pick}</div>`;
     }).join('<div class="vsmid">VS</div>')+'</div>';
   } else { panels=scoreboardHTML(); }
@@ -232,8 +235,9 @@ function renderHostEyecatch(){
     <div class="gname">${esc(state.curGameName||'')}</div>
     <div class="fmt ${cap?'cap':'all'}">${cap?'⚔ 大将戦（各チーム代表1人）':'👥 全員参加'}</div>
     ${cap?'<div class="pill">▼ 各チームの代表（大将）を決めてください</div>':''}
+    <div style="width:min(560px,92vw);background:#fff;border-radius:20px;padding:12px 18px;box-shadow:0 8px 0 #d7e3f4;text-align:left"><div class="sub" style="margin-bottom:4px">📊 現在のポイント${_leader?` — 👑 ${esc(_leader)} がリード`:'（まだ全員0）'}</div>${graphHTML()}</div>
     ${panels}
-    <button class="big green" id="begin" style="margin-top:14px">▶ この試合をはじめる</button>
+    <button class="big" id="begin" style="margin-top:14px;background:var(--gold);box-shadow:0 6px 0 var(--goldd),0 10px 16px rgba(40,50,74,.16);color:#4a2f10">▶ この試合をはじめる</button>
   </div>`;
   el('begin').onclick=()=>socket.emit('pt:beginMatch');
   root.querySelectorAll('select[data-rep]').forEach(s=>s.onchange=()=>{ if(s.value) socket.emit('pt:setMatchRep',{teamId:s.dataset.rep,playerId:s.value}); });
@@ -314,6 +318,7 @@ function renderPlayer(){
       <div style="font-size:76px;margin:8px 0">${state.curGameIcon}</div><h1 style="font-size:28px">${esc(state.curGameName)}</h1>
       <div class="pill" style="margin-top:8px;color:#fff;background:${cap?'var(--warn)':'var(--green)'};border:none">${cap?'⚔ 大将戦':'👥 全員参加'}</div>
       ${myTeam?`<div class="pill" style="margin-top:8px;border-color:${teamColor(myTeam)};color:${teamColor(myTeam)}">あなたのチーム: ${esc(myTeam.name)}</div>`:''}</div>
+      <div class="card"><div class="sub" style="margin-bottom:4px">📊 現在のポイント</div>${scoreEntries().map((x,i)=>`<div class="row" style="justify-content:space-between;padding:5px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'👑 ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
       ${capUI}<p class="status">ホストが始めるのを待ってね📺</p></div>`;
     if(el('vol')) el('vol').onclick=()=>socket.emit('pt:volunteerRep'); return;
   }
