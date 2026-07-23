@@ -80,7 +80,7 @@ function renderHome(err){
   state=null;
   const code = (qs.get('code')||'').toUpperCase();
   root.innerHTML = `<div class="center">
-    <div><div class="pill">親戚の集まりで</div><h1>🧩 ネプリーグ</h1>
+    <div><h1>🧩 ネプリーグ</h1>
     <p class="sub">テレビにホスト画面、スマホで参加</p></div>
     ${code ? '' : `<div class="card" style="width:min(520px,92vw)">
       <h2>📺 ホスト（テレビ・PC担当）</h2>
