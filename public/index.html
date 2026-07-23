@@ -11,65 +11,53 @@
   --src-ori:#e8871a; --src-moto:#4a7dd6; --src-ai:#8b5cf6;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
-  color:var(--ink);min-height:100vh;background:var(--bg);
-}
+body{font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;color:var(--ink);min-height:100vh;background:var(--bg)}
 a{text-decoration:none;color:inherit}
 button{font-family:inherit}
 .hidden{display:none!important}
 
-/* ══ ヘッダー(ストア風・固定) ══ */
-header{
-  position:sticky;top:0;z-index:30;
-  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
-  border-bottom:2px solid var(--line);
-  padding:10px 16px;
-}
+/* ══ ヘッダー ══ */
+header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line);padding:10px 16px}
 .hrow{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.logo{font-size:20px;font-weight:900;letter-spacing:.04em;white-space:nowrap}
+.logo{font-size:20px;font-weight:900;letter-spacing:.04em;white-space:nowrap;cursor:pointer}
 .logo .mark{font-size:24px;margin-right:4px}
-.logo span.grad{
-  background:linear-gradient(135deg,#e8a020,#5b6cff,#2fae6e);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.searchbox{
-  flex:1;min-width:180px;max-width:420px;display:flex;align-items:center;gap:8px;
-  background:#fff;border:2px solid var(--line);border-radius:99px;padding:7px 16px;
-  transition:border-color .15s;
-}
+.logo span.grad{background:linear-gradient(135deg,#e8a020,#5b6cff,#2fae6e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.searchbox{flex:1;min-width:180px;max-width:420px;display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:99px;padding:7px 16px;transition:border-color .15s}
 .searchbox:focus-within{border-color:var(--accent)}
 .searchbox input{border:none;outline:none;font-family:inherit;font-weight:700;font-size:14px;width:100%;color:var(--ink);background:transparent}
 .searchbox .icon{opacity:.5}
-/* BGMボタン置き場(次の作業で音を実装予定) */
 #bgmSlot{margin-left:auto}
-#bgmSlot button{
-  border:2px solid var(--line);background:#fff;border-radius:99px;width:38px;height:38px;
-  font-size:16px;cursor:pointer;opacity:.45;
-}
+#bgmSlot button{border:2px solid var(--line);background:#fff;border-radius:99px;width:38px;height:38px;font-size:16px;cursor:pointer;opacity:.45}
 
-/* ══ ヒーローバナー(eShop風・注目ゲーム) ══ */
-#hero{max-width:1080px;margin:18px auto 0;padding:0 16px}
-.heroCard{
-  position:relative;overflow:hidden;border-radius:22px;color:#fff;
-  padding:30px 30px 26px;min-height:190px;display:flex;flex-direction:column;justify-content:center;
-  box-shadow:0 14px 40px rgba(42,49,64,.22);
-  transition:background .5s;
-}
+/* ══ Wiiパーティ風・モード選択 ══ */
+.modewrap{max-width:940px;margin:0 auto;padding:34px 16px 40px}
+.modehead{text-align:center;margin-bottom:26px}
+.modehead .kicker{display:inline-block;background:#fff;border:2px solid var(--line);border-radius:99px;padding:5px 16px;font-weight:900;font-size:13px;color:#8a94a8}
+.modehead h1{font-size:clamp(24px,4vw,36px);font-weight:900;margin-top:12px}
+.modehead h1 .grad{background:linear-gradient(135deg,#e8a020,#5b6cff,#2fae6e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.modehead p{font-weight:700;color:#6a7488;margin-top:8px;font-size:14px}
+.modegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+.modegrid.two{max-width:760px;margin:0 auto}
+.modecard{background:#fff;border:2px solid var(--line);border-radius:24px;overflow:hidden;cursor:pointer;box-shadow:0 10px 30px rgba(42,49,64,.10);transition:transform .14s,box-shadow .14s;display:flex;flex-direction:column;position:relative}
+.modecard:hover{transform:translateY(-6px);box-shadow:0 20px 46px rgba(42,49,64,.18)}
+.modecard .banner{height:150px;display:flex;align-items:center;justify-content:center;font-size:60px;color:#fff}
+.modecard .cap{padding:16px 18px}
+.modecard .cap h3{font-size:23px;font-weight:900}
+.modecard .cap p{font-size:13px;font-weight:700;color:#6a7488;margin-top:6px;line-height:1.7}
+.modecard .foot{margin-top:auto;background:#eef1f9;padding:10px;text-align:center;font-weight:900;color:#6a7488;font-size:14px}
+.modecard .ribbon{position:absolute;top:16px;right:-40px;transform:rotate(38deg);background:#ffd75e;color:#7a4d00;font-weight:900;font-size:12px;padding:5px 46px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.backbtn{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);background:#fff;border-radius:99px;padding:8px 18px;font-weight:900;color:#6a7488;cursor:pointer;margin-bottom:16px}
+.backbtn:hover{border-color:#b9c4dd}
+
+/* ══ ヒーローバナー ══ */
+#hero{max-width:1080px;margin:6px auto 0;padding:0 16px}
+.heroCard{position:relative;overflow:hidden;border-radius:22px;color:#fff;padding:30px 30px 26px;min-height:190px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 14px 40px rgba(42,49,64,.22);transition:background .5s}
 .heroCard .hicon{font-size:52px;line-height:1.1}
 .heroCard h2{font-size:32px;font-weight:900;margin-top:4px;text-shadow:0 2px 8px rgba(0,0,0,.25)}
 .heroCard p{font-weight:700;font-size:13.5px;max-width:560px;margin-top:6px;line-height:1.8;text-shadow:0 1px 4px rgba(0,0,0,.3)}
-.heroCard .hbtn{
-  display:inline-block;margin-top:14px;background:#fff;color:var(--ink);font-weight:900;
-  border-radius:12px;padding:10px 30px;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.25);
-  transition:transform .12s;
-}
+.heroCard .hbtn{display:inline-block;margin-top:14px;background:#fff;color:var(--ink);font-weight:900;border-radius:12px;padding:10px 30px;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:transform .12s}
 .heroCard .hbtn:hover{transform:translateY(-3px) scale(1.03)}
-.heroCard .hnew{
-  position:absolute;top:18px;right:-42px;transform:rotate(38deg);
-  background:#ffd75e;color:#7a4d00;font-weight:900;font-size:13px;padding:5px 50px;
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
-}
+.heroCard .hnew{position:absolute;top:18px;right:-42px;transform:rotate(38deg);background:#ffd75e;color:#7a4d00;font-weight:900;font-size:13px;padding:5px 50px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .heroDots{display:flex;gap:7px;justify-content:center;margin-top:10px}
 .heroDots button{width:10px;height:10px;border-radius:50%;border:none;background:#c6cde4;cursor:pointer}
 .heroDots button.on{background:var(--accent);transform:scale(1.25)}
@@ -77,11 +65,7 @@ header{
 /* ══ フィルタ ══ */
 #filters{max-width:1080px;margin:20px auto 0;padding:0 16px}
 .srcTabs{display:flex;gap:8px;flex-wrap:wrap}
-.srcTab{
-  border:2px solid var(--line);background:#fff;border-radius:14px;padding:9px 18px;
-  font-weight:900;font-size:14px;cursor:pointer;color:#6a7488;
-  display:flex;align-items:center;gap:6px;transition:all .12s;
-}
+.srcTab{border:2px solid var(--line);background:#fff;border-radius:14px;padding:9px 18px;font-weight:900;font-size:14px;cursor:pointer;color:#6a7488;display:flex;align-items:center;gap:6px;transition:all .12s}
 .srcTab .cnt{font-size:11.5px;background:#eef1f9;border-radius:99px;padding:1px 8px;color:#8a94a8}
 .srcTab:hover{transform:translateY(-2px)}
 .srcTab.on{color:#fff;border-color:transparent}
@@ -91,310 +75,252 @@ header{
 .srcTab[data-src="元ネタあり"].on{background:var(--src-moto)}
 .srcTab[data-src="AI作"].on{background:var(--src-ai)}
 .tagRow{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;align-items:center}
-.tagchip{
-  border:2px solid var(--line);background:#fff;border-radius:99px;padding:5px 14px;
-  font-weight:900;font-size:12.5px;cursor:pointer;color:#6a7488;transition:all .12s;
-}
+.tagchip{border:2px solid var(--line);background:#fff;border-radius:99px;padding:5px 14px;font-weight:900;font-size:12.5px;cursor:pointer;color:#6a7488;transition:all .12s}
 .tagchip:hover{border-color:#b9c4dd}
 .tagchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-#clearBtn{
-  border:none;background:none;font-weight:900;font-size:12.5px;color:#d6455d;cursor:pointer;
-  padding:5px 8px;text-decoration:underline;
-}
+#clearBtn{border:none;background:none;font-weight:900;font-size:12.5px;color:#d6455d;cursor:pointer;padding:5px 8px;text-decoration:underline}
 #resultCount{font-weight:900;font-size:13px;color:#8a94a8;margin-top:12px}
 
-/* ══ ゲームカードグリッド(ストア風) ══ */
-#grid{
-  max-width:1080px;margin:12px auto 0;padding:0 16px 20px;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;
-}
-.gcard{
-  background:#fff;border:2px solid var(--line);border-radius:20px;overflow:hidden;
-  box-shadow:0 8px 22px rgba(42,49,64,.08);
-  transition:transform .14s, box-shadow .14s;
-  display:flex;flex-direction:column;position:relative;
-}
+/* ══ グリッド ══ */
+#grid{max-width:1080px;margin:12px auto 0;padding:0 16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px}
+.gcard{background:#fff;border:2px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 8px 22px rgba(42,49,64,.08);transition:transform .14s, box-shadow .14s;display:flex;flex-direction:column;position:relative}
 .gcard:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(42,49,64,.16)}
-.gbanner{
-  height:96px;display:flex;align-items:center;justify-content:center;font-size:46px;
-  position:relative;
-}
-.gbanner .newbadge{
-  position:absolute;top:10px;left:10px;background:#ffd75e;color:#7a4d00;
-  font-weight:900;font-size:11px;border-radius:99px;padding:3px 12px;box-shadow:0 2px 6px rgba(0,0,0,.2);
-}
-.gsrc{
-  position:absolute;top:10px;right:10px;color:#fff;font-weight:900;font-size:11px;
-  border-radius:99px;padding:3px 12px;box-shadow:0 2px 6px rgba(0,0,0,.2);
-}
+.gbanner{height:96px;display:flex;align-items:center;justify-content:center;font-size:46px;position:relative}
+.gbanner .newbadge{position:absolute;top:10px;left:10px;background:#ffd75e;color:#7a4d00;font-weight:900;font-size:11px;border-radius:99px;padding:3px 12px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.gsrc{position:absolute;top:10px;right:10px;color:#fff;font-weight:900;font-size:11px;border-radius:99px;padding:3px 12px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .gbody{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1}
 .gbody h3{font-size:20px;font-weight:900}
 .gmeta{display:flex;gap:12px;font-size:12px;font-weight:900;color:#8a94a8;margin-top:3px}
 .gdesc{font-size:12.5px;font-weight:700;color:#5a647a;line-height:1.75;margin-top:8px;flex:1}
 .gtags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
-.gtag{
-  font-size:11px;font-weight:900;color:#6a7488;background:#eef1f9;border-radius:99px;
-  padding:2px 10px;cursor:pointer;border:none;transition:all .1s;
-}
+.gtag{font-size:11px;font-weight:900;color:#6a7488;background:#eef1f9;border-radius:99px;padding:2px 10px;cursor:pointer;border:none;transition:all .1s}
 .gtag:hover{background:var(--accent);color:#fff}
-.gplay{
-  display:block;text-align:center;margin-top:12px;font-weight:900;color:#fff;
-  border-radius:12px;padding:10px;font-size:14.5px;
-  background:linear-gradient(135deg,#5b6cff,#3d4ed6);box-shadow:0 4px 12px rgba(91,108,255,.3);
-  transition:transform .1s;
-}
+.gplay{display:block;text-align:center;margin-top:12px;font-weight:900;color:#fff;border-radius:12px;padding:10px;font-size:14.5px;background:linear-gradient(135deg,#5b6cff,#3d4ed6);box-shadow:0 4px 12px rgba(91,108,255,.3);transition:transform .1s}
 .gplay:hover{transform:scale(1.03)}
-/* 空状態 */
 #empty{text-align:center;padding:50px 20px;font-weight:900;color:#8a94a8}
 #empty .big{font-size:50px;margin-bottom:10px}
 footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px;font-weight:700;color:#8a94a8;text-align:center}
-@media (max-width:560px){
-  .heroCard h2{font-size:24px}
-  .heroCard .hicon{font-size:40px}
-  .logo{font-size:17px}
-}
+@media (max-width:560px){.heroCard h2{font-size:24px}.heroCard .hicon{font-size:40px}.logo{font-size:17px}}
 </style>
 </head>
 <body>
 
 <header>
   <div class="hrow">
-    <a class="logo" href="/"><span class="mark">🎪</span><span class="grad">あらいの遊び場</span></a>
+    <div class="logo" id="logo"><span class="mark">🎪</span><span class="grad">あらいの遊び場</span></div>
     <div class="searchbox">
       <span class="icon">🔍</span>
       <input id="q" type="text" placeholder="ゲームをさがす(名前・タグ・説明)" autocomplete="off">
     </div>
-    <!-- BGM: /bgm.js が🔊トグル+音量をここに設置する -->
     <div id="bgmSlot"></div>
   </div>
 </header>
 
-<!-- 注目ゲーム(自動で切り替わる) -->
-<div id="hero"></div>
-
-<div id="filters">
-  <div class="srcTabs" id="srcTabs"></div>
-  <div class="tagRow" id="tagRow"></div>
-  <div id="resultCount"></div>
+<!-- ① トップ：モード選択(Wiiパーティ風) -->
+<div id="screen-top" class="screen">
+  <div class="modewrap">
+    <div class="modehead">
+      <span class="kicker">🎪 あそびかたを えらんでね</span>
+      <h1><span class="grad">あらいの遊び場</span></h1>
+      <p>アカウント不要・名前だけで遊べます</p>
+    </div>
+    <div class="modegrid two">
+      <div class="modecard" id="cardParty">
+        <div class="ribbon">メイン</div>
+        <div class="banner" style="background:linear-gradient(135deg,#ffd23f,#ff4d8d,#3fa9ff)">🎉</div>
+        <div class="cap"><h3>パーティープレイ</h3><p>テレビにホスト画面・スマホがコントローラー。チームで通算得点を競う、みんなで盛り上がるモード。</p></div>
+        <div class="foot">📺 テレビ＋スマホ</div>
+      </div>
+      <div class="modecard" id="cardFree">
+        <div class="banner" style="background:linear-gradient(135deg,#5b6cff,#2fae6e)">🎮</div>
+        <div class="cap"><h3>フリープレイ</h3><p>ゲームを1つ選んであそぶ。ひとりでも、他の人とでも。</p></div>
+        <div class="foot">🙋 ひとり 〜 👥 みんな</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div id="grid"></div>
-<div id="empty" class="hidden"><div class="big">🙈</div>みつからなかった…<br><button class="tagchip" onclick="clearFilters()" style="margin-top:10px">条件をぜんぶクリア</button></div>
+<!-- ② フリープレイ：人数タイプ選択 -->
+<div id="screen-free" class="screen hidden">
+  <div class="modewrap">
+    <button class="backbtn" id="freeBack">← もどる</button>
+    <div class="modehead"><span class="kicker">🎮 フリープレイ</span><h1>あそびかたを えらんでね</h1></div>
+    <div class="modegrid two">
+      <div class="modecard" data-cat="solo">
+        <div class="banner" style="background:linear-gradient(135deg,#3fa9ff,#5b6cff)">🙋</div>
+        <div class="cap"><h3>ひとりで</h3><p>1人でじっくり・スコアアタック。CPU相手に練習できるゲームも。</p></div>
+        <div class="foot" id="footSolo">1人用</div>
+      </div>
+      <div class="modecard" data-cat="multi">
+        <div class="banner" style="background:linear-gradient(135deg,#2fae6e,#e8a020)">👥</div>
+        <div class="cap"><h3>みんなで</h3><p>他の人と対戦・協力。オンラインで合言葉参加、CPUも混ぜられます。</p></div>
+        <div class="foot" id="footMulti">2人〜</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ ゲーム一覧(ストア風・検索/タグ/ヒーロー) -->
+<div id="screen-grid" class="screen hidden">
+  <div style="max-width:1080px;margin:16px auto 0;padding:0 16px"><button class="backbtn" id="gridBack">← もどる</button></div>
+  <div id="hero"></div>
+  <div id="filters">
+    <div class="srcTabs" id="srcTabs"></div>
+    <div class="tagRow" id="tagRow"></div>
+    <div id="resultCount"></div>
+  </div>
+  <div id="grid"></div>
+  <div id="empty" class="hidden"><div class="big">🙈</div>みつからなかった…<br><button class="tagchip" onclick="clearFilters()" style="margin-top:10px">条件をぜんぶクリア</button></div>
+</div>
 
 <footer>© arai — 大学祭で展示したボードゲームのデジタル化プロジェクト+新作ゲームたち<br>アカウント不要、名前だけで遊べます</footer>
 
 <script>
 'use strict';
-/* ════════ ゲームデータ(ここに追加すればカードも検索も自動で増える) ════════
- * src: 'オリジナル'(araiのオリジナル) | '元ネタあり'(既存ゲームが元) | 'AI作'(AIが設計) */
+/* ════ ゲームデータ ════
+ * src: 'オリジナル' | '元ネタあり' | 'AI作'
+ * cat: 'solo'(1人用) | 'multi'(みんなで) | 'both'(両方) | 'party'(パーティモード内・一覧に出さない) */
 const GAMES = [
-  {
-    id: 'party', url: '/party/', icon: '🎉', title: 'パーティモード',
-    src: 'オリジナル', isNew: true, featured: true,
-    players: 'チーム戦・個人戦', time: '自由',
-    grad: 'linear-gradient(135deg,#ffd23f,#ff4d8d,#3fa9ff)',
-    desc: '1つの部屋で、テレビにホスト画面・スマホがコントローラー。チームを作って通算得点で対抗! いまはネプリーグを収録。ゲームが終わってもメニューに戻って続けて遊べる、親戚の集まり用のまとめモード。',
-    tags: ['パーティー', 'チーム戦', 'ホスト画面＋スマホ', '大人数OK'],
-  },
-  {
-    id: 'nepleague', url: '/nepleague/', icon: '🧩', title: 'ネプリーグ',
-    src: '元ネタあり', isNew: true, featured: true,
-    players: 'チーム戦・個人戦', time: '自由',
-    grad: 'linear-gradient(135deg,#ff3b52,#2f7bff)',
-    desc: 'テレビに問題、スマホがコントローラー。チームの人数ぶんの文字数の答えを1人1文字ずつ入力。ホストがオープンして、合ってれば赤・違えば青、全部赤で正解! 難易度★1〜5×5ジャンル。',
-    tags: ['クイズ', 'チーム戦', 'パーティー', 'ホスト画面＋スマホ'],
-  },
-  {
-    id: 'quadcolor', url: '/quadcolor/', icon: '🟥🟦🟨🟩', title: 'クアドルカラー',
-    src: '元ネタあり', isNew: true, featured: true,
-    players: '1〜10人', time: '3〜5分',
-    grad: 'linear-gradient(135deg,#e04545,#4a7dd6,#f0c010,#3cae5c)',
-    desc: '4色マスの共通盤面から、手持ちの2×2パターンがピッタリはまる「4マスの境目」を探す早はめレース。回転あり・最大10人。抜けた人はみんなの手札を観戦!',
-    tags: ['パズル', '早探し', 'オンライン対戦', 'CPU対戦OK', '大人数OK'],
-  },
-  {
-    id: 'whoami', url: '/whoami/', icon: '👻👽', title: 'ユーレイ?エイリアン?',
-    src: 'オリジナル', isNew: true, featured: true,
-    players: '4〜8人', time: '約12分',
-    grad: 'linear-gradient(135deg,#8b5cf6,#2fae6e)',
-    desc: 'わからないのは…自分の正体だけ。他人の正体は特徴と「化け物注意情報」で見極められるのに、自分の特徴だけ見えない! 1回きりの能力とウソOKの「そぶり」を頼りに自分の陣営を推理し、「👻を罰する/👽を罰する」の多数決へ。まちがえて自分を罰したら大失敗。',
-    tags: ['正体かくし', '推理', '心理戦', 'オンライン対戦', 'CPU対戦OK', '大人数OK'],
-  },
-  {
-    id: 'monoku', url: '/monoku/', icon: '🐾💰', title: 'モンオク!',
-    src: 'オリジナル', isNew: true, featured: true,
-    players: '2〜4人', time: '約15分',
-    grad: 'linear-gradient(135deg,#0ea5a0,#e8871a)',
-    desc: 'コイン60でモンスターを競り(所持は無制限・初期2体はヒミツ)、アイテムを買い込み、トーナメントで3体バトル! SR/R/Nのレア度つき24種——弱いNは「えんぐん」「ぎせい」などのコンボパーツ。毎試合、全所持から3体+出撃順を選び直せる。',
-    tags: ['オークション', 'コンボ', 'トーナメント', 'オンライン対戦', 'CPU対戦OK'],
-  },
-  {
-    id: 'shuzomas', url: '/shuzomas/', icon: '🍺', title: 'シュゾマス',
-    src: 'オリジナル', featured: true,
-    players: '2〜8人', time: '約20分',
-    grad: 'linear-gradient(135deg,#e8a020,#c96f0a)',
-    desc: '「お酒の採点会」がテーマの推理ゲーム。度数が秘密の食材24種から3つ選び、合計ちょうど3.0%のお酒を最初に造った人が優勝。見えるのは毎ラウンドの順位だけ——賞金と評価の動きから正解を推理しろ!',
-    tags: ['推理', 'オンライン対戦', 'CPU対戦OK', '大人数OK', 'BGMつき'],
-  },
-  {
-    id: 'jandekken', url: '/jandekken/', icon: '✊✌️✋', title: 'ジャンデッキケン',
-    src: 'AI作', featured: true,
-    players: '1〜2人', time: '約10分',
-    grad: 'linear-gradient(135deg,#5b6cff,#3d4ed6)',
-    desc: 'デッキ構築×じゃんけんの1対1カードバトル。配られた7枚+公開ドラフトで取る5枚の12枚デッキを組み、能力カードのコンボを決めて先に3勝を目指せ。あいこすら武器になる!',
-    tags: ['カードバトル', 'デッキ構築', 'オンライン対戦', 'CPU対戦OK'],
-  },
-  {
-    id: 'countfruits', url: '/countfruits/', icon: '🍓🍒🍋🍌', title: 'カウントフルーツ',
-    src: 'オリジナル',
-    players: '1〜2人', time: '約10分',
-    grad: 'linear-gradient(135deg,#ff6b81,#e8a020)',
-    desc: '降ってくるフルーツを数えて、落下後に公開される問題に答える1対1の心理戦。どの問題を出すか・フルーツを何個降らせるかはプレイヤーが作問。相手が数え間違える出題を作れ!',
-    tags: ['クイズ', '作問バトル', '心理戦', 'オンライン対戦', 'CPU対戦OK'],
-  },
-  {
-    id: 'dorobou', url: '/dorobou/', icon: '🦹💰', title: 'ドロボウ市場',
-    src: 'AI作',
-    players: '2〜4人', time: '約8分',
-    grad: 'linear-gradient(135deg,#e8871a,#8b5cf6)',
-    desc: '市場に並ぶコイン・宝石・ドロボウを、値札1〜5の同時出しで奪い合え。同じ数字はケンカで没収、売れ残りのドロボウは押し付け合い——わざとケンカを狙う読み合いが熱い。',
-    tags: ['心理戦', '同時出し', 'オンライン対戦', 'CPU対戦OK'],
-  },
-  {
-    id: 'bombsort', url: '/bombsort/', icon: '💣✏️', title: 'ボムわけ!',
-    src: 'オリジナル',
-    players: '1人用', time: 'エンドレス',
-    grad: 'linear-gradient(135deg,#3a3a44,#e04545)',
-    desc: '降ってくる爆弾を、左クリック長押しで描く線でころがして仕分けるお絵かきアクション。線は離すと消える——右クリックで固定(最大3本)。爆弾は10秒で爆発! くろは左、あかは右の釜へ。金の爆弾でライフ回復。',
-    tags: ['アクション', '1人用', 'スコアアタック', 'お絵かき'],
-  },
+  { id:'party', url:'/party/', icon:'🎉', title:'パーティモード', src:'オリジナル', isNew:true, featured:false, cat:'party',
+    players:'チーム戦・個人戦', time:'自由', grad:'linear-gradient(135deg,#ffd23f,#ff4d8d,#3fa9ff)',
+    desc:'1つの部屋で、テレビにホスト画面・スマホがコントローラー。チームを作って通算得点で対抗! いまはネプリーグを収録。', tags:['パーティー','チーム戦','ホスト画面＋スマホ','大人数OK'] },
+  { id:'nepleague', url:'/nepleague/', icon:'🧩', title:'ネプリーグ', src:'元ネタあり', isNew:true, featured:false, cat:'party',
+    players:'チーム戦・個人戦', time:'自由', grad:'linear-gradient(135deg,#ff3b52,#2f7bff)',
+    desc:'テレビに問題、スマホがコントローラー。1人1文字ずつ答えを入力。全部赤で正解!', tags:['クイズ','チーム戦','パーティー','ホスト画面＋スマホ'] },
+  { id:'quadcolor', url:'/quadcolor/', icon:'🟥🟦🟨🟩', title:'クアドルカラー', src:'元ネタあり', isNew:true, featured:true, cat:'both',
+    players:'1〜10人', time:'3〜5分', grad:'linear-gradient(135deg,#e04545,#4a7dd6,#f0c010,#3cae5c)',
+    desc:'4色マスの共通盤面から、手持ちの2×2パターンがピッタリはまる「4マスの境目」を探す早はめレース。回転あり・最大10人。抜けた人はみんなの手札を観戦!', tags:['パズル','早探し','オンライン対戦','CPU対戦OK','大人数OK'] },
+  { id:'whoami', url:'/whoami/', icon:'👻👽', title:'ユーレイ?エイリアン?', src:'オリジナル', isNew:true, featured:true, cat:'multi',
+    players:'4〜8人', time:'約12分', grad:'linear-gradient(135deg,#8b5cf6,#2fae6e)',
+    desc:'わからないのは…自分の正体だけ。1回きりの能力とウソOKの「そぶり」を頼りに自分の陣営を推理し、多数決へ。まちがえて自分を罰したら大失敗。', tags:['正体かくし','推理','心理戦','オンライン対戦','CPU対戦OK','大人数OK'] },
+  { id:'monoku', url:'/monoku/', icon:'🐾💰', title:'モンオク!', src:'オリジナル', isNew:true, featured:true, cat:'multi',
+    players:'2〜4人', time:'約15分', grad:'linear-gradient(135deg,#0ea5a0,#e8871a)',
+    desc:'コイン60でモンスターを競り、アイテムを買い込み、トーナメントで3体バトル! SR/R/Nのレア度つき24種。毎試合、全所持から3体+出撃順を選び直せる。', tags:['オークション','コンボ','トーナメント','オンライン対戦','CPU対戦OK'] },
+  { id:'shuzomas', url:'/shuzomas/', icon:'🍺', title:'シュゾマス', src:'オリジナル', featured:true, cat:'multi',
+    players:'2〜8人', time:'約20分', grad:'linear-gradient(135deg,#e8a020,#c96f0a)',
+    desc:'「お酒の採点会」がテーマの推理ゲーム。度数が秘密の食材24種から3つ選び、合計ちょうど3.0%のお酒を最初に造った人が優勝。', tags:['推理','オンライン対戦','CPU対戦OK','大人数OK','BGMつき'] },
+  { id:'jandekken', url:'/jandekken/', icon:'✊✌️✋', title:'ジャンデッキケン', src:'AI作', featured:true, cat:'both',
+    players:'1〜2人', time:'約10分', grad:'linear-gradient(135deg,#5b6cff,#3d4ed6)',
+    desc:'デッキ構築×じゃんけんの1対1カードバトル。12枚デッキを組み、能力カードのコンボを決めて先に3勝を目指せ。あいこすら武器になる!', tags:['カードバトル','デッキ構築','オンライン対戦','CPU対戦OK'] },
+  { id:'countfruits', url:'/countfruits/', icon:'🍓🍒🍋🍌', title:'カウントフルーツ', src:'オリジナル', cat:'both',
+    players:'1〜2人', time:'約10分', grad:'linear-gradient(135deg,#ff6b81,#e8a020)',
+    desc:'降ってくるフルーツを数えて、落下後に公開される問題に答える1対1の心理戦。相手が数え間違える出題を作れ!', tags:['クイズ','作問バトル','心理戦','オンライン対戦','CPU対戦OK'] },
+  { id:'dorobou', url:'/dorobou/', icon:'🦹💰', title:'ドロボウ市場', src:'AI作', cat:'multi',
+    players:'2〜4人', time:'約8分', grad:'linear-gradient(135deg,#e8871a,#8b5cf6)',
+    desc:'市場に並ぶコイン・宝石・ドロボウを、値札1〜5の同時出しで奪い合え。わざとケンカを狙う読み合いが熱い。', tags:['心理戦','同時出し','オンライン対戦','CPU対戦OK'] },
+  { id:'bombsort', url:'/bombsort/', icon:'💣✏️', title:'ボムわけ!', src:'オリジナル', cat:'solo',
+    players:'1人用', time:'エンドレス', grad:'linear-gradient(135deg,#3a3a44,#e04545)',
+    desc:'降ってくる爆弾を、線でころがして仕分けるお絵かきアクション。くろは左、あかは右の釜へ。金の爆弾でライフ回復。', tags:['アクション','1人用','スコアアタック','お絵かき'] },
 ];
 const SRC_META = {
-  'オリジナル': { icon: '🏠', label: 'araiオリジナル', color: 'var(--src-ori)' },
-  '元ネタあり': { icon: '📚', label: '元ネタあり', color: 'var(--src-moto)' },
-  'AI作':      { icon: '🤖', label: 'AI作', color: 'var(--src-ai)' },
+  'オリジナル': { icon:'🏠', label:'araiオリジナル', color:'var(--src-ori)' },
+  '元ネタあり': { icon:'📚', label:'元ネタあり', color:'var(--src-moto)' },
+  'AI作':      { icon:'🤖', label:'AI作', color:'var(--src-ai)' },
 };
 
-/* ── フィルタ状態 ── */
-let state = { src: 'all', tags: new Set(), q: '' };
+/* フリープレイ対象(パーティモード内ゲームは除外) */
+const FREE = GAMES.filter(g => g.cat !== 'party');
+function inCat(g, cat){ if(cat==='all') return true; if(cat==='solo') return g.cat==='solo'||g.cat==='both'; if(cat==='multi') return g.cat==='multi'||g.cat==='both'; return true; }
 
-/* ── 検索・フィルタ判定(純関数) ── */
-function matchGame(g, st) {
+/* ── 画面遷移 ── */
+let gridFrom = 'free';
+function show(view){
+  ['top','free','grid'].forEach(v => document.getElementById('screen-'+v).classList.toggle('hidden', v!==view));
+  if (view==='top'){ if(heroTimer) clearInterval(heroTimer); }
+  window.scrollTo({top:0});
+}
+function openGrid(cat, from){ state.cat = cat; gridFrom = from||'free'; show('grid'); update(); renderHero(); restartHeroTimer(); }
+
+/* ── フィルタ状態 ── */
+let state = { src:'all', tags:new Set(), q:'', cat:'all' };
+
+function matchGame(g, st){
+  if (!inCat(g, st.cat)) return false;
   if (st.src !== 'all' && g.src !== st.src) return false;
   for (const t of st.tags) if (!g.tags.includes(t)) return false;
-  if (st.q) {
-    const hay = (g.title + ' ' + g.desc + ' ' + g.tags.join(' ') + ' ' + g.src + ' ' + g.players).toLowerCase();
-    for (const word of st.q.toLowerCase().split(/\s+/).filter(Boolean))
-      if (!hay.includes(word)) return false;
+  if (st.q){
+    const hay = (g.title+' '+g.desc+' '+g.tags.join(' ')+' '+g.src+' '+g.players).toLowerCase();
+    for (const word of st.q.toLowerCase().split(/\s+/).filter(Boolean)) if (!hay.includes(word)) return false;
   }
   return true;
 }
 
 const $ = id => document.getElementById(id);
-function esc(s){ const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
-/* ── 出典タブ ── */
-function renderSrcTabs() {
-  const counts = { all: GAMES.length };
-  for (const k of Object.keys(SRC_META)) counts[k] = GAMES.filter(g => g.src === k).length;
-  const tabs = [['all', '🎪 すべて'], ...Object.keys(SRC_META).map(k => [k, SRC_META[k].icon + ' ' + SRC_META[k].label])];
-  $('srcTabs').innerHTML = tabs.map(([k, label]) =>
-    `<button class="srcTab ${state.src === k ? 'on' : ''}" data-src="${k}">${label} <span class="cnt">${counts[k]}</span></button>`
-  ).join('');
-  $('srcTabs').querySelectorAll('.srcTab').forEach(b => b.onclick = () => {
-    state.src = b.dataset.src;
-    update();
-  });
+function renderSrcTabs(){
+  const base = FREE.filter(g => inCat(g, state.cat));
+  const counts = { all: base.length };
+  for (const k of Object.keys(SRC_META)) counts[k] = base.filter(g => g.src===k).length;
+  const tabs = [['all','🎪 すべて'], ...Object.keys(SRC_META).map(k => [k, SRC_META[k].icon+' '+SRC_META[k].label])];
+  $('srcTabs').innerHTML = tabs.map(([k,label]) =>
+    `<button class="srcTab ${state.src===k?'on':''}" data-src="${k}">${label} <span class="cnt">${counts[k]}</span></button>`).join('');
+  $('srcTabs').querySelectorAll('.srcTab').forEach(b => b.onclick = () => { state.src=b.dataset.src; update(); });
 }
+function renderTagRow(){
+  const base = FREE.filter(g => inCat(g, state.cat));
+  const all = [...new Set(base.flatMap(g => g.tags))];
+  $('tagRow').innerHTML = all.map(t => `<button class="tagchip ${state.tags.has(t)?'on':''}" data-t="${esc(t)}">${esc(t)}</button>`).join('')
+    + ((state.tags.size||state.q||state.src!=='all') ? `<button id="clearBtn">✕ 条件クリア</button>` : '');
+  $('tagRow').querySelectorAll('.tagchip').forEach(b => b.onclick = () => { const t=b.dataset.t; state.tags.has(t)?state.tags.delete(t):state.tags.add(t); update(); });
+  const cb = $('clearBtn'); if (cb) cb.onclick = clearFilters;
+}
+function clearFilters(){ state = { src:'all', tags:new Set(), q:'', cat:state.cat }; $('q').value=''; update(); }
 
-/* ── タグチップ(全ゲームのタグから自動生成) ── */
-function renderTagRow() {
-  const all = [...new Set(GAMES.flatMap(g => g.tags))];
-  $('tagRow').innerHTML = all.map(t =>
-    `<button class="tagchip ${state.tags.has(t) ? 'on' : ''}" data-t="${esc(t)}">${esc(t)}</button>`
-  ).join('') + ((state.tags.size || state.q || state.src !== 'all') ? `<button id="clearBtn">✕ 条件クリア</button>` : '');
-  $('tagRow').querySelectorAll('.tagchip').forEach(b => b.onclick = () => {
-    const t = b.dataset.t;
-    state.tags.has(t) ? state.tags.delete(t) : state.tags.add(t);
-    update();
-  });
-  const cb = $('clearBtn');
-  if (cb) cb.onclick = clearFilters;
-}
-function clearFilters() {
-  state = { src: 'all', tags: new Set(), q: '' };
-  $('q').value = '';
-  update();
-}
-
-/* ── ヒーローバナー(注目作を自動切替) ── */
-let heroIdx = 0, heroTimer = null;
-function renderHero() {
-  const feats = GAMES.filter(g => g.featured);
-  if (!feats.length) return;
+let heroIdx=0, heroTimer=null;
+function renderHero(){
+  const feats = FREE.filter(g => g.featured && inCat(g, state.cat));
+  if (!feats.length){ $('hero').innerHTML=''; return; }
   const g = feats[heroIdx % feats.length];
-  const sm = SRC_META[g.src];
   $('hero').innerHTML = `
     <a class="heroCard" href="${g.url}" style="background:${g.grad}">
-      ${g.isNew ? '<div class="hnew">NEW!</div>' : ''}
-      <div class="hicon">${g.icon}</div>
-      <h2>${esc(g.title)}</h2>
-      <p>${esc(g.desc)}</p>
-      <div><span class="hbtn">▶ いますぐあそぶ</span></div>
-    </a>
-    <div class="heroDots">${feats.map((_, i) =>
-      `<button class="${i === heroIdx % feats.length ? 'on' : ''}" data-i="${i}"></button>`).join('')}</div>`;
-  $('hero').querySelectorAll('.heroDots button').forEach(b => b.onclick = () => {
-    heroIdx = Number(b.dataset.i);
-    renderHero();
-    restartHeroTimer();
-  });
+      ${g.isNew?'<div class="hnew">NEW!</div>':''}
+      <div class="hicon">${g.icon}</div><h2>${esc(g.title)}</h2><p>${esc(g.desc)}</p>
+      <div><span class="hbtn">▶ いますぐあそぶ</span></div></a>
+    <div class="heroDots">${feats.map((_,i)=>`<button class="${i===heroIdx%feats.length?'on':''}" data-i="${i}"></button>`).join('')}</div>`;
+  $('hero').querySelectorAll('.heroDots button').forEach(b => b.onclick = () => { heroIdx=Number(b.dataset.i); renderHero(); restartHeroTimer(); });
 }
-function restartHeroTimer() {
-  clearInterval(heroTimer);
-  heroTimer = setInterval(() => { heroIdx++; renderHero(); }, 6000);
-}
+function restartHeroTimer(){ clearInterval(heroTimer); heroTimer = setInterval(()=>{ heroIdx++; renderHero(); }, 6000); }
 
-/* ── カードグリッド ── */
-function renderGrid() {
-  const shown = GAMES.filter(g => matchGame(g, state));
-  $('resultCount').textContent = `${GAMES.length}ゲーム中 ${shown.length}件を表示`;
-  $('empty').classList.toggle('hidden', shown.length > 0);
+function renderGrid(){
+  const shown = FREE.filter(g => matchGame(g, state));
+  $('resultCount').textContent = `${FREE.filter(g=>inCat(g,state.cat)).length}ゲーム中 ${shown.length}件を表示`;
+  $('empty').classList.toggle('hidden', shown.length>0);
   $('grid').innerHTML = shown.map(g => {
     const sm = SRC_META[g.src];
     return `<div class="gcard">
       <a href="${g.url}"><div class="gbanner" style="background:${g.grad}">
-        ${g.isNew ? '<span class="newbadge">NEW!</span>' : ''}
+        ${g.isNew?'<span class="newbadge">NEW!</span>':''}
         <span class="gsrc" style="background:${sm.color}">${sm.icon} ${sm.label}</span>
-        <span>${g.icon}</span>
-      </div></a>
-      <div class="gbody">
-        <h3>${esc(g.title)}</h3>
+        <span>${g.icon}</span></div></a>
+      <div class="gbody"><h3>${esc(g.title)}</h3>
         <div class="gmeta"><span>👥 ${esc(g.players)}</span><span>⏱ ${esc(g.time)}</span></div>
         <div class="gdesc">${esc(g.desc)}</div>
-        <div class="gtags">${g.tags.map(t => `<button class="gtag" data-t="${esc(t)}">#${esc(t)}</button>`).join('')}</div>
-        <a class="gplay" href="${g.url}">あそぶ ▶</a>
-      </div>
-    </div>`;
+        <div class="gtags">${g.tags.map(t=>`<button class="gtag" data-t="${esc(t)}">#${esc(t)}</button>`).join('')}</div>
+        <a class="gplay" href="${g.url}">あそぶ ▶</a></div></div>`;
   }).join('');
-  // カード内タグをクリック → そのタグで絞り込み
-  $('grid').querySelectorAll('.gtag').forEach(b => b.onclick = () => {
-    state.tags.add(b.dataset.t);
-    update();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  $('grid').querySelectorAll('.gtag').forEach(b => b.onclick = () => { state.tags.add(b.dataset.t); update(); window.scrollTo({top:0,behavior:'smooth'}); });
 }
+function update(){ renderSrcTabs(); renderTagRow(); renderGrid(); }
 
-function update() {
-  renderSrcTabs();
-  renderTagRow();
-  renderGrid();
-}
+/* 人数タイプの件数をフッターに */
+$('footSolo').textContent  = FREE.filter(g=>inCat(g,'solo')).length + 'ゲーム';
+$('footMulti').textContent = FREE.filter(g=>inCat(g,'multi')).length + 'ゲーム';
 
-$('q').addEventListener('input', () => { state.q = $('q').value.trim(); update(); });
-update();
-renderHero();
-restartHeroTimer();
+/* ── 遷移イベント ── */
+$('logo').onclick = () => show('top');
+$('cardParty').onclick = () => { location.href = '/party/'; };
+$('cardFree').onclick = () => show('free');
+$('freeBack').onclick = () => show('top');
+$('gridBack').onclick = () => show(gridFrom);
+document.querySelectorAll('#screen-free .modecard[data-cat]').forEach(c => c.onclick = () => openGrid(c.dataset.cat, 'free'));
+$('q').addEventListener('input', () => {
+  state.q = $('q').value.trim();
+  if (state.q && $('screen-grid').classList.contains('hidden')) openGrid('all', 'top');
+  else update();
+});
+
+show('top');
 </script>
 <script src="/bgm.js"></script>
 <script>AraiBGM.init('home');</script>
