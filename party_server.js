@@ -35,8 +35,9 @@ module.exports = function attach(io, opts = {}) {
     if (room.mode !== 'team') { const p = room.players[unitId]; return (p && p.connected) ? [p] : []; }
     const ms = teamMembers(room, unitId);
     if (room.curFormat === 'captain') {
-      const cap = ms.find(p => p.captain) || ms[0];
-      return cap ? [cap] : [];
+      const repId = room.matchRep[unitId];
+      const rep = ms.find(p => p.id === repId) || ms[0];
+      return rep ? [rep] : [];
     }
     return ms;
   }
@@ -59,7 +60,7 @@ module.exports = function attach(io, opts = {}) {
       players: {}, teams: {}, seq: 1,
       config: { matchCount: 3, slots: defaultSlots(3) },
       session: { index: 0, plan: [] }, // plan[i] = {game, format} (random解決後)
-      curGame: null, curFormat: 'all', game: null,
+      curGame: null, curFormat: 'all', game: null, matchRep: {},
       createdAt: Date.now(),
     };
   }
@@ -69,7 +70,7 @@ module.exports = function attach(io, opts = {}) {
       code: room.code, phase: room.phase, mode: room.mode, hostName: room.hostName,
       players: room.players, teams: room.teams, games: GAMES,
       config: room.config, session: room.session,
-      curGame: room.curGame, curFormat: room.curFormat, curGameName: room.curGame ? gameName(room.curGame) : null,
+      curGame: room.curGame, curFormat: room.curFormat, matchRep: room.matchRep, curGameName: room.curGame ? gameName(room.curGame) : null,
       curGameIcon: room.curGame ? gameIcon(room.curGame) : null,
       game: room.game,
     }));
@@ -98,7 +99,7 @@ module.exports = function attach(io, opts = {}) {
     room.session.plan[i] = { game, format: slot.format === 'captain' ? 'captain' : 'all' };
     room.curGame = game; room.curFormat = room.session.plan[i].format;
   }
-  function toEyecatch(room, i) { room.session.index = i; resolveSlot(room, i); room.phase = 'eyecatch'; room.game = null; broadcast(room); }
+  function toEyecatch(room, i) { room.session.index = i; resolveSlot(room, i); room.matchRep = {}; room.phase = 'eyecatch'; room.game = null; broadcast(room); }
   function startMatch(room) {
     if (room.curGame === 'nepleague') room.game = newNep();
     room.phase = 'ingame'; broadcast(room);
@@ -119,7 +120,7 @@ module.exports = function attach(io, opts = {}) {
       if (!name) return cb && cb({ ok: false, error: '名前を入れてください' });
       if (room.phase !== 'setup') return cb && cb({ ok: false, error: 'この部屋はすでに始まっています' });
       if (Object.values(room.players).some(p => p.name === name && p.connected)) name = name + room.seq;
-      room.players[socket.id] = { id: socket.id, socketId: socket.id, name, teamId: null, score: 0, connected: true, order: room.seq++, captain: false };
+      room.players[socket.id] = { id: socket.id, socketId: socket.id, name, teamId: null, score: 0, connected: true, order: room.seq++ };
       socket.join(room.code); cb && cb({ ok: true, code, playerId: socket.id }); broadcast(room);
     });
 
@@ -127,18 +128,25 @@ module.exports = function attach(io, opts = {}) {
     socket.on('pt:setMode', ({ mode } = {}) => { const room = host(socket); if (!room || room.phase !== 'setup') return; room.mode = (mode === 'individual') ? 'individual' : 'team'; broadcast(room); });
     socket.on('pt:addTeam', ({ name } = {}) => { const room = host(socket); if (!room || room.phase !== 'setup') return; const id = 't' + (room.seq++); const n = Object.keys(room.teams).length; room.teams[id] = { id, name: (String(name || '').trim() || ('チーム' + (n + 1))).slice(0, 16), score: 0, order: n }; broadcast(room); });
     socket.on('pt:renameTeam', ({ teamId, name } = {}) => { const room = host(socket); if (!room) return; if (room.teams[teamId]) room.teams[teamId].name = String(name || '').trim().slice(0, 16) || room.teams[teamId].name; broadcast(room); });
-    socket.on('pt:removeTeam', ({ teamId } = {}) => { const room = host(socket); if (!room || room.phase !== 'setup') return; delete room.teams[teamId]; Object.values(room.players).forEach(p => { if (p.teamId === teamId) { p.teamId = null; p.captain = false; } }); broadcast(room); });
-    socket.on('pt:assignPlayer', ({ playerId, teamId } = {}) => { const room = host(socket); if (!room) return; const p = room.players[playerId]; if (p) { p.teamId = (teamId && room.teams[teamId]) ? teamId : null; p.captain = false; broadcast(room); } });
-    socket.on('pt:pickTeam', ({ teamId } = {}) => { const c = ctx(socket); if (!c || c.isHost) return; const p = c.room.players[c.playerId]; if (p && c.room.teams[teamId]) { p.teamId = teamId; p.captain = false; broadcast(c.room); } });
-    // 大将指定(チームに1人)。host操作
-    socket.on('pt:setCaptain', ({ playerId } = {}) => {
-      const room = host(socket); if (!room) return; const p = room.players[playerId]; if (!p || !p.teamId) return;
-      const makeCap = !p.captain;
-      Object.values(room.players).forEach(x => { if (x.teamId === p.teamId) x.captain = false; });
-      p.captain = makeCap; broadcast(room);
+    socket.on('pt:removeTeam', ({ teamId } = {}) => { const room = host(socket); if (!room || room.phase !== 'setup') return; delete room.teams[teamId]; Object.values(room.players).forEach(p => { if (p.teamId === teamId) { p.teamId = null; } }); broadcast(room); });
+    socket.on('pt:assignPlayer', ({ playerId, teamId } = {}) => { const room = host(socket); if (!room) return; const p = room.players[playerId]; if (p) { p.teamId = (teamId && room.teams[teamId]) ? teamId : null; broadcast(room); } });
+    socket.on('pt:pickTeam', ({ teamId } = {}) => { const c = ctx(socket); if (!c || c.isHost) return; const p = c.room.players[c.playerId]; if (p && c.room.teams[teamId]) { p.teamId = teamId; broadcast(c.room); } });
+    // ホストが参加者を外す
+    socket.on('pt:removePlayer', ({ playerId } = {}) => {
+      const room = host(socket); if (!room) return; const p = room.players[playerId];
+      if (p) { if (p.socketId) { try { io.sockets.sockets.get(p.socketId)?.leave(room.code); } catch (e) {} } delete room.players[playerId]; broadcast(room); }
     });
     // 初期化: 参加者とチームを全消去して最初から
     socket.on('pt:clearRoster', () => { const room = host(socket); if (!room || room.phase !== 'setup') return; room.players = {}; room.teams = {}; broadcast(room); });
+    // 大将戦: この試合の代表を決める(ホスト指名 / 本人立候補)。アイキャッチ中に決定
+    socket.on('pt:setMatchRep', ({ teamId, playerId } = {}) => {
+      const room = host(socket); if (!room) return; const p = room.players[playerId];
+      if (p && p.teamId === teamId) { room.matchRep[teamId] = playerId; broadcast(room); }
+    });
+    socket.on('pt:volunteerRep', () => {
+      const c = ctx(socket); if (!c || c.isHost) return; const p = c.room.players[c.playerId];
+      if (p && p.teamId) { c.room.matchRep[p.teamId] = p.id; broadcast(c.room); }
+    });
 
     /* ── マッチ設定 ── */
     socket.on('pt:setConfig', ({ matchCount, slots } = {}) => {
@@ -208,8 +216,8 @@ module.exports = function attach(io, opts = {}) {
       const c = ctx(socket); if (!c) return; const room = c.room;
       if (c.isHost) { room.hostSocketId = null; return; }
       const p = room.players[socket.id]; if (!p) return;
-      if (room.phase === 'setup') delete room.players[socket.id]; else p.connected = false;
-      if (!room.hostSocketId && Object.values(room.players).every(x => !x.connected)) { rooms.delete(room.code); return; }
+      delete room.players[socket.id]; // いなくなったユーザーは削除
+      if (!room.hostSocketId && Object.keys(room.players).length === 0) { rooms.delete(room.code); return; }
       broadcast(room);
     });
   });
