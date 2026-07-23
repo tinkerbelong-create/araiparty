@@ -96,14 +96,56 @@ label{display:block;text-align:left;color:var(--muted);font-size:13px;font-weigh
 </head>
 <body>
 <div id="root"></div>
-<script src="/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js">
+/* ════ 外部ゲーム(既存単体版で遊び、ホストが順位入力→加点) ════ */
+function rankPtsClient(r){ return (r===1?3:r===2?2:r===3?1:0)*10; }
+function renderHostExternal(){
+  const g=state.game;
+  const units = state.mode==='team'
+    ? orderedTeams().map(t=>({id:t.id,name:t.name,color:teamColor(t)}))
+    : Object.values(state.players).sort((a,b)=>a.order-b.order).map((p,i)=>({id:p.id,name:p.name,color:TEAMCOL[i%TEAMCOL.length]}));
+  root.className='';
+  if(g.ranked){
+    root.innerHTML=`<div class="wrap"><div class="center" style="min-height:auto;gap:6px"><div style="font-size:54px">${state.curGameIcon}</div><h1>${esc(state.curGameName)} 結果</h1></div>
+      <div class="card">${(g.ranking||[]).map(r=>`<div class="row" style="justify-content:space-between;padding:10px 4px;border-bottom:2px solid var(--soft)"><b>${r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':r.rank+'位'} ${esc(r.name)}</b><b style="color:var(--green)">+${r.gained}pt</b></div>`).join('')}</div>
+      ${scoreboardHTML()}
+      <div class="center" style="min-height:auto"><button id="nextm" class="green">▶ 次の試合へ</button></div></div>`;
+    el('nextm').onclick=()=>socket.emit('pt:endMatch'); return;
+  }
+  const remaining=units.filter(u=>!extOrder.includes(u.id));
+  root.innerHTML=`<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">${state.curGameIcon} ${esc(state.curGameName)} <span class="pill">第${state.session.index+1}戦・別画面</span></h2></div>${scoreboardHTML()}<div style="height:10px"></div>
+    <div class="card" style="text-align:center"><p class="sub">このゲームは別画面であそびます。ホストが下のボタンで開き、みんなはそのゲームの合言葉で参加してください。</p>
+      <button class="secondary" id="openg" style="margin-top:8px">▶ ${esc(state.curGameName)}を開く</button></div>
+    <div class="card"><h3>遊び終わったら「順位」を入力（1位から順にタップ）</h3>
+      <div class="row" style="margin-top:6px">${remaining.length?remaining.map(u=>`<button class="ghost" data-u="${u.id}" style="border-color:${u.color}">${esc(u.name)}</button>`).join(''):'<span class="sub">全員入力しました</span>'}</div>
+      <div style="margin-top:10px">${extOrder.map((id,i)=>{const u=units.find(x=>x.id===id);return `<div class="row" style="justify-content:space-between;padding:6px 4px"><b>${i+1===1?'🥇':i+1===2?'🥈':i+1===3?'🥉':(i+1)+'位'} ${esc(u?u.name:'')} <small class="sub">(+${rankPtsClient(i+1)}pt)</small></b></div>`;}).join('')}</div>
+      <div class="row" style="margin-top:8px"><button class="ghost" id="undo" ${extOrder.length?'':'disabled'}>やり直し</button><button class="green" id="confirm" ${extOrder.length?'':'disabled'}>確定して加点</button></div></div></div>`;
+  el('openg').onclick=()=>window.open(state.curGameUrl||'/','_blank');
+  root.querySelectorAll('button[data-u]').forEach(b=>b.onclick=()=>{ extOrder.push(b.dataset.u); render(); });
+  el('undo').onclick=()=>{ extOrder.pop(); render(); };
+  el('confirm').onclick=()=>socket.emit('pt:submitResult',{order:[...extOrder]});
+}
+function renderPlayerExternal(){
+  const g=state.game, me=state.players[priv.youId]; if(!me){ sessionStorage.removeItem('pt_player'); renderHome('部屋から外れました'); return; }
+  root.className='';
+  if(g.ranked){ const e=scoreEntries();
+    root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:52px">${state.curGameIcon}</div><h1 style="font-size:24px">結果が入りました！</h1></div>
+      <div class="card">${e.map((x,i)=>`<div class="row" style="justify-content:space-between;padding:6px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'👑 ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
+      <p class="status">ホストが次に進むのを待ってね📺</p></div>`; return;
+  }
+  root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:72px">${state.curGameIcon}</div><h1 style="font-size:26px">${esc(state.curGameName)}</h1><p class="my-slot">このゲームは別画面であそびます</p></div>
+    <div class="card" style="text-align:center"><button class="secondary" style="width:100%" id="openg">▶ ${esc(state.curGameName)}を開く</button>
+      <p class="status" style="margin-top:10px">ホストが作った合言葉で参加してね。<br>終わったらこの画面に戻って、結果入力を待ちます。</p></div></div>`;
+  el('openg').onclick=()=>window.open(state.curGameUrl||'/','_blank');
+}
+</script>
 <script>
 const socket = io();
 const GENRES = ['一般常識','生活・雑学','エンタメ','歴史・地理','ことば'];
 const TEAMCOL=['#ff5a5f','#3a9bff','#ffb23e','#37c86b','#a86cff','#2ad2c9','#ff7ac0','#ff8f3e'];
 const TEAMCOLD=['#d6454a','#2b74c4','#e0912a','#28a355','#8a52d6','#1fa89f','#d65fa0','#e0692a'];
 const root = document.getElementById('root');
-let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='';
+let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='', extOrder=[];
 const qs = new URLSearchParams(location.search);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const chars = s => Array.from(s||'');
@@ -153,7 +195,7 @@ function renderHost(){
   if(state.phase==='setup') return renderHostSetup();
   if(state.phase==='eyecatch') return renderHostEyecatch();
   if(state.phase==='result') return renderHostResult();
-  if(state.phase==='ingame' && state.curGame==='nepleague') return renderHostNep();
+  if(state.phase==='ingame'){ if(state.curGameExternal) return renderHostExternal(); if(state.curGame==='nepleague') return renderHostNep(); }
   root.innerHTML='<div class="wrap"><div class="card"><p class="waiting">読み込み中…</p></div></div>';
 }
 
@@ -185,7 +227,7 @@ function renderHostSetup(){
       <div style="margin-top:12px">${cfg.slots.map((sl,i)=>`
         <div class="cfgrow"><span class="no">第${i+1}戦</span>
           <select data-game="${i}"><option value="random" ${sl.game==='random'?'selected':''}>🎲 ランダム</option>${state.games.filter(g=>g.ready).map(g=>`<option value="${g.id}" ${sl.game===g.id?'selected':''}>${g.icon} ${esc(g.name)}</option>`).join('')}</select>
-          <div class="seg"><button data-fmt="${i}" data-v="all" class="${sl.format==='all'?'on':''}">全員参加</button><button data-fmt="${i}" data-v="captain" class="${sl.format==='captain'?'on':''}">⚔ 大将戦</button></div>
+          <div class="seg"><button data-fmt="${i}" data-v="all" class="${sl.format==='all'?'on':''}">全員参加</button><button data-fmt="${i}" data-v="captain" class="${sl.format==='captain'?'on':''}" ${sl.game==='nepleague'?'disabled':''} title="${sl.game==='nepleague'?'ネプリーグは大将戦できません':''}">⚔ 大将戦</button></div>
         </div>`).join('')}</div>
       <p class="sub" style="margin-top:8px">※参加者は自分のスマホでもチームを選べます。大将戦の代表は「試合の直前」に決めます。</p>
     </div>
@@ -209,7 +251,7 @@ function renderHostSetup(){
 function dotsHTML(){ const n=state.config.matchCount, cur=state.session.index; let s='<div class="dots">'; for(let i=0;i<n;i++) s+=`<i class="${i<cur?'done':i===cur?'on':''}"></i>`; return s+'</div>'; }
 
 function renderHostEyecatch(){
-  root.className=''; const cap=state.curFormat==='captain';
+  root.className=''; extOrder=[]; const cap=state.curFormat==='captain';
   const teams=orderedTeams(); const max=Math.max(0,...teams.map(t=>t.score));
   const _se=scoreEntries(); const _leader=(_se[0]&&_se[0].score>0)?_se[0].name:null;
   const _sorted=[...teams].sort((a,b)=>b.score-a.score); const _rank={}; _sorted.forEach((t,i)=>_rank[t.id]=i+1); const _lead=_sorted.length?_sorted[0].score:0;
@@ -234,10 +276,11 @@ function renderHostEyecatch(){
     <div class="big">${state.curGameIcon||'🎲'}</div><div class="sub">つぎのゲームは…</div>
     <div class="gname">${esc(state.curGameName||'')}</div>
     <div class="fmt ${cap?'cap':'all'}">${cap?'⚔ 大将戦（各チーム代表1人）':'👥 全員参加'}</div>
+    ${state.curGameExternal?'<div class="pill">※このゲームは別画面であそびます</div>':''}
     ${cap?'<div class="pill">▼ 各チームの代表（大将）を決めてください</div>':''}
     <div style="width:min(560px,92vw);background:#fff;border-radius:20px;padding:12px 18px;box-shadow:0 8px 0 #d7e3f4;text-align:left"><div class="sub" style="margin-bottom:4px">📊 現在のポイント${_leader?` — 👑 ${esc(_leader)} がリード`:'（まだ全員0）'}</div>${graphHTML()}</div>
     ${panels}
-    <button class="big" id="begin" style="margin-top:14px;background:var(--gold);box-shadow:0 6px 0 var(--goldd),0 10px 16px rgba(40,50,74,.16);color:#4a2f10">▶ この試合をはじめる</button>
+    <button id="begin" style="margin-top:14px;background:var(--gold);box-shadow:0 5px 0 var(--goldd);color:#4a2f10">▶ この試合をはじめる</button>
   </div>`;
   el('begin').onclick=()=>socket.emit('pt:beginMatch');
   root.querySelectorAll('select[data-rep]').forEach(s=>s.onchange=()=>{ if(s.value) socket.emit('pt:setMatchRep',{teamId:s.dataset.rep,playerId:s.value}); });
@@ -261,7 +304,7 @@ function renderHostNep(){
   if(g.question){
     h+=`<div class="card"><div class="board"><div class="pill">${esc(g.question.genre)}・難易度★${g.question.difficulty}・${g.length}文字・正解で+${g.question.difficulty*10}pt</div>
       <div class="qtext">${esc(g.question.text)}</div><div class="slots">`;
-    h+=g.slots.map(s=>{const cls=g.revealed&&g.results?g.results[s.index]:''; const shown=g.revealed?(chars(g.question.answer)[s.index]||''):(s.char||''); const bc='box'+(s.locked&&!g.revealed?' locked':'');
+    h+=g.slots.map(s=>{const cls=g.revealed&&g.results?g.results[s.index]:''; const shown=g.revealed?(chars(g.question.answer)[s.index]||''):(s.filled?'●':''); const bc='box'+(s.locked&&!g.revealed?' locked':'');
       return `<div class="slot ${cls}"><div class="${bc}">${esc(shown)}</div><div class="name">${esc(s.playerName)}<small>${g.revealed?'':(s.locked?'ロック済':'入力中…')}</small></div></div>`;}).join('');
     h+=`</div>`;
     if(g.revealed){ h+=`<div class="result-line ${g.correctAll?'ok':'ng'}">${g.correctAll?'⭕ 正解！':'❌ ざんねん'}</div><div class="row"><button id="next" class="green">次の問題へ</button></div>`; }
@@ -295,6 +338,7 @@ function renderHostResult(){
 
 /* ════ プレイヤー ════ */
 function renderPlayer(){
+  if(state.phase==='ingame' && state.curGameExternal){ lastPlayerSig=''; return renderPlayerExternal(); }
   if(state.phase==='ingame' && state.curGame==='nepleague'){ return renderPlayerNep(); }
   lastPlayerSig='';
   const me=state.players[priv.youId];
