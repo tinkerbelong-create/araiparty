@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>パーティモード 🎉</title>
+<style>
+:root{--bg:#0f1226;--bg2:#171a35;--card:#1e2246;--line:#2c3160;--accent:#ffd23f;--accent2:#3fa9ff;--pink:#ff4d8d;--red:#ff3b52;--blue:#2f7bff;--green:#28d17c;--text:#f2f4ff;--muted:#9aa0c9;}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;background:radial-gradient(1200px 800px at 50% -10%,#232858 0%,var(--bg) 60%);color:var(--text);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:20px}
+.phone{max-width:460px;margin:0 auto;padding:18px;min-height:100vh;display:flex;flex-direction:column;gap:16px;justify-content:center}
+.center{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px}
+h1{font-size:clamp(26px,5vw,48px);margin:0}h2{font-size:clamp(19px,3vw,28px);margin:0 0 12px}
+.sub{color:var(--muted);font-size:15px}
+.card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.35);margin-bottom:14px}
+.row{display:flex;gap:12px;flex-wrap:wrap}.grow{flex:1 1 auto}
+button{font:inherit;font-weight:700;color:#10132b;background:var(--accent);border:none;padding:13px 20px;border-radius:13px;cursor:pointer;transition:.12s}
+button:hover{filter:brightness(1.05)}button:active{transform:translateY(1px)}
+button.secondary{background:var(--accent2);color:#08152b}button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+button.pink{background:var(--pink);color:#2a0a17}button:disabled{opacity:.4;cursor:not-allowed}
+input,select{font:inherit;padding:12px 13px;border-radius:11px;border:1px solid var(--line);background:#0d1030;color:var(--text);width:100%}
+label{display:block;text-align:left;color:var(--muted);font-size:13px;margin:0 0 6px}
+.pill{display:inline-block;background:#0d1030;border:1px solid var(--line);border-radius:999px;padding:6px 14px;color:var(--muted);font-size:14px}
+.code-badge{font-weight:800;letter-spacing:.32em;font-size:clamp(38px,8vw,80px);color:var(--accent);text-shadow:0 4px 0 rgba(0,0,0,.25)}
+.join-box{display:flex;gap:24px;align-items:center;justify-content:center;flex-wrap:wrap}
+.qr{background:#fff;padding:10px;border-radius:14px}.qr img{display:block;width:190px;height:190px}
+.players{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chip{background:#0d1030;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:700}
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:12px}
+.team{background:#0d1030;border:1px solid var(--line);border-radius:16px;padding:14px}
+.team .members{min-height:22px;color:var(--muted);font-size:14px;margin-top:8px}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:8px}
+.game-card{background:#0d1030;border:1px solid var(--line);border-radius:18px;padding:22px;text-align:center;cursor:pointer;position:relative}
+.game-card.locked{opacity:.5;cursor:not-allowed}
+.game-card .ic{font-size:40px}.game-card .nm{font-weight:800;margin-top:8px}
+.game-card .soon{position:absolute;top:10px;right:10px;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.board{display:flex;flex-direction:column;align-items:center;gap:20px}
+.qtext{font-size:clamp(22px,3.4vw,36px);font-weight:800;text-align:center;line-height:1.4}
+.slots{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.slot{width:clamp(78px,12vw,128px)}
+.slot .box{height:clamp(88px,13vw,138px);border-radius:16px;border:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:clamp(42px,7vw,82px);font-weight:800;background:#0d1030}
+.slot .box.locked{border-color:var(--accent)}
+.slot.correct .box{background:var(--red);border-color:var(--red);color:#fff}
+.slot.wrong .box{background:var(--blue);border-color:var(--blue);color:#fff}
+.slot .name{margin-top:8px;text-align:center;font-weight:700}
+.slot .name small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.result-line{font-size:clamp(22px,3vw,32px);font-weight:800}.result-line.ok{color:var(--green)}.result-line.ng{color:var(--pink)}
+.scoreboard{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.score{background:#0d1030;border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-weight:800}.score small{display:block;color:var(--muted);font-weight:400}
+.waiting{color:var(--muted);text-align:center}
+.big-input{font-size:52px;text-align:center;letter-spacing:.1em;padding:16px}
+.my-slot{font-size:19px;color:var(--muted);text-align:center}
+.status{text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const GENRES = ['一般常識','生活・雑学','エンタメ','歴史・地理','ことば'];
+const root = document.getElementById('root');
+let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='';
+const qs = new URLSearchParams(location.search);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const chars = s => Array.from(s||'');
+const el = id => document.getElementById(id);
+
+socket.on('connect', () => {
+  const h = sessionStorage.getItem('pt_host'), p = sessionStorage.getItem('pt_player');
+  if (h) { socket.emit('pt:rejoinHost',{code:h},r=>{ if(!r||!r.ok){ sessionStorage.removeItem('pt_host'); renderHome(); } }); return; }
+  if (p) { try{const {code,name}=JSON.parse(p); socket.emit('pt:joinRoom',{code,name},r=>{ if(!r||!r.ok){ sessionStorage.removeItem('pt_player'); renderHome(); } });}catch(e){renderHome();} return; }
+  renderHome();
+});
+socket.on('pt:state', ({pub,priv:pv}) => { state=pub; priv=pv; render(); });
+
+function renderHome(err){
+  state=null;
+  const code=(qs.get('code')||'').toUpperCase();
+  root.innerHTML = `<div class="center">
+    <div><div class="pill">親戚の集まりで</div><h1>🎉 パーティモード</h1><p class="sub">テレビにホスト画面、スマホで参加。チーム対抗で通しで遊ぼう</p></div>
+    ${code?'':`<div class="card" style="width:min(520px,92vw)"><h2>📺 ホスト（テレビ・PC担当）</h2><p class="sub" style="margin-bottom:12px">ここで合言葉を表示します</p><button id="host">ホスト画面をひらく</button></div>`}
+    <div class="card" style="width:min(520px,92vw)"><h2>📱 参加する（スマホ）</h2>
+      <label>あいことば</label><input id="code" maxlength="5" style="text-transform:uppercase;text-align:center;letter-spacing:.3em;font-size:24px" value="${esc(code)}">
+      <div style="height:10px"></div><label>なまえ</label><input id="name" maxlength="12" placeholder="なまえ">
+      <div style="height:14px"></div><button id="join" class="secondary" style="width:100%">参加する</button>
+      ${err?`<p style="color:var(--pink);text-align:center;margin-top:10px">${esc(err)}</p>`:''}
+    </div></div>`;
+  if(el('host')) el('host').onclick=()=>socket.emit('pt:createRoom',{name:'ホスト'},r=>{ if(r&&r.ok) sessionStorage.setItem('pt_host',r.code); });
+  el('join').onclick=()=>{const c=(el('code').value||'').toUpperCase().trim(),n=(el('name').value||'').trim();
+    if(!c||!n) return renderHome('合言葉と名前を入れてください');
+    socket.emit('pt:joinRoom',{code:c,name:n},r=>{ if(r&&r.ok) sessionStorage.setItem('pt_player',JSON.stringify({code:c,name:n})); else renderHome(r&&r.error||'参加できませんでした'); });};
+}
+
+function render(){ if(!state) return; priv&&priv.isHost ? renderHost() : renderPlayer(); }
+
+function scoreboard(){
+  if(state.mode==='team'){const ts=Object.values(state.teams).sort((a,b)=>b.score-a.score);
+    if(!ts.length) return ''; return '<div class="scoreboard">'+ts.map(t=>`<div class="score">${esc(t.name)}<small>${t.score}点</small></div>`).join('')+'</div>';}
+  const ps=Object.values(state.players).sort((a,b)=>b.score-a.score);
+  return '<div class="scoreboard">'+ps.map(p=>`<div class="score">${esc(p.name)}<small>${p.score}点</small></div>`).join('')+'</div>';
+}
+
+/* ══ ホスト（テレビ） ══ */
+function renderHost(){ state.phase==='ingame' ? renderHostGame() : renderHostHub(); }
+
+function renderHostHub(){
+  const code=state.code, joinUrl=location.origin+'/party/?code='+code;
+  const players=Object.values(state.players), teams=Object.values(state.teams).sort((a,b)=>a.order-b.order);
+  root.className='';
+  root.innerHTML=`<div class="wrap">
+    <div class="center" style="min-height:auto;gap:8px;margin-bottom:6px">
+      <div class="pill">合言葉を伝えてスマホから参加してもらおう</div>
+      <div class="join-box"><div><div class="sub">あいことば</div><div class="code-badge">${esc(code)}</div><div class="sub">${esc(joinUrl)}</div></div>
+      <div class="qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&data=${encodeURIComponent(joinUrl)}"></div></div>
+    </div>
+    ${scoreboard()?`<div class="card"><h2>通算スコア</h2>${scoreboard()}</div>`:''}
+    <div class="card"><h2>参加者 <span class="pill">${players.length}人</span></h2>
+      <div class="players">${players.length?players.map(p=>{
+        let sel='';
+        if(state.mode==='team'){const o=['<option value="">未所属</option>'].concat(teams.map(t=>`<option value="${t.id}" ${t.id===p.teamId?'selected':''}>${esc(t.name)}</option>`)).join('');sel=`<div><select data-assign="${p.id}" style="margin-top:6px;padding:6px">${o}</select></div>`;}
+        return `<div class="chip">${esc(p.name)}${sel}</div>`;}).join(''):'<span class="sub">まだ誰もいません</span>'}</div></div>
+    <div class="card"><h2>あそび方</h2>
+      <div class="row"><button id="mTeam" class="${state.mode==='team'?'':'ghost'}">👥 チーム戦</button>
+      <button id="mIndiv" class="${state.mode==='individual'?'secondary':'ghost'}">🙋 個人戦</button>
+      <span class="pill" style="align-self:center">${state.mode==='team'?'チーム戦':'個人戦'}</span></div>
+      <div id="teamArea" style="margin-top:14px;${state.mode==='team'?'':'display:none'}">
+        <div class="row" style="max-width:420px"><input id="tName" class="grow" placeholder="チーム名（例：赤チーム）"><button id="addT">チーム追加</button></div>
+        <div class="teams">${teams.map(t=>{const m=players.filter(p=>p.teamId===t.id).map(p=>esc(p.name)).join('、')||'（0人）';
+          return `<div class="team"><div class="row" style="gap:8px"><input class="grow" data-rename="${t.id}" value="${esc(t.name)}"><button class="ghost" data-remove="${t.id}">✕</button></div><div class="members">${m}</div></div>`;}).join('')}</div>
+        <p class="sub" style="margin-top:10px">※参加者は自分のスマホでもチームを選べます</p></div></div>
+    <div class="card"><h2>ゲームをえらぶ</h2>
+      <div class="games">${state.games.map(g=>`<div class="game-card ${g.ready?'':'locked'}" data-game="${g.id}">${g.ready?'':'<span class="soon">準備中</span>'}<div class="ic">${g.icon||'🎲'}</div><div class="nm">${g.ready?esc(g.name):'？？？'}</div></div>`).join('')}</div>
+      <p class="sub" style="margin-top:8px">ゲームが終わったらこのメニューに戻ります。得点は通算で持ち越します。</p></div>
+  </div>`;
+  root.querySelectorAll('select[data-assign]').forEach(s=>s.onchange=()=>socket.emit('pt:assignPlayer',{playerId:s.dataset.assign,teamId:s.value||null}));
+  root.querySelectorAll('input[data-rename]').forEach(i=>i.onchange=()=>socket.emit('pt:renameTeam',{teamId:i.dataset.rename,name:i.value}));
+  root.querySelectorAll('button[data-remove]').forEach(b=>b.onclick=()=>socket.emit('pt:removeTeam',{teamId:b.dataset.remove}));
+  el('mTeam').onclick=()=>socket.emit('pt:setMode',{mode:'team'});
+  el('mIndiv').onclick=()=>socket.emit('pt:setMode',{mode:'individual'});
+  el('addT').onclick=()=>{socket.emit('pt:addTeam',{name:el('tName').value});el('tName').value='';};
+  root.querySelectorAll('.game-card').forEach(c=>{const g=state.games.find(x=>x.id===c.dataset.game); if(g&&g.ready) c.onclick=()=>socket.emit('pt:openGame',{gameId:g.id});});
+}
+
+function renderHostGame(){
+  const g=state.game; if(!g) return;
+  const units=state.mode==='team'
+    ? Object.values(state.teams).sort((a,b)=>a.order-b.order).map(t=>({id:t.id,name:t.name}))
+    : Object.values(state.players).sort((a,b)=>a.order-b.order).map(p=>({id:p.id,name:p.name}));
+  let h=`<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center">
+    <h2 style="margin:0">🧩 ネプリーグ</h2><button class="ghost" id="back">← ゲーム選択にもどる</button></div>${scoreboard()}<div style="height:12px"></div>`;
+  h+=`<div class="card"><label>手番を選ぶ（他は待機）</label><div class="row">`;
+  h+= units.length?units.map(u=>`<button data-unit="${u.id}" class="${g.activeUnitId===u.id?'':'ghost'}">${esc(u.name)}${g.activeUnitId===u.id?' ▶':''}</button>`).join(''):'<span class="sub">先にメニューでチーム/参加者を用意してください</span>';
+  h+=`</div>`;
+  if(g.activeUnitId&&!g.question){
+    h+=`<div class="row" style="margin-top:14px;align-items:end">
+      <div style="min-width:110px"><label>難易度</label><select id="diff">${[1,2,3,4,5].map(n=>`<option value="${n}" ${ui.difficulty===n?'selected':''}>★${n}</option>`).join('')}</select></div>
+      <div style="min-width:150px"><label>傾向</label><select id="genre">${GENRES.map(x=>`<option ${ui.genre===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <button id="deal">問題を出す</button></div>`;}
+  h+=`</div>`;
+  if(g.question){
+    h+=`<div class="card"><div class="board"><div class="pill">${esc(g.question.genre)}・難易度★${g.question.difficulty}・${g.length}文字</div>
+      <div class="qtext">${esc(g.question.text)}</div><div class="slots">`;
+    h+=g.slots.map(s=>{const cls=g.revealed&&g.results?g.results[s.index]:'';
+      const shown=g.revealed?(chars(g.question.answer)[s.index]||''):(s.char||'');
+      const bc='box'+(s.locked&&!g.revealed?' locked':'');
+      return `<div class="slot ${cls}"><div class="${bc}">${esc(shown)}</div><div class="name">${esc(s.playerName)}<small>${g.revealed?'':(s.locked?'ロック済':'入力中…')}</small></div></div>`;}).join('');
+    h+=`</div>`;
+    if(g.revealed){h+=`<div class="result-line ${g.correctAll?'ok':'ng'}">${g.correctAll?'⭕ 正解！':'❌ ざんねん'}</div><div class="row"><button id="next">次の問題へ</button></div>`;}
+    else{const allLocked=g.slots.length&&g.slots.every(s=>s.locked);
+      h+=`<div class="waiting">${esc(g.message)}</div><div class="row"><button id="open" ${allLocked?'':'disabled'}>オープン（判定）</button><button id="redeal" class="ghost">問題を変える</button></div>`;}
+    h+=`</div></div>`;
+  }else{h+=`<div class="card"><p class="waiting">${esc(g.message)}</p></div>`;}
+  h+=`</div>`;
+  root.className=''; root.innerHTML=h;
+  el('back').onclick=()=>socket.emit('pt:closeGame');
+  root.querySelectorAll('button[data-unit]').forEach(b=>b.onclick=()=>socket.emit('pt:np:selectUnit',{unitId:b.dataset.unit}));
+  if(el('diff')) el('diff').onchange=()=>ui.difficulty=parseInt(el('diff').value,10);
+  if(el('genre')) el('genre').onchange=()=>ui.genre=el('genre').value;
+  if(el('deal')) el('deal').onclick=()=>socket.emit('pt:np:deal',{difficulty:ui.difficulty,genre:ui.genre});
+  if(el('open')) el('open').onclick=()=>socket.emit('pt:np:open');
+  if(el('next')) el('next').onclick=()=>socket.emit('pt:np:next');
+  if(el('redeal')) el('redeal').onclick=()=>socket.emit('pt:np:next');
+}
+
+/* ══ プレイヤー（スマホ） ══ */
+function mySlots(){const g=state.game; if(!g||!g.slots) return []; return g.slots.filter(s=>s.playerId===priv.youId);}
+function playerSig(){
+  const g=state.game, me=state.players[priv.youId];
+  const parts=[state.phase,state.mode,state.currentGame,(me?me.teamId:'')];
+  if(state.mode==='team') parts.push(Object.keys(state.teams).join(','));
+  if(g){parts.push(g.question?g.question.text:'noq',g.revealed?'rev':'live',mySlots().map(s=>s.index+(s.locked?'L':'o')).join('|')); if(g.revealed&&g.results) parts.push(g.results.join(''));}
+  return parts.join('#');
+}
+function renderPlayer(){
+  const sig=playerSig(); if(sig===lastPlayerSig) return; lastPlayerSig=sig;
+  const me=state.players[priv.youId];
+  if(!me){ sessionStorage.removeItem('pt_player'); renderHome('接続が切れました'); return; }
+  root.className='';
+  if(state.phase!=='ingame'){
+    let h=`<div class="phone"><div style="text-align:center"><div class="pill">参加中</div><h1 style="font-size:24px;margin-top:10px">${esc(me.name)} さん</h1></div>`;
+    if(state.mode==='team'){const teams=Object.values(state.teams).sort((a,b)=>a.order-b.order);
+      h+=`<div class="card"><label>チームを選ぼう</label>`;
+      h+= teams.length?teams.map(t=>`<button class="${t.id===me.teamId?'':'ghost'}" style="width:100%;margin:6px 0" data-team="${t.id}">${esc(t.name)}${t.id===me.teamId?' ✓':''}</button>`).join(''):'<p class="sub">ホストがチームを作るのを待っています…</p>';
+      h+=`</div>`;
+    }else h+=`<div class="card"><p class="status">個人戦です。ホストがゲームを始めるのを待っています…</p></div>`;
+    h+=`<p class="status">ホストの画面（テレビ）を見ててね📺</p></div>`;
+    root.innerHTML=h;
+    root.querySelectorAll('button[data-team]').forEach(b=>b.onclick=()=>socket.emit('pt:pickTeam',{teamId:b.dataset.team}));
+    return;
+  }
+  const g=state.game, slots=mySlots();
+  if(g&&g.revealed){
+    root.innerHTML=`<div class="phone"><div style="text-align:center"><h1 style="font-size:28px">${g.correctAll?'⭕ 正解！':'結果'}</h1>
+      ${slots.map(s=>`<div class="my-slot">あなたのマス：<b style="font-size:32px;color:${g.results[s.index]==='correct'?'var(--red)':'var(--blue)'}">${esc(chars(g.question.answer)[s.index]||'')}</b>（${g.results[s.index]==='correct'?'正解=赤':'不正解=青'}）</div>`).join('')||'<p class="status">あなたのマスはありませんでした</p>'}
+      <p class="status">${esc(g.message)}</p><p class="status">ホスト画面で続きを待ってね</p></div></div>`;
+    return;
+  }
+  if(slots.length&&g.question){
+    root.innerHTML=`<div class="phone"><div style="text-align:center"><div class="pill">あなたの番！</div><p class="my-slot">問題：${esc(g.question.text)}</p></div>`
+      +slots.map(s=>`<div class="card"><div class="my-slot">${g.length}文字のうち <b>${s.index+1}文字目</b> を担当</div>
+        <input class="big-input" data-idx="${s.index}" maxlength="2" ${s.locked?'disabled':''} value="${esc(s.char||'')}" placeholder="？">
+        <div style="height:10px"></div><button data-lock="${s.index}" style="width:100%" class="${s.locked?'pink':''}">${s.locked?'🔓 ロック解除':'🔒 これで決定（ロック）'}</button></div>`).join('')
+      +`<p class="status">カタカナ／ひらがなどちらでもOK</p></div>`;
+    root.querySelectorAll('input[data-idx]').forEach(inp=>inp.oninput=()=>socket.emit('pt:np:input',{index:parseInt(inp.dataset.idx,10),char:Array.from(inp.value)[0]||''}));
+    root.querySelectorAll('button[data-lock]').forEach(b=>{const idx=parseInt(b.dataset.lock,10);b.onclick=()=>socket.emit('pt:np:lock',{index:idx,locked:!state.game.slots[idx].locked});});
+    return;
+  }
+  root.innerHTML=`<div class="phone"><div style="text-align:center"><h1 style="font-size:24px">🧩 ネプリーグ</h1>
+    <div class="card"><p class="status">今は <b>${esc(g?g.activeUnitName:'')||'ほかのチーム'}</b> の番です。<br>あなたは待機中…📺</p></div>
+    <p class="status">ホスト画面を見て応援しよう！</p></div></div>`;
+}
+</script>
+</body>
+</html>

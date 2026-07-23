@@ -417,4 +417,16 @@ require('./mo_server.js')(io, {
   gapMs: parseFloat(process.env.MO_GAP_MS) || 4500,
 });
 
+require('./wa_server.js')(io, {
+  studyMs: (parseFloat(process.env.WA_STUDY_SECONDS) || 90) * 1000,
+  voteMs: (parseFloat(process.env.WA_VOTE_SECONDS) || 30) * 1000,
+  revealMs: (parseFloat(process.env.WA_REVEAL_SECONDS) || 12) * 1000,
+});
+
+// ネプリーグ(テレビ=ホスト画面＋スマホ=コントローラー)
+require('./np_server.js')(io, {});
+
+// パーティモード(1部屋でチーム対抗・通算得点。中でネプリーグ等を遊ぶ)
+require('./party_server.js')(io, {});
+
 server.listen(PORT, () => console.log(`あらいの遊び場 : http://localhost:${PORT}`));

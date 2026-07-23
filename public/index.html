@@ -189,12 +189,36 @@ footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px
  * src: 'オリジナル'(araiのオリジナル) | '元ネタあり'(既存ゲームが元) | 'AI作'(AIが設計) */
 const GAMES = [
   {
+    id: 'party', url: '/party/', icon: '🎉', title: 'パーティモード',
+    src: 'オリジナル', isNew: true, featured: true,
+    players: 'チーム戦・個人戦', time: '自由',
+    grad: 'linear-gradient(135deg,#ffd23f,#ff4d8d,#3fa9ff)',
+    desc: '1つの部屋で、テレビにホスト画面・スマホがコントローラー。チームを作って通算得点で対抗! いまはネプリーグを収録。ゲームが終わってもメニューに戻って続けて遊べる、親戚の集まり用のまとめモード。',
+    tags: ['パーティー', 'チーム戦', 'ホスト画面＋スマホ', '大人数OK'],
+  },
+  {
+    id: 'nepleague', url: '/nepleague/', icon: '🧩', title: 'ネプリーグ',
+    src: '元ネタあり', isNew: true, featured: true,
+    players: 'チーム戦・個人戦', time: '自由',
+    grad: 'linear-gradient(135deg,#ff3b52,#2f7bff)',
+    desc: 'テレビに問題、スマホがコントローラー。チームの人数ぶんの文字数の答えを1人1文字ずつ入力。ホストがオープンして、合ってれば赤・違えば青、全部赤で正解! 難易度★1〜5×5ジャンル。',
+    tags: ['クイズ', 'チーム戦', 'パーティー', 'ホスト画面＋スマホ'],
+  },
+  {
     id: 'quadcolor', url: '/quadcolor/', icon: '🟥🟦🟨🟩', title: 'クアドルカラー',
     src: '元ネタあり', isNew: true, featured: true,
     players: '1〜10人', time: '3〜5分',
     grad: 'linear-gradient(135deg,#e04545,#4a7dd6,#f0c010,#3cae5c)',
     desc: '4色マスの共通盤面から、手持ちの2×2パターンがピッタリはまる「4マスの境目」を探す早はめレース。回転あり・最大10人。抜けた人はみんなの手札を観戦!',
     tags: ['パズル', '早探し', 'オンライン対戦', 'CPU対戦OK', '大人数OK'],
+  },
+  {
+    id: 'whoami', url: '/whoami/', icon: '👻👽', title: 'ユーレイ?エイリアン?',
+    src: 'オリジナル', isNew: true, featured: true,
+    players: '4〜8人', time: '約12分',
+    grad: 'linear-gradient(135deg,#8b5cf6,#2fae6e)',
+    desc: 'わからないのは…自分の正体だけ。他人の正体は特徴と「化け物注意情報」で見極められるのに、自分の特徴だけ見えない! 1回きりの能力とウソOKの「そぶり」を頼りに自分の陣営を推理し、「👻を罰する/👽を罰する」の多数決へ。まちがえて自分を罰したら大失敗。',
+    tags: ['正体かくし', '推理', '心理戦', 'オンライン対戦', 'CPU対戦OK', '大人数OK'],
   },
   {
     id: 'monoku', url: '/monoku/', icon: '🐾💰', title: 'モンオク!',

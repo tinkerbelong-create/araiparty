@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ユーレイ?エイリアン? 👻👽</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{ --ink:#2a3140; --line:#ddd8ec; --ghost:#8b5cf6; --alien:#2fae6e; --amber:#e8871a; --red:#d6455d; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--ink);min-height:100vh;user-select:none;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(139,92,246,.14), transparent 40%),
+    radial-gradient(circle at 88% 14%, rgba(47,174,110,.14), transparent 40%),
+    linear-gradient(#f6f3ff,#f0f8f2);
+}
+.wrap{max-width:920px;margin:0 auto;padding:16px 12px 46px}
+h1{font-size:30px;font-weight:900;text-align:center;letter-spacing:.04em;
+  background:linear-gradient(90deg,var(--ghost),var(--alien));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;font-weight:700;color:#6a6a88;font-size:12px;margin-top:2px}
+.card{background:#fff;border:2px solid var(--line);border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 8px 22px rgba(60,50,90,.09)}
+.btn{display:inline-block;border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#fff;border-radius:12px;padding:10px 24px;font-size:15px;
+  background:linear-gradient(135deg,#8b5cf6,#6d3fe0);box-shadow:0 4px 12px rgba(139,92,246,.35);transition:transform .1s}
+.btn:hover{transform:translateY(-2px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.green{background:linear-gradient(135deg,#2fae6e,#1f8f57);box-shadow:0 4px 12px rgba(47,174,110,.35)}
+.btn.amber{background:linear-gradient(135deg,#e8871a,#c96f0a);box-shadow:0 4px 12px rgba(232,135,26,.35)}
+.btn.gray{background:#9c98b0;box-shadow:none}
+.btn.small{padding:6px 14px;font-size:13px;border-radius:9px}
+input[type=text]{font-family:inherit;font-weight:700;font-size:16px;color:var(--ink);
+  border:2px solid var(--line);border-radius:10px;padding:9px 12px;outline:none;width:100%}
+input:focus{border-color:var(--ghost)}
+label{font-size:12.5px;font-weight:900;color:#6a6a88;display:block;margin:12px 0 4px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.err{color:var(--red);font-weight:900;font-size:13px;min-height:18px;margin-top:8px}
+.hidden{display:none!important}
+.codebox{font-size:28px;font-weight:900;letter-spacing:.22em;color:var(--ghost);background:#f3edff;border:2px dashed var(--ghost);border-radius:12px;padding:7px 16px;display:inline-block}
+.seat{display:flex;align-items:center;gap:8px;background:#f7f5ff;border:2px solid var(--line);border-radius:12px;padding:8px 13px;font-weight:900;margin-top:7px;font-size:14px}
+.seat .tag{font-size:11px;color:#fff;background:#9c98b0;border-radius:99px;padding:2px 10px}
+.note{font-size:12.5px;font-weight:700;color:#6a6a88;line-height:1.8;margin-top:8px}
+.timer{font-size:15px;font-weight:900;color:var(--red);text-align:center;margin-top:8px;min-height:20px}
+/* ── 注意情報 ── */
+.rules{background:#fff8ee;border:2px dashed var(--amber);border-radius:14px;padding:10px 14px;font-weight:900;font-size:13.5px;line-height:2}
+.rules b{color:var(--amber)}
+/* ── プレイヤーカード ── */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:10px}
+.pcard{background:#f7f5ff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;font-weight:900;font-size:13px;position:relative}
+.pcard.me{border-color:var(--ghost);background:#f3edff}
+.pcard .chip{position:absolute;top:-9px;right:8px;font-size:10px;color:#fff;border-radius:99px;padding:2px 9px;background:#9c98b0}
+.pcard .chip.ok{background:var(--alien)}
+.pcard .traits{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.trait{font-size:11px;font-weight:900;background:#fff;border:2px solid var(--line);border-radius:99px;padding:2px 9px}
+.trait.gm{border-color:var(--ghost);color:var(--ghost)}
+.trait.am{border-color:var(--alien);color:var(--alien)}
+.trait.secret{border-style:dashed;color:#9c98b0}
+.gesture{font-size:18px;margin-top:4px}
+/* ── 能力/そぶり ── */
+.abbox{background:#f3edff;border:2px solid var(--ghost);border-radius:14px;padding:12px;font-weight:900}
+.abres{background:#2a2140;color:#e8dfff;border-radius:12px;padding:10px 14px;margin-top:8px;font-weight:900;font-size:14px}
+.gesbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.gesbtn{font-family:inherit;font-weight:900;font-size:13px;border:2px solid var(--line);background:#fff;border-radius:99px;padding:7px 16px;cursor:pointer}
+.gesbtn.on{border-color:var(--amber);background:#fff3e0}
+/* ── 投票 ── */
+.votebtns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.votebtn{font-family:inherit;font-weight:900;font-size:17px;border:3px solid;border-radius:16px;padding:16px 26px;cursor:pointer;background:#fff;transition:transform .1s}
+.votebtn:hover{transform:translateY(-3px)}
+.votebtn.g{border-color:var(--ghost);color:var(--ghost)}
+.votebtn.a{border-color:var(--alien);color:var(--alien)}
+/* ── 開票/結果 ── */
+.overlay{position:fixed;inset:0;background:rgba(30,25,50,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:14px}
+.panel{background:#fff;border-radius:20px;padding:24px;max-width:560px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);max-height:90vh;overflow:auto}
+table.rank{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;font-weight:700}
+table.rank th,table.rank td{border-bottom:1px solid var(--line);padding:7px 4px;text-align:center}
+table.rank th{color:#6a6a88;font-size:11.5px}
+.modalrule{text-align:left;font-size:13px;font-weight:700;line-height:1.9}
+.modalrule h3{margin-top:12px;color:var(--ghost)}
+.backlink{display:block;text-align:center;margin-top:20px;font-size:12.5px;font-weight:900;color:#9c98b0;text-decoration:none}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(42,33,64,.92);color:#fff;
+  font-weight:900;font-size:14px;border-radius:99px;padding:8px 22px;opacity:0;transition:opacity .25s;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ユーレイ?エイリアン?</h1>
+  <p class="sub">👻👽 わからないのは…自分の正体だけ。(4〜8人・3惑星)</p>
+
+  <!-- ══ ホーム ══ -->
+  <div id="vHome" class="card">
+    <label>なまえ(10文字まで)</label>
+    <input id="inName" type="text" maxlength="10" placeholder="なまえ">
+    <div class="row" style="margin-top:16px">
+      <button class="btn" id="btnCreate">部屋を作る</button>
+      <button class="btn green" id="btnCpu">CPU3人と対戦</button>
+    </div>
+    <label style="margin-top:18px">招待コードで参加</label>
+    <div class="row">
+      <input id="inCode" type="text" maxlength="5" placeholder="W○○○○" style="width:130px;text-transform:uppercase">
+      <button class="btn amber" id="btnJoin">参加する</button>
+    </div>
+    <div class="err" id="homeErr"></div>
+    <button class="btn gray small" id="btnRule" style="margin-top:10px">📜 ルールを読む</button>
+    <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+  </div>
+
+  <!-- ══ ロビー ══ -->
+  <div id="vLobby" class="card hidden">
+    <div style="text-align:center">
+      <div style="font-weight:900;color:#6a6a88;font-size:13px">招待コード</div>
+      <div class="codebox" id="lbCode">-----</div>
+      <div style="margin-top:8px"><button class="btn small" id="btnCopy">📋 コードをコピー</button></div>
+      <p class="note">4人から遊べます(たりなければCPUを追加)</p>
+    </div>
+    <div id="lbSeats"></div>
+    <div id="lbHostArea">
+      <div class="row" style="margin-top:12px">
+        <button class="btn green" id="btnAddCpu">CPUを追加</button>
+        <button class="btn gray hidden" id="btnRemoveCpu">CPUを削除</button>
+        <button class="btn" id="btnStart">出発する!</button>
+      </div>
+    </div>
+    <div id="lbGuestArea" class="hidden"><p class="note" style="text-align:center">ホストの開始を待っています…</p></div>
+    <div class="err" id="lbErr"></div>
+  </div>
+
+  <!-- ══ ゲーム ══ -->
+  <div id="vGame" class="hidden">
+    <div style="text-align:center;font-weight:900;font-size:17px;margin-top:8px" id="gPlanet"></div>
+    <div class="timer" id="timer"></div>
+    <div class="card" style="padding:12px 16px">
+      <div style="font-weight:900;font-size:13px">📢 化け物注意情報(すべて真実!)</div>
+      <div class="rules" id="gRules" style="margin-top:6px"></div>
+    </div>
+    <div class="card" id="abCard" style="padding:12px 16px">
+      <div class="abbox" id="abBox"></div>
+      <div class="abres hidden" id="abRes"></div>
+      <div style="font-weight:900;font-size:13px;margin-top:12px">🎭 あなたの「そぶり」(みんなに見える・ウソOK)</div>
+      <div class="gesbtns" id="gesBtns"></div>
+    </div>
+    <div class="card hidden" id="voteCard" style="text-align:center">
+      <div style="font-weight:900;font-size:17px">🗳 投票! どちらの陣営を罰する?</div>
+      <p class="note">自分の陣営に入れたら大失敗。よく考えて…</p>
+      <div class="votebtns" id="voteBtns">
+        <button class="votebtn g" id="btnVoteG">👻 ゆうれいを罰する</button>
+        <button class="votebtn a" id="btnVoteA">👽 エイリアンを罰する</button>
+      </div>
+      <div id="voteWait" class="note hidden" style="font-size:15px">✔ 投票した! 開票を待とう…</div>
+      <div class="err" id="vErr"></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:900;font-size:13px">👥 みんなの特徴 <span class="note">(自分の特徴だけ見えない!)</span></div>
+      <div class="pgrid" id="players"></div>
+    </div>
+  </div>
+
+  <!-- ══ 結果 ══ -->
+  <div id="vEnd" class="card hidden">
+    <div style="text-align:center;font-size:38px">🏆</div>
+    <div style="text-align:center;font-size:24px;font-weight:900" id="endTitle"></div>
+    <table class="rank" id="endTable"></table>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn" id="btnAgain">ロビーにもどる</button>
+      <a class="backlink" href="/">← あらいの遊び場にもどる</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="ovReveal" class="overlay hidden"><div class="panel" id="ovRevealPanel"></div></div>
+<div id="ovTarget" class="overlay hidden"><div class="panel" id="ovTargetPanel"></div></div>
+<div id="ovRule" class="overlay hidden">
+  <div class="panel modalrule">
+    <h2 style="text-align:center">📜 ユーレイ?エイリアン? のルール</h2>
+    <h3>🌌 せかい</h3>
+    ・プレイヤーは👻ゆうれい陣営か👽エイリアン陣営。でも<b>自分がどっちなのか分からない!</b><br>
+    ・全員「特徴のしるし」を3つ持つが、<b>自分のしるしだけ見えない</b>(他人のは全部見える)。
+    <h3>🔍 調査フェーズ</h3>
+    ・公開されている<b>化け物注意情報</b>(すべて真実)と他人の特徴をてらし合わせれば、<b>他人の正体はわかる</b>。でも自分だけ謎…<br>
+    ・<b>1回きりの能力</b>で自分のヒントを集めろ(🪞かがみ/👣けはい/🔭とおめがね/🔮うらない/🦉みみずく/👁️にらみ)。「Aさんは👻」のような直接情報はもらえない。<br>
+    ・<b>そぶり</b>で「👻っぽく/👽っぽく」ふるまえる(みんなに見える)。ウソをついて相手陣営をまどわせるもよし!
+    <h3>🗳 投票</h3>
+    ・最後に「👻を罰する」か「👽を罰する」の<b>多数決</b>。多かった方の陣営は<b>全員罰せられる</b>。<br>
+    ・<b>自分の陣営がわからないまま投票する</b>のがこのゲームのキモ。まちがえて自分を罰しないように!<br>
+    ・同数なら罰なし(全員セーフ)。
+    <h3>🏆 得点(3惑星の合計)</h3>
+    ・相手陣営が罰せられた: <b>+3点</b> / 罰なし(同数): <b>+1点</b> / 自分の陣営が罰せられた: <b>0点</b><br>
+    ・惑星ごとに正体・特徴・能力は配り直し!
+    <div style="text-align:center;margin-top:16px"><button class="btn" onclick="document.getElementById('ovRule').classList.add('hidden')">とじる</button></div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+'use strict';
+const socket = io();
+const $ = id => document.getElementById(id);
+
+/* ── 効果音 ── */
+let AC = null;
+function se(freq, dur = 0.07, type = 'square', vol = 0.2, slide = 0) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, AC.currentTime + dur);
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const seClick = () => se(600, 0.05, 'square', 0.12);
+const seSpooky = () => { se(392, 0.3, 'sine', 0.15, 300); setTimeout(() => se(330, 0.35, 'sine', 0.15, 250), 200); };
+const seAb = () => [523, 740, 988].forEach((f, i) => setTimeout(() => se(f, 0.1, 'triangle', 0.2), i * 80));
+const seVote = () => { se(740, 0.06, 'triangle', 0.2); setTimeout(() => se(988, 0.08, 'triangle', 0.2), 60); };
+const seWin = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => se(f, 0.18, 'triangle', 0.24), i * 120));
+const seLose = () => [392, 330, 262].forEach((f, i) => setTimeout(() => se(f, 0.25, 'triangle', 0.2), i * 160));
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.btn, .votebtn, .gesbtn')) seClick(); });
+
+/* 図鑑ミラー */
+const TRAITS = {
+  sukitoru:['すきとおる','🫥'], ashinai:['あしがない','🦶'], hikaru:['ひかる','✨'], antenna:['アンテナ','📡'],
+  midori:['みどりいろ','🟢'], marui:['まるい','⚪'], tsumetai:['つめたい','🧊'], fuwafuwa:['ふわふわ','☁️'],
+  shippo:['しっぽ','🦎'], memittsu:['めがみっつ','👀'], kagenai:['かげがない','🌑'], nureteru:['ぬれている','💧'],
+};
+const ABILITIES = {
+  kagami:['かがみ','🪞','自分の特徴をランダムに1つ見る',false],
+  kehai:['けはい','👣','1人えらんで、自分と同じ陣営か知る',true],
+  toomegane:['とおめがね','🔭','👻と👽どちらが多いか知る',false],
+  uranai:['うらない','🔮','自分の正体を占う(的中80%)',false],
+  mimizuku:['みみずく','🦉','この星の👻の総数を知る',false],
+  nirami:['にらみ','👁️','1人の「そぶり」が本心かウソか見抜く',true],
+};
+const GES = { none: ['😐 すまし顔', ''], ghost: ['👻っぽくふるまう', '👻'], alien: ['👽っぽくふるまう', '👽'] };
+
+let S = null, deadline = null;
+function show(v){ ['vHome','vLobby','vGame','vEnd'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function esc(s){ const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function toast(m){ const t = $('toast'); t.textContent = m; t.style.opacity = 1; clearTimeout(t._t); t._t = setTimeout(() => t.style.opacity = 0, 2200); }
+
+setInterval(() => {
+  const el = $('timer');
+  if (!deadline){ el.textContent = ''; return; }
+  const remain = Math.max(0, Math.ceil((deadline - Date.now())/1000));
+  el.textContent = remain > 0 ? `⏱ のこり ${remain} 秒` : '';
+}, 250);
+
+/* ══ ホーム/ロビー ══ */
+$('btnRule').onclick = () => $('ovRule').classList.remove('hidden');
+function myName(){ return $('inName').value.trim() || 'ゲスト'; }
+$('btnCreate').onclick = () => socket.emit('wa:createRoom', {name: myName()}, r => { if(!r.ok) $('homeErr').textContent = r.error; });
+$('btnCpu').onclick = () => socket.emit('wa:createRoom', {name: myName()}, r => {
+  if(!r.ok) return $('homeErr').textContent = r.error;
+  socket.emit('wa:addCpu', {}, ()=>{}); socket.emit('wa:addCpu', {}, ()=>{}); socket.emit('wa:addCpu', {}, ()=>{});
+});
+$('btnJoin').onclick = () => socket.emit('wa:joinRoom', {code: $('inCode').value, name: myName()}, r => { if(!r.ok) $('homeErr').textContent = r.error; });
+$('btnAddCpu').onclick = () => socket.emit('wa:addCpu', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnRemoveCpu').onclick = () => socket.emit('wa:removeCpu', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnStart').onclick = () => socket.emit('wa:start', {}, r => { if(!r.ok) $('lbErr').textContent = r.error; });
+$('btnAgain').onclick = () => { if (S && S.pub.isHost) socket.emit('wa:backToLobby', {}, ()=>{}); else location.reload(); };
+$('btnCopy').onclick = () => {
+  const code = $('lbCode').textContent;
+  const done = ok => { $('btnCopy').textContent = ok ? '✅ コピーした!' : '❌ 失敗'; setTimeout(() => $('btnCopy').textContent = '📋 コードをコピー', 1500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(()=>done(true)).catch(()=>done(fb(code)));
+  else done(fb(code));
+  function fb(t){ try{ const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok; }catch(e){ return false; } }
+};
+
+/* ══ 状態 ══ */
+socket.on('wa:state', st => {
+  S = st;
+  const p = st.pub;
+  deadline = (p.phase === 'study' || p.phase === 'vote') ? p.deadline : null;
+  if (p.phase === 'lobby') renderLobby(p);
+  else if (p.phase === 'study' || p.phase === 'vote' || p.phase === 'reveal') renderGame(p, st.priv);
+});
+
+function renderLobby(p){
+  $('ovReveal').classList.add('hidden');
+  show('vLobby');
+  $('lbCode').textContent = p.code;
+  $('lbSeats').innerHTML = p.seats.map((s,i) =>
+    `<div class="seat">${s.isCpu?'🤖':'🙂'} ${esc(s.name)} ${i===0?'<span class="tag">ホスト</span>':''}</div>`
+  ).join('') + (p.seats.length < 8 ? `<div class="seat" style="opacity:.5">💺 あと${8-p.seats.length}人まで(4人から)</div>` : '');
+  $('lbHostArea').classList.toggle('hidden', !p.isHost);
+  $('lbGuestArea').classList.toggle('hidden', p.isHost);
+  $('btnAddCpu').classList.toggle('hidden', p.seats.length >= 8);
+  $('btnRemoveCpu').classList.toggle('hidden', !p.seats.some(s => s.isCpu));
+  $('btnStart').disabled = p.seats.length < 4;
+}
+
+function markerClass(p, traitId){
+  // 注意情報のテキストからしるし判定(👻ルール/👽ルールに含まれるか)
+  const [name] = TRAITS[traitId];
+  if (p.rules && p.rules[0] && p.rules[0].includes(name)) return 'gm';
+  if (p.rules && p.rules[1] && p.rules[1].includes(name)) return 'am';
+  return '';
+}
+function renderGame(p, priv){
+  show('vGame');
+  $('gPlanet').textContent = `🪐 ${p.planet || ''}(${p.roundNo + 1}/3)` + (p.phase === 'study' ? ' — 調査フェーズ' : p.phase === 'vote' ? ' — 投票フェーズ!' : '');
+  $('gRules').innerHTML = (p.rules || []).map(r => `・${esc(r)}`).join('<br>');
+  // 能力
+  const ab = ABILITIES[priv.myAbility] || ['?', '?', '', false];
+  $('abBox').innerHTML = `あなたの能力: <b>${ab[1]} ${ab[0]}</b> — ${esc(ab[2])}<br>
+    <button class="btn small" id="btnAb" ${priv.abilityUsed || p.phase !== 'study' ? 'disabled' : ''} style="margin-top:6px">
+      ${priv.abilityUsed ? '✔ 使用ずみ(1ラウンド1回)' : '✨ 能力を使う!'}</button>`;
+  const btnAb = $('btnAb');
+  if (btnAb && !priv.abilityUsed && p.phase === 'study') {
+    btnAb.onclick = () => {
+      if (ab[3]) pickTarget(p, priv, t => useAbility(t));
+      else useAbility(undefined);
+    };
+  }
+  if (priv.abilityResult) {
+    $('abRes').classList.remove('hidden');
+    $('abRes').textContent = '💡 ' + priv.abilityResult.text;
+  } else $('abRes').classList.add('hidden');
+  // そぶり
+  const myGes = p.seats[priv.myIdx].gesture;
+  $('gesBtns').innerHTML = Object.entries(GES).map(([k, [label]]) =>
+    `<button class="gesbtn ${myGes === k ? 'on' : ''}" data-g="${k}" ${p.phase !== 'study' ? 'disabled' : ''}>${label}</button>`).join('');
+  $('gesBtns').querySelectorAll('.gesbtn').forEach(b => b.onclick = () => {
+    socket.emit('wa:gesture', { g: b.dataset.g }, r => { if (!r.ok) toast(r.error); });
+  });
+  // 投票カード
+  $('voteCard').classList.toggle('hidden', p.phase !== 'vote');
+  if (p.phase === 'vote') {
+    const voted = priv.myVote !== null && priv.myVote !== undefined;
+    $('voteBtns').classList.toggle('hidden', voted);
+    $('voteWait').classList.toggle('hidden', !voted);
+    $('btnVoteG').onclick = () => sendVote('ghost');
+    $('btnVoteA').onclick = () => sendVote('alien');
+  }
+  // プレイヤー
+  $('players').innerHTML = p.seats.map((s, i) => {
+    const me = i === priv.myIdx;
+    const traits = me
+      ? `<span class="trait secret">❓</span><span class="trait secret">❓</span><span class="trait secret">❓</span> <span class="note">自分のは見えない!</span>`
+      : (s.traits || []).map(t => `<span class="trait ${markerClass(p, t)}">${TRAITS[t][1]}${TRAITS[t][0]}</span>`).join('');
+    const chip = p.phase === 'vote'
+      ? `<span class="chip ${s.voted ? 'ok' : ''}">${s.voted ? '投票済' : '考え中'}</span>`
+      : `<span class="chip ${s.abilityUsed ? 'ok' : ''}">${s.abilityUsed ? '能力済' : '調査中'}</span>`;
+    return `<div class="pcard ${me ? 'me' : ''}">${chip}
+      ${s.isCpu ? '🤖' : '🙂'} ${esc(s.name)}${me ? '(あなた)' : ''} <small>⭐${s.points}</small>
+      <div class="gesture">そぶり: ${GES[s.gesture] ? GES[s.gesture][0] : '😐'}</div>
+      <div class="traits">${traits}</div>
+    </div>`;
+  }).join('');
+}
+function pickTarget(p, priv, cb){
+  $('ovTargetPanel').innerHTML = `<div style="font-weight:900">だれに使う?</div>
+    <div class="votebtns">${p.seats.map((s, i) => i === priv.myIdx ? '' :
+      `<button class="btn gray" data-t="${i}">${s.isCpu ? '🤖' : '🙂'} ${esc(s.name)}</button>`).join('')}</div>
+    <button class="btn gray small" style="margin-top:10px" onclick="document.getElementById('ovTarget').classList.add('hidden')">やめる</button>`;
+  $('ovTarget').classList.remove('hidden');
+  $('ovTargetPanel').querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+    $('ovTarget').classList.add('hidden');
+    cb(Number(b.dataset.t));
+  });
+}
+function useAbility(target){
+  socket.emit('wa:ability', { target }, r => {
+    if (!r.ok) { toast(r.error); return; }
+    seAb();
+  });
+}
+function sendVote(v){
+  socket.emit('wa:vote', { v }, r => {
+    if (!r.ok) { $('vErr').textContent = r.error; return; }
+    $('vErr').textContent = '';
+    seVote();
+  });
+}
+
+/* ══ 開票 ══ */
+socket.on('wa:reveal', rec => {
+  const names = rec.names;
+  const F = f => f === 'ghost' ? '👻' : '👽';
+  const my = rec.results[rec.myIdx];
+  const myFaction = rec.factions[rec.myIdx];
+  const punishedTxt = rec.punished === null ? '同数! だれも罰せられない' :
+    rec.punished === 'ghost' ? '👻ゆうれい陣営が罰せられた!!' : '👽エイリアン陣営が罰せられた!!';
+  const rows = names.map((n, i) => `
+    <div style="display:flex;gap:8px;align-items:center;font-weight:900;background:#f7f5ff;border-radius:10px;padding:5px 12px;margin-top:5px;font-size:13.5px;
+      ${rec.punished === rec.factions[i] ? 'opacity:.55;text-decoration:line-through' : ''}">
+      <span style="font-size:18px">${F(rec.factions[i])}</span>
+      <span style="flex:1;text-align:left">${esc(n)}${i === rec.myIdx ? '(あなた)' : ''}</span>
+      <span>投票: ${rec.votes[i] === null ? '棄権' : F(rec.votes[i]) + 'を罰'}</span>
+      <span style="color:${rec.results[i].points >= 3 ? 'var(--alien)' : rec.results[i].points > 0 ? 'var(--amber)' : 'var(--red)'}">+${rec.results[i].points}</span>
+    </div>`).join('');
+  $('ovRevealPanel').innerHTML = `
+    <div style="font-weight:900;color:#6a6a88">${esc(rec.planet)} の開票結果</div>
+    <div style="font-size:15px;font-weight:900;margin-top:6px">👻を罰する ${rec.tally.ghost}票 / 👽を罰する ${rec.tally.alien}票</div>
+    <div style="font-size:21px;font-weight:900;margin-top:8px">${punishedTxt}</div>
+    <div style="font-size:17px;font-weight:900;margin-top:10px;color:${my.points >= 3 ? 'var(--alien)' : my.points > 0 ? 'var(--amber)' : 'var(--red)'}">
+      あなたの正体は ${F(myFaction)} ${myFaction === 'ghost' ? 'ゆうれい' : 'エイリアン'} だった! → ${my.outcome === 'win' ? '🎉 大勝利 +3点' : my.outcome === 'tie' ? '😮‍💨 生存 +1点' : '💀 罰せられた… 0点'}</div>
+    ${rows}
+    <div class="note">${rec.finished ? 'まもなく最終結果…' : 'まもなく次の惑星へ…'}</div>`;
+  $('ovReveal').classList.remove('hidden');
+  if (my.outcome === 'win') seWin(); else if (my.outcome === 'lose') seLose(); else seSpooky();
+  setTimeout(() => $('ovReveal').classList.add('hidden'), 11000);
+});
+
+/* ══ 最終結果 ══ */
+socket.on('wa:end', e => {
+  deadline = null;
+  setTimeout(() => {
+    $('ovReveal').classList.add('hidden');
+    show('vEnd');
+    const myIdx = S ? S.priv.myIdx : -1;
+    const MED = ['🥇', '🥈', '🥉'];
+    $('endTitle').textContent = e.standings.winners.map(w => e.names[w]).join(' と ') + ' の優勝!' + (e.standings.winners.includes(myIdx) ? ' 🎉' : '');
+    if (e.standings.winners.includes(myIdx)) seWin();
+    $('endTable').innerHTML = '<tr><th>順位</th><th>なまえ</th><th>合計点</th><th>大勝利</th><th>正体の記録</th></tr>' +
+      e.standings.order.map((o, i) => `<tr>
+        <td style="font-size:16px">${MED[i] || (i + 1) + '位'}</td>
+        <td style="text-align:left"><b>${esc(e.names[o.p])}${o.p === myIdx ? '(あなた)' : ''}</b></td>
+        <td><b>${o.points}</b></td><td>${o.wins}回</td>
+        <td>${e.history.map(h => h.factions[o.p] === 'ghost' ? '👻' : '👽').join(' ')}</td>
+      </tr>`).join('');
+  }, 800);
+});
+</script>
+<script src="/bgm.js"></script>
+<script>AraiBGM.init('jandekken');</script>
+</body>
+</html>
