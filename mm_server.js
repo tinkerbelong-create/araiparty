@@ -17,9 +17,12 @@ module.exports = function attach(io, opts = {}) {
     return c;
   }
 
-  function makeRoom(scenarioId, hostName, socketId) {
+  const MAX_SEATS = 8; // シナリオ未定のうちは広めに受け入れる
+
+  function makeRoom(hostName, socketId) {
     const room = {
-      code: genCode(), scenarioId,
+      code: genCode(),
+      scenarioId: null,          // ★人が集まってから選ぶ
       stage: 'lobby',            // lobby | play | ended
       game: null,
       seats: [{ name: hostName, socketId, connected: true, charId: null }],
@@ -31,6 +34,14 @@ module.exports = function attach(io, opts = {}) {
     return room;
   }
 
+  /* 人数が変わって、選んでいたシナリオに合わなくなったら選び直させる */
+  function fitScenario(room) {
+    if (!room.scenarioId) return;
+    const sc = MM.listScenarios().find(s => s.id === room.scenarioId);
+    const n = room.seats.length;
+    if (!sc || n < sc.players.min || n > sc.players.max) room.scenarioId = null;
+  }
+
   function ctx(socket) {
     for (const room of rooms.values()) {
       const idx = room.seats.findIndex(s => s.socketId === socket.id);
@@ -40,16 +51,23 @@ module.exports = function attach(io, opts = {}) {
   }
 
   function lobbyView(room) {
+    const n = room.seats.length;
     return {
       code: room.code, stage: room.stage, scenarioId: room.scenarioId, hostIdx: room.hostIdx,
       seats: room.seats.map((s, i) => ({ idx: i, name: s.name, connected: s.connected })),
       deadline: room.deadline,
+      // いまの人数で遊べるかどうかを添えて、全シナリオを渡す
+      catalog: MM.listScenarios().map(s => ({
+        ...s,
+        playable: n >= s.players.min && n <= s.players.max,
+        need: n < s.players.min ? `あと${s.players.min - n}人` : (n > s.players.max ? `${n - s.players.max}人多い` : null),
+      })),
     };
   }
   function broadcast(room) {
     const lobby = lobbyView(room);
     const pub = room.game ? room.game.publicView()
-      : { scenario: MM.listScenarios().find(s => s.id === room.scenarioId) || null };
+      : { scenario: room.scenarioId ? (MM.listScenarios().find(s => s.id === room.scenarioId) || null) : null };
     room.seats.forEach((s, i) => {
       if (!s.connected || !s.socketId) return;
       const priv = (room.game && s.charId) ? room.game.privateView(s.charId) : { charId: null };
@@ -90,15 +108,28 @@ module.exports = function attach(io, opts = {}) {
 
     socket.on('mm:scenarios', (_, cb) => cb && cb({ ok: true, list: MM.listScenarios() }));
 
-    socket.on('mm:create', ({ name, scenarioId }, cb) => {
+    /* 部屋を作る(この時点ではシナリオ未定) */
+    socket.on('mm:create', ({ name }, cb) => {
       name = String(name || '').trim().slice(0, 12);
       if (!name) return cb && cb({ ok: false, msg: '名前を入れてください' });
-      let list;
-      try { list = MM.listScenarios(); } catch (e) { return cb && cb({ ok: false, msg: 'シナリオを読めませんでした' }); }
-      const sc = list.find(s => s.id === scenarioId) || list[0];
-      if (!sc) return cb && cb({ ok: false, msg: 'シナリオがありません' });
-      const room = makeRoom(sc.id, name, socket.id);
+      try { MM.listScenarios(); } catch (e) { return cb && cb({ ok: false, msg: 'シナリオを読めませんでした' }); }
+      const room = makeRoom(name, socket.id);
       cb && cb({ ok: true, code: room.code });
+      broadcast(room);
+    });
+
+    /* ホスト: 人が集まってからシナリオを選ぶ */
+    socket.on('mm:pickScenario', ({ scenarioId }, cb) => {
+      const c = ctx(socket); if (!c || !c.isHost) return cb && cb({ ok: false, msg: 'ホストのみ' });
+      const { room } = c;
+      if (room.stage !== 'lobby') return cb && cb({ ok: false });
+      const sc = MM.listScenarios().find(s => s.id === scenarioId);
+      if (!sc) return cb && cb({ ok: false, msg: 'そのシナリオがありません' });
+      const n = room.seats.length;
+      if (n < sc.players.min || n > sc.players.max)
+        return cb && cb({ ok: false, msg: `『${sc.title}』は${sc.players.min}人用です(いまは${n}人)` });
+      room.scenarioId = sc.id;
+      cb && cb({ ok: true });
       broadcast(room);
     });
 
@@ -113,10 +144,11 @@ module.exports = function attach(io, opts = {}) {
       if (back) { back.socketId = socket.id; back.connected = true; cb && cb({ ok: true, code, rejoined: true }); broadcast(room); return; }
 
       if (room.stage !== 'lobby') return cb && cb({ ok: false, msg: 'すでに始まっています' });
-      const sc = MM.loadScenario(room.scenarioId);
-      if (room.seats.length >= sc.players.max) return cb && cb({ ok: false, msg: '満席です' });
+      // ★シナリオを選んだあとでも人は入れる(あとから来た人のぶんで選び直せるように)
+      if (room.seats.length >= MAX_SEATS) return cb && cb({ ok: false, msg: '満席です' });
       if (room.seats.some(s => s.name === name)) return cb && cb({ ok: false, msg: 'その名前は使われています' });
       room.seats.push({ name, socketId: socket.id, connected: true, charId: null });
+      fitScenario(room);
       cb && cb({ ok: true, code });
       broadcast(room);
     });
@@ -126,6 +158,7 @@ module.exports = function attach(io, opts = {}) {
       const c = ctx(socket); if (!c || !c.isHost) return cb && cb({ ok: false, msg: 'ホストのみ' });
       const { room } = c;
       if (room.stage !== 'lobby') return cb && cb({ ok: false });
+      if (!room.scenarioId) return cb && cb({ ok: false, msg: '先にシナリオを選んでください' });
       const sc = MM.loadScenario(room.scenarioId);
       if (room.seats.length !== sc.players.max) return cb && cb({ ok: false, msg: `${sc.players.max}人そろってから始めてください` });
       room.game = new MM.Game(room.scenarioId);
@@ -184,6 +217,7 @@ module.exports = function attach(io, opts = {}) {
         c.room.seats.splice(c.idx, 1);
         if (!c.room.seats.length) { clearTimer(c.room); rooms.delete(c.room.code); return; }
         if (c.room.hostIdx >= c.room.seats.length) c.room.hostIdx = 0;
+        fitScenario(c.room);
       }
       broadcast(c.room);
     });

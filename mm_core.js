@@ -460,10 +460,13 @@ class Game {
           ? `命令${this.orders.length}件は船長権限で無効化された`
           : `${obeyed.length}/${live.length} 件が守られた`;
       } else if (rule.rule === 'orderFollowed') {
-        const mine = this.orders.filter(o => o.target === rule.char && !o.void);
+        const all = this.orders.filter(o => o.target === rule.char);
+        const mine = all.filter(o => !o.void);
         const followed = mine.filter(o => ans[rule.char]?.questions?.[o.questionId] === o.answerId);
         got = followed.length * rule.points;
-        note = mine.length ? `${followed.length}/${mine.length} 件に従った` : '命令されなかった';
+        if (mine.length) note = `${followed.length}/${mine.length} 件に従った`;
+        else if (all.length) note = `命令${all.length}件は船長権限で無効になった(従う義務が消えた)`;
+        else note = '命令されなかった';
       } else if (rule.rule === 'authority') {
         got = this.authorityDeclared ? rule.points : 0;
         note = this.authorityDeclared ? '宣言した' : '宣言しなかった';

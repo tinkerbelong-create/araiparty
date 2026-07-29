@@ -6,36 +6,56 @@
 <title>マーダーミステリー 🍰</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{ --ink:#3a3a44; --line:#f0dca8; --bg:#ffe066; --accent:#f7a8b8; --red:#d6455d; --paper:#fffdf6; }
+:root{ --ink:#e6e9f0; --line:#2f3a52; --bg:#0d1220; --accent:#b08d57; --red:#e2596e; --paper:#161d2e; }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;color:var(--ink);min-height:100vh;
-  background:radial-gradient(circle at 8% 6%, rgba(247,168,184,.35), transparent 34%),
-             radial-gradient(circle at 92% 92%, rgba(247,168,184,.3), transparent 34%), var(--bg);}
+  background:radial-gradient(ellipse at 50% -10%, rgba(176,141,87,.20), transparent 55%),
+             radial-gradient(circle at 88% 96%, rgba(60,90,130,.22), transparent 45%),
+             linear-gradient(#0d1220,#070a12);}
 .wrap{max-width:760px;margin:0 auto;padding:14px 12px 60px}
 h1{font-size:26px;font-weight:900;text-align:center}
-h1 .pill{background:var(--accent);color:#fff;border-radius:14px;padding:2px 18px;display:inline-block}
-.sub{text-align:center;font-weight:700;color:#8a7a55;font-size:12px;margin-top:5px}
-.card{background:var(--paper);border:3px solid #fff;border-radius:20px;padding:18px;margin-top:14px;box-shadow:0 8px 22px rgba(140,110,40,.13)}
-.btn{border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#fff;border-radius:14px;padding:13px 24px;font-size:16px;
-  background:linear-gradient(135deg,#f7a8b8,#ec7f97);box-shadow:0 4px 14px rgba(236,127,151,.45);transition:transform .1s}
-.btn:hover{transform:translateY(-2px)} .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.btn.dark{background:linear-gradient(135deg,#5c5c6e,#3a3a44);box-shadow:0 4px 12px rgba(58,58,68,.3)}
-.btn.gray{background:#bdb6a4;box-shadow:none}
+h1 .pill{background:transparent;color:var(--accent);border:2px solid var(--accent);border-radius:0;
+  padding:6px 22px;display:inline-block;letter-spacing:.16em;font-size:20px}
+.sub{text-align:center;font-weight:700;color:#7d8aa3;font-size:12px;margin-top:8px;letter-spacing:.08em}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.btn{border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#0d1220;border-radius:10px;padding:13px 24px;font-size:16px;
+  background:linear-gradient(135deg,#c9a464,#a8834c);box-shadow:0 4px 16px rgba(176,141,87,.3);transition:transform .1s}
+.btn:hover{transform:translateY(-2px)} .btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn.dark{background:transparent;color:var(--accent);border:1px solid var(--accent);box-shadow:none}
+.btn.gray{background:#39435c;color:var(--ink);box-shadow:none}
 .btn.small{padding:7px 15px;font-size:13px;border-radius:10px}
 .btn.wide{width:100%;padding:15px;font-size:17px}
 input[type=text],textarea{font-family:inherit;font-weight:700;font-size:16px;color:var(--ink);
-  border:2px solid var(--line);border-radius:10px;padding:10px 12px;outline:none;width:100%;background:#fff}
+  border:1px solid var(--line);border-radius:8px;padding:11px 12px;outline:none;width:100%;background:#0f1523}
 textarea{min-height:90px;line-height:1.7;font-weight:500}
 input:focus,textarea:focus{border-color:var(--accent)}
-label{font-size:12.5px;font-weight:900;color:#8a7a55;display:block;margin:14px 0 5px}
+label{font-size:12px;font-weight:900;color:#8b98b2;display:block;margin:16px 0 6px;letter-spacing:.06em}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .err{color:var(--red);font-weight:900;font-size:13px;min-height:18px;margin-top:8px}
 .hidden{display:none!important}
-.codebox{font-size:28px;font-weight:900;letter-spacing:.22em;color:#e0708c;background:#fff2f5;border:2px dashed var(--accent);border-radius:12px;padding:7px 18px;display:inline-block}
-.seat{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:9px 14px;font-weight:900;margin-top:7px;font-size:14px}
-.dot{width:9px;height:9px;border-radius:50%;background:#57c08a} .dot.off{background:#c9c2b2}
-.tag{font-size:11px;font-weight:900;background:var(--accent);color:#fff;border-radius:7px;padding:2px 8px}
-.note{font-size:12px;color:#8a7a55;line-height:1.75;margin-top:8px}
+.codebox{font-size:30px;font-weight:900;letter-spacing:.3em;color:var(--accent);background:#0f1523;border:1px dashed var(--accent);border-radius:8px;padding:9px 20px 9px 26px;display:inline-block}
+.seat{display:flex;align-items:center;gap:8px;background:#0f1523;border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-weight:900;margin-top:7px;font-size:14px}
+.dot{width:8px;height:8px;border-radius:50%;background:#5fd39a} .dot.off{background:#4a5568}
+.tag{font-size:11px;font-weight:900;background:var(--accent);color:#0d1220;border-radius:5px;padding:2px 8px}
+.note{font-size:12px;color:#7d8aa3;line-height:1.8;margin-top:8px}
+/* 入口の読み物 */
+.lead{font-size:14.5px;line-height:2;color:#c3cbdb;margin-top:14px}
+.hr{border:none;border-top:1px solid var(--line);margin:22px 0}
+.stepline{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.stepline:last-child{border-bottom:none}
+.stepline .n{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--accent);color:var(--accent);
+  font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.stepline .b{font-size:13.5px;line-height:1.8}
+.stepline .b b{color:var(--accent)}
+.scard{display:block;width:100%;text-align:left;background:#0f1523;border:1px solid var(--line);border-radius:12px;
+  padding:15px 17px;margin-top:10px;font-family:inherit;color:var(--ink);cursor:pointer;transition:.14s}
+.scard:hover{border-color:var(--accent)}
+.scard.on{border-color:var(--accent);background:#1a2butt}
+.scard.on{background:#1b2233}
+.scard:disabled{opacity:.38;cursor:not-allowed}
+.scard .ttl{font-size:16px;font-weight:900}
+.scard .meta{font-size:11.5px;color:var(--accent);font-weight:900;margin-top:3px;letter-spacing:.05em}
+.scard .desc{font-size:12.5px;color:#8b98b2;line-height:1.75;margin-top:6px}
 
 /* 進行バー */
 .bar{position:sticky;top:0;z-index:30;background:rgba(255,253,246,.97);backdrop-filter:blur(6px);
@@ -99,22 +119,28 @@ th,td{border:1px solid #ece2c5;padding:7px 9px;text-align:left} th{background:#f
 .map{width:100%;max-width:400px;display:block;margin:10px auto;border-radius:12px;border:2px solid var(--line);background:#fff}
 .back{position:fixed;left:10px;top:10px;z-index:40;background:rgba(255,255,255,.92);border:2px solid #fff;border-radius:11px;
   padding:6px 12px;font-weight:900;font-size:12.5px;color:#3a3a44;text-decoration:none;box-shadow:0 3px 10px rgba(140,110,40,.18)}
-/* 夜モード(暗い色のシナリオ) */
-body.night .card,body.night .opt,body.night .abl,body.night .logit,body.night .seat,body.night textarea,body.night input[type=text]{background:var(--paper);color:var(--ink);border-color:var(--line)}
-body.night .tab{background:#12253a;color:#7f9bb5}
-body.night .tab.on{background:var(--paper);color:var(--ink)}
-body.night .bar{background:rgba(23,48,73,.97)}
-body.night .prog{background:#12253a}
-body.night th{background:#12253a;color:var(--ink)} body.night td,body.night th{border-color:var(--line)}
-body.night .mission,body.night .todo{background:#1d3a55;border-color:var(--accent)}
-body.night .codebox{background:#12253a}
-body.night label,body.night .note,body.night .sub,body.night .waiting{color:#8fb0c9}
-body.night .opt .s,body.night .abl .nt{color:#8fb0c9}
-body.night .tl .it{border-color:#2c4a66}
-body.night .btn.gray{background:#3d5a75}
+/* 既定は夜(ミステリアス)。明るい色のシナリオのときだけ .day で上書きする */
+.card,.opt,.abl,.logit,.seat,textarea,input[type=text],.scard{background:var(--paper);color:var(--ink);border-color:var(--line)}
+.tab{background:#0f1523;color:#6f7d96} .tab.on{background:var(--paper);color:var(--ink)}
+.bar{background:rgba(22,29,46,.97)} .prog{background:#0f1523}
+th{background:#0f1523;color:var(--ink)} td,th{border-color:var(--line)}
+.mission,.todo{background:#1b2233;border-color:var(--accent)}
+.tl .it{border-color:var(--line)}
+body.day .card,body.day .opt,body.day .abl,body.day .logit,body.day .seat,body.day textarea,body.day input[type=text],body.day .scard{background:#fff}
+body.day .card{background:var(--paper);border-width:3px;border-color:#fff}
+body.day .tab{background:#fff5d0;color:#a89b7c} body.day .tab.on{background:var(--paper);color:var(--ink)}
+body.day .bar{background:rgba(255,253,246,.97)} body.day .prog{background:#f2ecd9}
+body.day th{background:#fff5d0} body.day td,body.day th{border-color:#ece2c5}
+body.day .mission,body.day .todo{background:#fff2f5}
+body.day label,body.day .note,body.day .sub,body.day .waiting,body.day .opt .s,body.day .abl .nt{color:#8a7a55}
+body.day .btn{color:#fff;background:linear-gradient(135deg,#f7a8b8,#ec7f97)}
+body.day .btn.dark{background:linear-gradient(135deg,#5c5c6e,#3a3a44);color:#fff;border:none}
+body.day .btn.gray{background:#bdb6a4;color:#fff}
+body.day h1 .pill{background:var(--accent);color:#fff;border:none;border-radius:14px}
+body.day .kw{background:var(--ink)}
 /* 命令の表示 */
-.order{background:#3a2a2a;color:#ffd9d9;border:2px solid #d6455d;border-radius:14px;padding:13px 16px;margin-top:10px;font-weight:900;font-size:14px;line-height:1.8}
-body:not(.night) .order{background:#fff0f2;color:#8c2b3d}
+.order{background:#2e1c22;color:#ffd9d9;border:1px solid var(--red);border-radius:10px;padding:13px 16px;margin-top:10px;font-weight:900;font-size:14px;line-height:1.8}
+body.day .order{background:#fff0f2;color:#8c2b3d}
 .big-event{background:var(--accent);color:#fff;border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:900;text-align:center;font-size:15px}
 </style>
 </head>
@@ -124,39 +150,71 @@ body:not(.night) .order{background:#fff0f2;color:#8c2b3d}
 
 <!-- 入口 -->
 <div id="s-entry">
-  <h1><span class="pill">マダミス</span></h1>
-  <div class="sub">3人で遊ぶマーダーミステリー ／ 通話をつなぎながら</div>
+  <h1><span class="pill">MURDER MYSTERY</span></h1>
+  <div class="sub">あらいの遊び場 ／ マーダーミステリー</div>
+
+  <div class="card">
+    <div style="font-weight:900;font-size:17px;color:var(--accent)">マーダーミステリーとは</div>
+    <div class="lead">
+      <b>物語の登場人物になって、事件の真相をさがすゲーム</b>です。<br><br>
+      あなたには、あなただけのシートが配られます。そこには、その人が見たこと・考えていること・
+      そして<b>他の人には言えない秘密</b>が書いてあります。<br><br>
+      全員が何かを隠しています。だから、<b>嘘をついてもかまいません。</b>
+      話し合いながら、誰が何を隠しているのかを探り、最後に「何が起きたのか」を各自で答えます。<br><br>
+      推理が得意でなくても大丈夫。<b>自分の役を演じきることが、いちばん面白いところ</b>です。
+    </div>
+    <hr class="hr">
+    <div style="font-weight:900;font-size:15px">はじめての方へ — このサイトの進みかた</div>
+    <div style="margin-top:10px">
+      <div class="stepline"><div class="n">1</div><div class="b"><b>通話をつなぐ</b><br>DiscordでもLINEでも構いません。話しながら遊ぶゲームです</div></div>
+      <div class="stepline"><div class="n">2</div><div class="b"><b>部屋を作って、招待コードを配る</b><br>ホストが1人、部屋を作ります。出てきた5文字を友達に送ってください</div></div>
+      <div class="stepline"><div class="n">3</div><div class="b"><b>全員そろってから、シナリオを選ぶ</b><br>作品ごとに人数が決まっています。集まった人数で遊べるものを選べます</div></div>
+      <div class="stepline"><div class="n">4</div><div class="b"><b>役はランダムに配られます</b><br>誰がどの役かは、始まるまで分かりません</div></div>
+      <div class="stepline"><div class="n">5</div><div class="b"><b>あとは画面のとおりに</b><br>「つぎは何をするか」が毎回出ます。<b>全員が「完了」を押すまで先に進みません</b>。進行役(GM)は要りません</div></div>
+    </div>
+    <div class="note">ネタバレになるので、<b>ひとつの作品は一度しか遊べません</b>。真相を知っている人は参加しないでください。</div>
+  </div>
+
   <div class="card">
     <label>あなたの名前</label>
     <input type="text" id="name" maxlength="12" placeholder="なまえ">
-    <label>シナリオ</label>
-    <div id="sclist"></div>
-    <button class="btn wide" id="btnCreate" style="margin-top:14px">部屋を作る</button>
-    <hr style="margin:20px 0;border:none;border-top:2px dashed #ece2c5">
-    <label>招待コードで参加する</label>
+    <button class="btn wide" id="btnCreate" style="margin-top:16px">部屋を作る</button>
+    <div class="note" style="text-align:center">シナリオは、みんなが集まってから選びます</div>
+    <hr class="hr">
+    <label>友達から招待コードをもらった人はこちら</label>
     <div class="row">
-      <input type="text" id="code" maxlength="5" placeholder="MXXXX" style="flex:1;text-transform:uppercase;letter-spacing:.18em;font-weight:900">
-      <button class="btn dark" id="btnJoin">参加</button>
+      <input type="text" id="code" maxlength="5" placeholder="MXXXX" style="flex:1;text-transform:uppercase;letter-spacing:.2em;font-weight:900">
+      <button class="btn dark" id="btnJoin">参加する</button>
     </div>
     <div class="err" id="e1"></div>
-    <div class="note">通話(Discord・LINEなど)をつなぎながら遊びます。この画面が進行役をやってくれるので、GMは要りません。</div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:900;font-size:15px">収録されている作品</div>
+    <div id="sclist"></div>
+    <div class="note">※ あらすじだけ載せています。中身は遊ぶまで伏せられます</div>
   </div>
 </div>
 
 <!-- ロビー -->
 <div id="s-lobby" class="hidden">
-  <h1><span class="pill" id="lbTitle">—</span></h1>
-  <div class="sub" id="lbSub">—</div>
+  <h1><span class="pill">待合室</span></h1>
+  <div class="sub" id="lbSub">まずは全員そろうのを待ちましょう</div>
   <div class="card" style="text-align:center">
-    <div style="font-size:12px;font-weight:900;color:#8a7a55">招待コード</div>
+    <div style="font-size:12px;font-weight:900;color:#8b98b2">招待コード</div>
     <div class="codebox" id="lbCode">—</div>
-    <div class="note">このコードを友達2人に送ってください</div>
+    <div class="note">このコードを友達に送ってください</div>
   </div>
   <div class="card">
     <div style="font-weight:900;font-size:14px" id="lbCount">参加者</div>
     <div id="lbSeats"></div>
-    <button class="btn wide" id="btnStart" style="margin-top:16px">3人そろった! はじめる</button>
-    <div class="note">キャラクターはランダムに配られます。</div>
+  </div>
+  <div class="card">
+    <div style="font-weight:900;font-size:15px">シナリオを選ぶ</div>
+    <div class="note" id="lbPickNote" style="margin-top:4px"></div>
+    <div id="lbCatalog"></div>
+    <button class="btn wide" id="btnStart" style="margin-top:16px">この作品ではじめる</button>
+    <div class="note" style="text-align:center">役はランダムに配られます</div>
     <div class="err" id="e2"></div>
   </div>
 </div>
@@ -214,28 +272,28 @@ function applyTheme(t){
   r.setProperty('--ink', dark ? '#e8eef4' : (t.ink||'#3a3a44'));
   r.setProperty('--paper', dark ? '#173049' : '#fffdf6');
   r.setProperty('--line', dark ? '#2c4a66' : '#f0dca8');
-  document.body.classList.toggle('night', dark);
+  document.body.style.background = dark
+    ? `radial-gradient(ellipse at 50% -10%, ${t.accent}22, transparent 55%), linear-gradient(${t.bg},#070a12)`
+    : `radial-gradient(circle at 8% 6%, ${t.accent}55, transparent 34%), ${t.bg}`;
+  document.body.classList.toggle('day', !dark);
 }
 
 /* ── 入口 ── */
 socket.emit('mm:scenarios', {}, r => {
   if(!r || !r.ok) return;
-  scenarios = r.list; pickedScenario = scenarios[0] ? scenarios[0].id : null;
+  scenarios = r.list;
   $('sclist').innerHTML = scenarios.map(s => `
-    <button class="opt ${s.id===pickedScenario?'on':''}" data-sc="${esc(s.id)}">
-      ${esc(s.icon)} ${esc(s.title)}
-      <span class="s">${esc(s.subtitle)}<br>${s.players.min}人 / ${esc(s.duration)}</span>
-    </button>`).join('');
-  $('sclist').querySelectorAll('[data-sc]').forEach(b => b.onclick = () => {
-    pickedScenario = b.dataset.sc;
-    $('sclist').querySelectorAll('.opt').forEach(x => x.classList.toggle('on', x.dataset.sc===pickedScenario));
-  });
+    <div class="scard" style="cursor:default">
+      <div class="ttl">${esc(s.icon)} ${esc(s.title)}</div>
+      <div class="meta">${s.players.min}人用 ／ ${esc(s.duration)}</div>
+      <div class="desc">${esc(s.subtitle)}</div>
+    </div>`).join('');
 });
 $('name').value = localStorage.getItem('arai_mm_name') || '';
 $('btnCreate').onclick = () => {
   const name = $('name').value.trim(); if(!name) return $('e1').textContent='名前を入れてください';
   localStorage.setItem('arai_mm_name', name);
-  socket.emit('mm:create', { name, scenarioId: pickedScenario }, r => { if(!r.ok) $('e1').textContent = r.msg||'失敗しました'; });
+  socket.emit('mm:create', { name }, r => { if(!r.ok) $('e1').textContent = r.msg||'失敗しました'; });
 };
 $('btnJoin').onclick = () => {
   const name = $('name').value.trim(), code = $('code').value.trim().toUpperCase();
@@ -259,16 +317,36 @@ function render(){
 
 function renderLobby(){
   show('lobby');
-  const { lobby, pub, priv } = ST;
-  const sc = pub.scenario || {};
-  $('lbTitle').textContent = sc.title || 'マダミス';
-  $('lbSub').textContent = sc.subtitle || '';
+  const { lobby, priv } = ST;
+  const isHost = priv.myIdx === lobby.hostIdx;
+  const n = lobby.seats.length;
   $('lbCode').textContent = lobby.code;
-  const max = (sc.players && sc.players.max) || 3;
-  $('lbCount').textContent = `参加者 ${lobby.seats.length} / ${max}`;
+  $('lbCount').textContent = `参加者 ${n}人`;
   $('lbSeats').innerHTML = lobby.seats.map(s =>
     `<div class="seat"><span class="dot ${s.connected?'':'off'}"></span>${esc(s.name)}${s.idx===lobby.hostIdx?'<span class="tag">ホスト</span>':''}</div>`).join('');
-  $('btnStart').classList.toggle('hidden', priv.myIdx !== lobby.hostIdx);
+
+  const cat = lobby.catalog || [];
+  const playable = cat.filter(s=>s.playable);
+  $('lbSub').textContent = playable.length
+    ? `いま${n}人。遊べる作品が${playable.length}つあります`
+    : `いま${n}人。あと少し人数が必要です`;
+  $('lbPickNote').innerHTML = isHost
+    ? '作品ごとに人数が決まっています。いまの人数で遊べるものだけ選べます。'
+    : 'ホストが選ぶのを待っています。通話で相談して決めましょう。';
+
+  $('lbCatalog').innerHTML = cat.map(s => `
+    <button class="scard ${lobby.scenarioId===s.id?'on':''}" data-sc="${esc(s.id)}" ${(!s.playable||!isHost)?'disabled':''}>
+      <div class="ttl">${esc(s.icon)} ${esc(s.title)}${lobby.scenarioId===s.id?' <span class="tag">選択中</span>':''}</div>
+      <div class="meta">${s.players.min}人用 ／ ${esc(s.duration)}${s.need?` ／ ⚠ ${esc(s.need)}`:''}</div>
+      <div class="desc">${esc(s.subtitle)}</div>
+    </button>`).join('');
+  $('lbCatalog').querySelectorAll('[data-sc]:not([disabled])').forEach(b => b.onclick = () =>
+    socket.emit('mm:pickScenario', { scenarioId: b.dataset.sc }, r => { if(!r.ok) $('e2').textContent = r.msg||''; }));
+
+  const ready = !!lobby.scenarioId;
+  $('btnStart').classList.toggle('hidden', !isHost);
+  $('btnStart').disabled = !ready;
+  $('btnStart').textContent = ready ? 'この作品ではじめる' : 'シナリオを選んでください';
 }
 
 const TABS = [
