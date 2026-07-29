@@ -47,11 +47,11 @@ console.log('\n── 秘匿性 ──');
     assert.strictEqual(p.cards.length, 3);
     assert(p.cards.every(c => /^s/.test(c.id)));
   });
-  T('遠見だけが命令の選択肢を持つ', () => {
+  T('トオミだけが命令の選択肢を持つ', () => {
     assert(G.privateView('toomi').canOrder);
     assert(!G.privateView('shizu').canOrder);
   });
-  T('鏑木だけが船長権限を持つ', () => {
+  T('カブラギだけが船長権限を持つ', () => {
     assert(G.privateView('kaburagi').authority);
     assert(!G.privateView('mei').authority);
   });
@@ -68,7 +68,7 @@ console.log('\n── ★命令 ──');
     assert(/誰も突き飛ばしていない/.test(txt(G,'shizu')));
     assert(!/誰も突き飛ばしていない/.test(txt(G,'mei')));
   });
-  T('「誰が誰に命じたか」は全員に公開', () => assert(/遠見 康一郎が静に何かを命じた/.test(pubText(G))));
+  T('「誰が誰に命じたか」は全員に公開', () => assert(/トオミがシズに何かを命じた/.test(pubText(G))));
   T('命令の中身は公開されない', () => assert(!/突き飛ばしていない/.test(pubText(G))));
   T('privateView に自分宛の命令が入る', () => {
     const o = G.privateView('shizu').myOrders;
@@ -121,7 +121,7 @@ console.log('\n── ★船長権限 ──');
     const o = G.privateView('shizu').myOrders;
     assert(o.length === 1 && o[0].void === true);
   });
-  T('無効化されたことは静の画面に伝わる', () =>
+  T('無効化されたことはシズの画面に伝わる', () =>
     assert.strictEqual(G.privateView('shizu').authorityDeclared, true));
 }
 
@@ -150,7 +150,7 @@ console.log('\n── 問いかけ・思い出す ──');
   G.resolvePhase();
   T('問いかけは全員に聞こえる', () => assert(/お金を受け取っていませんか/.test(pubText(G))));
   T('問われた本人に通知が届く', () => assert(/問いかけられた/.test(txt(G,'kaburagi'))));
-  T('芽衣は1回目で「人を運んでいた」と思い出す', () => assert(/人が、人を抱えて運んでいた/.test(txt(G,'mei'))));
+  T('メイは1回目で「人を運んでいた」と思い出す', () => assert(/人が、人を抱えて運んでいた/.test(txt(G,'mei'))));
   T('思い出した内容は本人だけ', () => assert(!/人を抱えて運んで/.test(pubText(G))));
   G.phaseIdx = 5; G.step = 'main';
   G.submitMove('mei', { abilityId:'m_watch' });
@@ -166,11 +166,11 @@ console.log('\n── ★採点: 真相に全員が到達した場合 ──');
                   q_heir:'shizu', q_mei:'daughter', q_valid:'invalid', q_why:'protect', q_illness:'dying' };
   CH.forEach(c => G.submitAnswers(c, { questions: truth, abilities:{}, note:'' }));
   const R = G.score();
-  T('遠見: 静がバレたので8pt無し、病気もバレて0pt', () => assert.strictEqual(R.detail.toomi.total, 0));
-  T('鏑木: q_push正解6 ／ 自分がバレて5pt無し ／ 権限未宣言0 = 6', () => assert.strictEqual(R.detail.kaburagi.total, 6));
-  T('静: 自分がバレて0 ／ q_witness正解5 = 5', () => assert.strictEqual(R.detail.shizu.total, 5));
-  T('芽衣: q_kill正解6 ＋ q_mei正解5 = 11', () => assert.strictEqual(R.detail.mei.total, 11));
-  T('真相を暴いた芽衣が1位', () => assert.strictEqual(R.winner.id, 'mei'));
+  T('トオミ: シズがバレたので8pt無し、病気もバレて0pt', () => assert.strictEqual(R.detail.toomi.total, 0));
+  T('カブラギ: q_push正解6 ／ 自分がバレて5pt無し ／ 権限未宣言0 = 6', () => assert.strictEqual(R.detail.kaburagi.total, 6));
+  T('シズ: 自分がバレて0 ／ q_witness正解5 = 5', () => assert.strictEqual(R.detail.shizu.total, 5));
+  T('メイ: q_kill正解6 ＋ q_mei正解5 = 11', () => assert.strictEqual(R.detail.mei.total, 11));
+  T('真相を暴いたメイが1位', () => assert.strictEqual(R.winner.id, 'mei'));
   T('エンディングに勝者が入る', () => assert(R.outro.includes(R.winner.name) && !R.outro.includes('{{WINNER}}')));
   T('能力当てのセクションは出ない', () => assert.strictEqual(R.hasAbilityGuess, false));
 }
@@ -190,11 +190,11 @@ console.log('\n── ★採点: 命令が通り、誰も真相に届かない�
                   q_heir:'nephew', q_mei:'nothing', q_valid:'valid', q_why:'self', q_illness:'fine' };
   CH.forEach(c => G.submitAnswers(c, { questions: wrong, abilities:{}, note:'' }));
   const R = G.score();
-  T('遠見: 静を守り抜き8 ＋ 命令2件成立4 ＋ 病気を隠し3 = 15', () => assert.strictEqual(R.detail.toomi.total, 15));
-  T('静: 自分がバレず6 ＋ 命令に従い2 = 8', () => assert.strictEqual(R.detail.shizu.total, 8));
-  T('芽衣: 命令に従い2 のみ', () => assert.strictEqual(R.detail.mei.total, 2));
-  T('鏑木: 自分がバレず5 のみ', () => assert.strictEqual(R.detail.kaburagi.total, 5));
-  T('隠し通した遠見が1位', () => assert.strictEqual(R.winner.id, 'toomi'));
+  T('トオミ: シズを守り抜き8 ＋ 命令2件成立4 ＋ 病気を隠し3 = 15', () => assert.strictEqual(R.detail.toomi.total, 15));
+  T('シズ: 自分がバレず6 ＋ 命令に従い2 = 8', () => assert.strictEqual(R.detail.shizu.total, 8));
+  T('メイ: 命令に従い2 のみ', () => assert.strictEqual(R.detail.mei.total, 2));
+  T('カブラギ: 自分がバレず5 のみ', () => assert.strictEqual(R.detail.kaburagi.total, 5));
+  T('隠し通したトオミが1位', () => assert.strictEqual(R.winner.id, 'toomi'));
   T('内訳に命令の成立数が出る', () =>
     assert(/2\/2 件が守られた/.test(R.detail.toomi.lines.find(l=>/命令に従わせる/.test(l.label)).note)));
 }
@@ -211,11 +211,11 @@ console.log('\n── ★採点: 権限で命令が無効化された場合 ─�
                   q_heir:'shizu', q_mei:'daughter', q_valid:'invalid', q_why:'protect', q_illness:'dying' };
   CH.forEach(c => G.submitAnswers(c, { questions: truth, abilities:{}, note:'' }));
   const R = G.score();
-  T('無効化された命令では遠見に点が入らない', () =>
+  T('無効化された命令ではトオミに点が入らない', () =>
     assert.strictEqual(R.detail.toomi.lines.find(l=>/命令に従わせる/.test(l.label)).points, 0));
   T('内訳に「無効化された」と出る', () =>
     assert(/無効化された/.test(R.detail.toomi.lines.find(l=>/命令に従わせる/.test(l.label)).note)));
-  T('鏑木は権限宣言で3pt(だが自分の罪もバレて5pt無し)', () => {
+  T('カブラギは権限宣言で3pt(だが自分の罪もバレて5pt無し)', () => {
     const l = R.detail.kaburagi.lines.find(x=>/船長権限/.test(x.label));
     assert.strictEqual(l.points, 3);
     assert.strictEqual(R.detail.kaburagi.total, 9); // 6 + 0 + 3
