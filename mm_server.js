@@ -206,12 +206,15 @@ module.exports = function attach(io, opts = {}) {
       broadcast(room);
     });
 
-    /* 能力使用(同時提出) */
-    socket.on('mm:act', ({ abilityId, target }, cb) => {
+    /* 行動(移動して調べる＋能力)の同時提出 */
+    socket.on('mm:act', ({ placeId, extra, abilityId, target }, cb) => {
       const c = ctx(socket); if (!c || !c.seat.charId) return cb && cb({ ok: false });
       const { room, seat } = c;
       if (room.stage !== 'play') return cb && cb({ ok: false });
-      const r = room.game.submitMove(seat.charId, { abilityId: abilityId || null, target: target || null });
+      const r = room.game.submitMove(seat.charId, {
+        placeId: placeId || null, extra: extra || null,
+        abilityId: abilityId || null, target: target || {},
+      });
       if (!r.ok) return cb && cb(r);
       cb && cb({ ok: true });
       broadcast(room);

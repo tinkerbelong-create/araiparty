@@ -38,6 +38,7 @@ header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);backdro
 .modehead p{font-weight:700;color:#6a7488;margin-top:8px;font-size:14px}
 .modegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
 .modegrid.two{max-width:760px;margin:0 auto}
+.modegrid.three{max-width:1080px;margin:0 auto}
 .modecard{background:#fff;border:2px solid var(--line);border-radius:24px;overflow:hidden;cursor:pointer;box-shadow:0 10px 30px rgba(42,49,64,.10);transition:transform .14s,box-shadow .14s;display:flex;flex-direction:column;position:relative}
 .modecard:hover{transform:translateY(-6px);box-shadow:0 20px 46px rgba(42,49,64,.18)}
 .modecard .banner{height:150px;display:flex;align-items:center;justify-content:center;font-size:60px;color:#fff}
@@ -124,7 +125,7 @@ footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px
       <h1><span class="grad">あらいの遊び場</span></h1>
       <p>アカウント不要・名前だけで遊べます</p>
     </div>
-    <div class="modegrid two">
+    <div class="modegrid three">
       <div class="modecard" id="cardParty">
         <div class="ribbon">メイン</div>
         <div class="banner" style="background:linear-gradient(135deg,#ffd23f,#ff4d8d,#3fa9ff)">🎉</div>
@@ -135,6 +136,12 @@ footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px
         <div class="banner" style="background:linear-gradient(135deg,#5b6cff,#2fae6e)">🎮</div>
         <div class="cap"><h3>フリープレイ</h3><p>ゲームを1つ選んであそぶ。ひとりでも、他の人とでも。</p></div>
         <div class="foot">🙋 ひとり 〜 👥 みんな</div>
+      </div>
+      <div class="modecard" id="cardMystery">
+        <div class="ribbon">NEW</div>
+        <div class="banner" style="background:linear-gradient(135deg,#ffd23f,#f7a8b8)">🍰</div>
+        <div class="cap"><h3>マーダーミステリー</h3><p>キャラになりきって、たったひとつの事件の真相を探る。通話をつなぎながら、あなただけの秘密を抱えて話し合うモード。</p></div>
+        <div class="foot">🎧 通話推奨 ・ 3人〜</div>
       </div>
     </div>
   </div>
@@ -181,7 +188,7 @@ footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px
  * src: 'オリジナル' | '元ネタあり' | 'AI作'
  * cat: 'solo'(1人用) | 'multi'(みんなで) | 'both'(両方) | 'party'(パーティモード内・一覧に出さない) */
 const GAMES = [
-  { id:'mystery', url:'/mystery/', icon:'🍰🕯', title:'マーダーミステリー', src:'オリジナル', isNew:true, featured:true, cat:'multi',
+  { id:'mystery', url:'/mystery/', icon:'🍰🕯', title:'マーダーミステリー', src:'オリジナル', isNew:true, featured:false, cat:'mystery',
     players:'3人', time:'約45分', grad:'linear-gradient(135deg,#ffd23f,#f7a8b8)',
     desc:'通話しながら遊ぶ本格マダミス。第1弾は『ケーキを食べた能力者』——能力を隠す3人の同居人と、消えたひと切れのケーキ。ハンドアウト配布から採点まで全部おまかせ。', tags:['マーダーミステリー','推理','なりきり','オンライン対戦','通話推奨'] },
   { id:'party', url:'/party/', icon:'🎉', title:'パーティモード', src:'オリジナル', isNew:true, featured:false, cat:'party',
@@ -221,8 +228,8 @@ const SRC_META = {
   'AI作':      { icon:'🤖', label:'AI作', color:'var(--src-ai)' },
 };
 
-/* フリープレイ対象(パーティモード内ゲームは除外) */
-const FREE = GAMES.filter(g => g.cat !== 'party');
+/* フリープレイ対象(パーティモード内ゲーム・マダミスは別モードなので除外) */
+const FREE = GAMES.filter(g => g.cat !== 'party' && g.cat !== 'mystery');
 function inCat(g, cat){ if(cat==='all') return true; if(cat==='solo') return g.cat==='solo'||g.cat==='both'; if(cat==='multi') return g.cat==='multi'||g.cat==='both'; return true; }
 
 /* ── 画面遷移 ── */
@@ -313,6 +320,7 @@ $('footMulti').textContent = FREE.filter(g=>inCat(g,'multi')).length + 'ゲー�
 /* ── 遷移イベント ── */
 $('logo').onclick = () => show('top');
 $('cardParty').onclick = () => { location.href = '/party/'; };
+$('cardMystery').onclick = () => { location.href = '/mystery/'; };
 $('cardFree').onclick = () => show('free');
 $('freeBack').onclick = () => show('top');
 $('gridBack').onclick = () => show(gridFrom);

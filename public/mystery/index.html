@@ -203,7 +203,7 @@ const socket = io();
 let ST = { lobby:null, pub:null, priv:null };
 let scenarios = [], pickedScenario = null;
 let tab = 'story';
-let draft = { abilityId:null, target:{} };
+let draft = { placeId:null, extra:null, abilityId:null, target:{} };
 let answers = { questions:{}, abilities:{}, note:'' };
 
 /* ── 画面切替 ── */
@@ -301,7 +301,8 @@ function renderSelect(){
 const TABS = [
   { id:'story', label:'📖 ストーリー' },
   { id:'ho',    label:'🎴 あなたのHO' },
-  { id:'act',   label:'✨ 能力' },
+  { id:'act',   label:'🚶 行動' },
+  { id:'board', label:'🏠 家のようす' },
   { id:'log',   label:'📜 調査ログ' },
   { id:'memo',  label:'📝 メモ' },
 ];
@@ -334,6 +335,7 @@ function paint(){
   if(tab==='story')      P.innerHTML = paneStory();
   else if(tab==='ho')    P.innerHTML = paneHO();
   else if(tab==='act')   { P.innerHTML = paneAct(); bindAct(); }
+  else if(tab==='board') P.innerHTML = paneBoard();
   else if(tab==='log')   P.innerHTML = paneLog();
   else if(tab==='memo')  { P.innerHTML = paneMemo(); bindMemo(); }
   else if(tab==='final') { P.innerHTML = paneFinal(); bindFinal(); }
@@ -387,66 +389,100 @@ function paneAct(){
   const { pub, priv } = ST;
   const ph = pub.phase || {};
   if(ph.type!=='ability'){
-    return `<p style="font-size:13.5px;line-height:1.8">いまは能力使用フェーズではありません。<br>
-      <b>残り使用回数: ${priv.usesLeft}回</b>${priv.copied?' ／ コピー保持中':''}</p>
-      <div class="note">能力使用フェーズになると、ここから使えます。誰が能力を使ったかは全員に伝わりますが、<b>何を使ったかは伝わりません</b>。</div>`;
+    return `<p style="font-size:13.5px;line-height:1.8">いまは行動フェーズではありません。<br>
+      <b>能力の残り使用回数: ${priv.usesLeft}回</b>${priv.copied?' ／ コピー保持中':''}</p>
+      <div class="note">行動フェーズになると、<b>家の中を1か所だけ調べに行けます</b>(能力を使わなくても調べられます)。
+      あわせて能力を1つ重ねられます。誰が能力を使ったかは全員に伝わりますが、<b>何を使ったかは伝わりません</b>。</div>`;
   }
   if(priv.moved) return `<div class="big">行動を提出しました</div><div class="note" style="text-align:center">全員がそろうと結果が届きます。</div>`;
 
+  const places = pub.scenario.places;
+  const doors  = pub.board.doors;
+  let h = `<label>① どこを調べに行く?(必須)</label>
+    <div class="grid2">${places.map(p=>{
+      const blocked = p.door && doors[p.id]==='closed';
+      return `<button class="opt ${draft.placeId===p.id?'on':''}" data-t="placeId" data-v="${esc(p.id)}">
+        ${esc(p.name)}${blocked?' 🚪':''}${p.dark?' 🌑':''}
+        ${blocked?'<span class="s">ドアが閉まっている</span>':''}</button>`;
+    }).join('')}</div>`;
+
+  // 場所ごとの追加操作(キッチンの電源コードなど)
+  const PA = PLACE_ACTIONS[draft.placeId];
+  if(PA) h += `<label>その場でできること</label>
+    <button class="opt ${draft.extra==='action'?'on':''}" data-t="extra" data-v="action">
+      ${esc(pub.board.fridgePower ? PA.off : PA.on)}<span class="s">${esc(PA.note)}</span></button>`;
+
   const acts = priv.abilityActions;
-  const abList = priv.character.abilities;
-  let h = `<div style="font-weight:900;font-size:14px">残り使用回数: ${priv.usesLeft}回</div>
-    <div class="note">使わずに待つこともできます。</div>`;
-  h += abList.map(a=>{
+  h += `<label>② 能力を使う?(残り ${priv.usesLeft}回)</label>`;
+  h += priv.character.abilities.map(a=>{
     const d = acts[a.id]; if(!d) return '';
-    const dis = (!a.copied && priv.usesLeft<=0) ? 'disabled' : '';
+    const usable = d.usable !== false;
+    const dis = (!usable || (!a.copied && priv.usesLeft<=0)) ? 'disabled' : '';
     return `<button class="opt ${draft.abilityId===a.id?'on':''}" data-ab="${esc(a.id)}" ${dis}>
-      ${esc(d.label)}${a.copied?' <span class="tag">コピー</span>':''}
-      <span class="s">${esc(d.hint||a.note||'')}</span></button>`;
+      ${esc(d.label)}${a.copied?' <span class="tag">コピー</span>':''}${!usable?' <span class="tag" style="background:#bdb6a4">今は使えない</span>':''}
+      <span class="s">${esc(d.purpose||'')}<br>${esc(d.hint||a.note||'')}</span></button>`;
   }).join('');
-  h += `<button class="opt ${draft.abilityId===null?'on':''}" data-ab="">使わない<span class="s">今回は様子を見る</span></button>`;
+  h += `<button class="opt ${draft.abilityId===null?'on':''}" data-ab="">使わない<span class="s">調べるだけにする</span></button>`;
 
   if(draft.abilityId && acts[draft.abilityId]) h += targetUI(acts[draft.abilityId]);
   h += `<div class="row" style="margin-top:14px"><button class="btn wide" id="btnAct">この行動で決定</button></div><div class="err" id="e4"></div>`;
   return h;
 }
+const PLACE_ACTIONS = {
+  kitchen: { on:'電源コードを挿し直す', off:'電源コードを抜く', note:'冷蔵庫の中が明るくなる/暗くなる' },
+};
 function targetUI(d){
   const places = ST.pub.scenario.places;
   const chars  = ST.pub.scenario.characters.filter(c=>c.id!==ST.priv.charId);
   const sel = (list, key, cur) => `<div class="grid2">${list.map(o=>
     `<button class="opt ${cur===o.id?'on':''}" data-t="${esc(key)}" data-v="${esc(o.id)}">${esc(o.name||o.label)}</button>`).join('')}</div>`;
-  if(d.targetType==='place')  return `<label>どこに?</label>${sel(places,'placeId',draft.target.placeId)}`;
+  if(d.targetType==='place')  return `<label>どこに?</label>${sel(places,'placeId2',draft.target.placeId)}`;
   if(d.targetType==='door')   return `<label>どのドア?</label>${sel(d.doors,'doorId',draft.target.doorId)}`;
   if(d.targetType==='player') return `<label>誰に?</label>${sel(chars,'charId',draft.target.charId)}`;
   if(d.targetType==='objectPlace')
-    return `<label>何の偽物を?</label>${sel(d.objects,'objId',draft.target.objId)}<label>どこに置く?</label>${sel(places,'placeId',draft.target.placeId)}`;
+    return `<label>何の偽物を?</label>${sel(d.objects,'objId',draft.target.objId)}<label>どこに置く?</label>${sel(places,'placeId2',draft.target.placeId)}`;
   if(d.targetType==='playerAbility'){
     let h = `<label>誰の能力を?</label>${sel(chars,'charId',draft.target.charId)}`;
-    if(draft.target.charId){
-      const pool = ST.priv.abilityGuessPool || (ST.pub.scenario.abilityPool||[]);
-      h += `<label>どの能力だと思う?</label>${sel(GUESS_POOL,'abilityId',draft.target.abilityId)}`;
-    }
+    if(draft.target.charId) h += `<label>どの能力だと思う?(外れたら1回ぶんの無駄)</label>${sel(ST.priv.abilityPool||[],'abilityId',draft.target.abilityId)}`;
     return h;
   }
   return '';
 }
-/* コピー用の能力候補(公開されている「ありうる能力」一覧) */
-const GUESS_POOL = [
-  {id:'n1',name:'壁を手だけすり抜けることができる'},{id:'n2',name:'相手の能力をコピーできる'},{id:'n3',name:'壁に同化できる'},
-  {id:'r1',name:'手から水を出せる'},{id:'r2',name:'偽物をコピーできる'},{id:'r3',name:'一時的に小型カメラを作り出せる'},
-  {id:'k1',name:'一番近いドアを開け閉めできる'},{id:'k2',name:'相手の能力のキーワードを知ることができる'},{id:'k3',name:'特定のものを消すことができる'},
-];
 function bindAct(){
   const P = $('pane');
   P.querySelectorAll('[data-ab]').forEach(b => b.onclick = () => {
-    draft = { abilityId: b.dataset.ab || null, target:{} }; paint();
+    draft.abilityId = b.dataset.ab || null; draft.target = {}; paint();
   });
   P.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
-    draft.target[b.dataset.t] = b.dataset.v; paint();
+    const k = b.dataset.t, v = b.dataset.v;
+    if(k==='placeId'){ draft.placeId = (draft.placeId===v ? null : v); if(draft.placeId!==v) draft.extra=null; }
+    else if(k==='extra'){ draft.extra = (draft.extra==='action' ? null : 'action'); }
+    else if(k==='placeId2'){ draft.target.placeId = v; }
+    else draft.target[k] = v;
+    paint();
   });
   const go = $('btnAct'); if(!go) return;
-  go.onclick = () => socket.emit('mm:act', { abilityId: draft.abilityId, target: draft.target },
-    r => { if(!r.ok) $('e4').textContent = r.msg||''; else draft={abilityId:null,target:{}}; });
+  go.onclick = () => {
+    if(!draft.placeId) return $('e4').textContent = '調べに行く場所を選んでください';
+    socket.emit('mm:act', { placeId: draft.placeId, extra: draft.extra, abilityId: draft.abilityId, target: draft.target },
+      r => { if(!r.ok) $('e4').textContent = r.msg||''; else draft={placeId:null,extra:null,abilityId:null,target:{}}; });
+  };
+}
+
+function paneBoard(){
+  const B = ST.pub.board;
+  const names = { fridge:'冷蔵庫の扉', r_natsuki:'ナツキの部屋', r_kaito:'カイトの部屋', r_ryusei:'リュウセイの部屋', genkan:'玄関' };
+  let h = `<div class="note">ここは全員が見ている情報です。ドアの開け閉めや電源の変化、誰が能力を使ったかは全員に伝わります。</div>`;
+  h += `<label>いまの家のようす</label><div class="grid2">
+    ${Object.entries(B.doors).map(([id,st])=>
+      `<div class="opt" style="cursor:default">${esc(names[id]||id)}<span class="s">${st==='closed'?'🚪 閉まっている':'✅ 開いている'}</span></div>`).join('')}
+    <div class="opt" style="cursor:default">冷蔵庫の電源<span class="s">${B.fridgePower?'⚡ 入っている(庫内は扉を開ければ明るい)':'🌑 切れている(庫内は真っ暗)'}</span></div>
+  </div>`;
+  h += `<label>できごと</label>`;
+  h += B.log.length ? B.log.slice().reverse().map(x=>
+    `<div class="logit"><div class="h">${esc(x.phase)}</div><div class="b">${nl(x.text)}</div></div>`).join('')
+    : `<div class="note">まだ何も起きていません。</div>`;
+  return h;
 }
 
 function paneLog(){
