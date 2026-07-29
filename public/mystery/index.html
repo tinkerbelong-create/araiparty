@@ -98,7 +98,24 @@ th,td{border:1px solid #ece2c5;padding:7px 9px;text-align:left} th{background:#f
 .rank.win{border-color:var(--accent);background:#fff2f5}
 .map{width:100%;max-width:400px;display:block;margin:10px auto;border-radius:12px;border:2px solid var(--line);background:#fff}
 .back{position:fixed;left:10px;top:10px;z-index:40;background:rgba(255,255,255,.92);border:2px solid #fff;border-radius:11px;
-  padding:6px 12px;font-weight:900;font-size:12.5px;color:var(--ink);text-decoration:none;box-shadow:0 3px 10px rgba(140,110,40,.18)}
+  padding:6px 12px;font-weight:900;font-size:12.5px;color:#3a3a44;text-decoration:none;box-shadow:0 3px 10px rgba(140,110,40,.18)}
+/* 夜モード(暗い色のシナリオ) */
+body.night .card,body.night .opt,body.night .abl,body.night .logit,body.night .seat,body.night textarea,body.night input[type=text]{background:var(--paper);color:var(--ink);border-color:var(--line)}
+body.night .tab{background:#12253a;color:#7f9bb5}
+body.night .tab.on{background:var(--paper);color:var(--ink)}
+body.night .bar{background:rgba(23,48,73,.97)}
+body.night .prog{background:#12253a}
+body.night th{background:#12253a;color:var(--ink)} body.night td,body.night th{border-color:var(--line)}
+body.night .mission,body.night .todo{background:#1d3a55;border-color:var(--accent)}
+body.night .codebox{background:#12253a}
+body.night label,body.night .note,body.night .sub,body.night .waiting{color:#8fb0c9}
+body.night .opt .s,body.night .abl .nt{color:#8fb0c9}
+body.night .tl .it{border-color:#2c4a66}
+body.night .btn.gray{background:#3d5a75}
+/* 命令の表示 */
+.order{background:#3a2a2a;color:#ffd9d9;border:2px solid #d6455d;border-radius:14px;padding:13px 16px;margin-top:10px;font-weight:900;font-size:14px;line-height:1.8}
+body:not(.night) .order{background:#fff0f2;color:#8c2b3d}
+.big-event{background:var(--accent);color:#fff;border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:900;text-align:center;font-size:15px}
 </style>
 </head>
 <body>
@@ -183,6 +200,23 @@ let answers = { questions:{}, abilities:{}, note:'' };
 
 function show(v){ ['entry','lobby','play','end'].forEach(x => $('s-'+x).classList.toggle('hidden', x!==v)); }
 
+/* シナリオごとの色を反映(暗い色なら夜モードにする) */
+let themeApplied = null;
+function applyTheme(t){
+  if(!t || themeApplied===t.bg) return;
+  themeApplied = t.bg;
+  const r = document.documentElement.style;
+  const hex = t.bg.replace('#','');
+  const [R,G,B] = [0,2,4].map(i=>parseInt(hex.substr(i,2),16));
+  const dark = (R*299+G*587+B*114)/1000 < 128;
+  r.setProperty('--bg', t.bg);
+  r.setProperty('--accent', t.accent);
+  r.setProperty('--ink', dark ? '#e8eef4' : (t.ink||'#3a3a44'));
+  r.setProperty('--paper', dark ? '#173049' : '#fffdf6');
+  r.setProperty('--line', dark ? '#2c4a66' : '#f0dca8');
+  document.body.classList.toggle('night', dark);
+}
+
 /* ── 入口 ── */
 socket.emit('mm:scenarios', {}, r => {
   if(!r || !r.ok) return;
@@ -245,6 +279,7 @@ const TABS = [
 function renderPlay(){
   show('play');
   const { pub } = ST;
+  applyTheme(pub.scenario.theme);
   $('phNum').textContent = `ステップ ${pub.phaseIdx+1} / ${pub.total}`;
   $('phTitle').textContent = pub.phase.title;
   $('progBar').style.width = Math.round((pub.phaseIdx)/(pub.total-1)*100) + '%';
@@ -286,11 +321,25 @@ function paneNow(){
     <div class="note">この内容はあなたにしか見えていません。話すか黙っているかは自由です。</div>
     ${readyBtn('読んだ! 次へ')}`;
 
+  if(ph.type==='intro')   return paneIntro();
   if(ph.type==='read')    return paneRead();
   if(ph.type==='discuss') return paneTalk();
   if(ph.type==='ability') return paneAbility();
   if(ph.type==='final')   return paneFinal();
   return '';
+}
+
+function paneIntro(){
+  const { pub } = ST;
+  const s = pub.scenario;
+  const acts = s.phases.filter(p=>['discuss','ability','final'].includes(p.type));
+  return `<div class="ho">
+    <p>${nl(s.intro || 'これはマーダーミステリーというゲームです。')}</p>
+    <h3>この${esc(s.duration)}で起きること</h3>
+    ${s.phases.filter(p=>p.type!=='intro').map((p,i)=>
+      `<div class="abl"><b>${i+1}. ${esc(p.title)}</b>${p.minutes?` <span style="font-size:12px;color:#8a7a55">${p.minutes}分</span>`:''}
+       <div class="nt">${esc(p.todo||'')}</div></div>`).join('')}
+  </div>${readyBtn('わかった!')}`;
 }
 
 function paneRead(){
@@ -300,8 +349,12 @@ function paneRead(){
     <div class="note">📌 ${esc(pub.phase.todo)}</div>
     <h3>プロローグ</h3><p>${nl(s.prologue)}</p>
     <h3>あなたは ${esc(c.name)}(${esc(c.gender)})</h3>
+    <h3>あなたにできること</h3>
     ${c.abilities.map(a=>`<div class="abl"><span class="kw">${esc(a.keyword)}</span><b>${esc(a.name)}</b>
       <div class="nt">${esc(a.note||'')}</div></div>`).join('')}
+    ${(priv.cards&&priv.cards.length)?`<h3>あなたの手札(証言)</h3>
+      <div class="note" style="margin-top:0">行動フェーズで1枚ずつ出せます。出せば全員に見えます。黙っていてもかまいません。</div>
+      ${priv.cards.map(x=>`<div class="abl"><b>${esc(x.title)}</b><div class="nt">${esc(x.text)}</div></div>`).join('')}`:''}
     <h3>あなたの記憶(4月1日)</h3>
     <div class="tl">${h.timeline.map(t=>`<div class="it"><div class="tm">${esc(t.time)}</div><div class="tx">${nl(t.text)}</div></div>`).join('')}</div>
     <h3>二人に対して</h3>
@@ -309,11 +362,21 @@ function paneRead(){
     <h3>3日間過ごしてみて思うこと</h3><p>${nl(h.thoughts)}</p>
     <h3>あなたのミッション</h3>
     ${h.missions.map((m,i)=>`<div class="mission">${'①②③④⑤'[i]||''} ${esc(m.text)} <span style="color:#e0708c">(${esc(String(m.points))}${typeof m.points==='number'?'ポイント':''})</span></div>`).join('')}
-    <h3>この家のこと</h3><p>${nl(s.commonInfo)}</p>
-    <img class="map" src="madori.png" alt="間取り図">
-    <div class="note" style="text-align:center">${esc(s.map.note)}</div>
+    <h3>共通情報</h3><p>${nl(s.commonInfo)}</p>
+    ${s.map&&s.map.image?`<img class="map" src="${esc(s.map.image)}" alt="間取り図">`:''}
+    ${s.map&&s.map.note?`<div class="note" style="text-align:center">${esc(s.map.note)}</div>`:''}
     <h3>ルール</h3><p>${s.rules.map((r,i)=>`${i+1}. ${esc(r)}`).join('<br>')}</p>
   </div>${readyBtn('読み終えた!')}`;
+}
+
+/* 自分に向けられている生きた命令 */
+function orderBox(){
+  const live = (ST.priv.myOrders||[]).filter(o=>!o.void);
+  const dead = (ST.priv.myOrders||[]).filter(o=>o.void);
+  let h = live.map(o=>`<div class="order">⚠ 命令されています<br>
+    「${esc(o.questionText)}」<br>——『${esc(o.answerLabel)}』と答えろ。</div>`).join('');
+  if(dead.length) h += `<div class="note">※ ${dead.length}件の命令は、船長権限によって無効になりました。従う必要はありません。</div>`;
+  return h;
 }
 
 function paneTalk(){
@@ -321,6 +384,15 @@ function paneTalk(){
   const h = priv.character.handout;
   let out = `<div class="brief" style="padding:8px 4px 0"><div class="msg">🗣 ${nl(pub.phase.brief)}</div></div>
     <div class="todo" style="margin:14px 0">📌 ${nl(pub.phase.todo)}</div>`;
+  out += orderBox();
+  if(priv.cards && priv.cards.length){
+    const rest = priv.cards.filter(c=>!c.played);
+    out += `<label>あなたの手札(証言) — 残り${rest.length}枚</label>` +
+      priv.cards.map(c=>`<div class="abl" style="${c.played?'opacity:.45':''}">
+        <b>${esc(c.title)}</b>${c.played?' <span class="tag">公開済み</span>':''}
+        <div class="nt">${esc(c.text)}</div></div>`).join('') +
+      `<div class="note">出すかどうかは行動フェーズで選べます。黙っていることもできます。</div>`;
+  }
   out += `<label>あなたのミッション(忘れずに)</label>`;
   out += h.missions.map((m,i)=>`<div class="mission">${'①②③④⑤'[i]||''} ${esc(m.text)}</div>`).join('');
   if(priv.known.length) out += `<label>あなたが掴んでいるキーワード</label>` +
@@ -346,9 +418,10 @@ function paneAbility(){
     ${readyBtn('OK')}`;
 
   let h = `<div class="brief" style="padding:8px 4px 0"><div class="msg">✨ ${nl(pub.phase.brief)}</div></div>
-    <div class="todo" style="margin:14px 0">📌 ${nl(pub.phase.todo)}<br>
-    <span style="font-weight:500;font-size:12.5px">※ 使うと「あなたが能力を使った」ことだけが全員に伝わります。何を使ったかは伝わりません。</span></div>
-    <label>残り使用回数: ${priv.usesLeft}回${priv.copied?' ／ コピー保持中':''}</label>`;
+    <div class="todo" style="margin:14px 0">📌 ${nl(pub.phase.todo)}</div>`;
+  h += orderBox();
+  if(pub.authorityDeclared) h += `<div class="big-event">⚓ 船長権限が宣言されています。命令はもう効きません。</div>`;
+  h += `<label>残りの行動回数: ${priv.usesLeft}回${priv.copied?' ／ コピー保持中':''}</label>`;
   h += priv.character.abilities.map(a=>{
     const d = acts[a.id]; if(!d) return '';
     const usable = d.usable !== false;
@@ -366,7 +439,30 @@ function targetUI(d){
   const places = ST.pub.scenario.places;
   const chars  = ST.pub.scenario.characters.filter(c=>c.id!==ST.priv.charId);
   const sel = (list,key,cur) => `<div class="grid2">${list.map(o=>
-    `<button class="opt ${cur===o.id?'on':''}" data-t="${esc(key)}" data-v="${esc(o.id)}">${esc(o.name||o.label)}</button>`).join('')}</div>`;
+    `<button class="opt ${cur===o.id?'on':''}" data-t="${esc(key)}" data-v="${esc(o.id)}">${esc(o.name||o.label||o.title)}</button>`).join('')}</div>`;
+
+  if(d.targetType==='card'){
+    const rest = (ST.priv.cards||[]).filter(c=>!c.played);
+    if(!rest.length) return `<div class="note">出せる証言がもうありません。</div>`;
+    return `<label>どの証言を出しますか?(全員に見えます)</label>` +
+      rest.map(c=>`<button class="opt ${draft.target.cardId===c.id?'on':''}" data-t="cardId" data-v="${esc(c.id)}">
+        ${esc(c.title)}<span class="s">${esc(c.text)}</span></button>`).join('');
+  }
+  if(d.targetType==='order'){
+    const O = ST.priv.canOrder;
+    if(!O) return `<div class="note">もう命令はできません。</div>`;
+    let h = `<label>誰に?</label>${sel(chars,'charId',draft.target.charId)}`;
+    h += `<label>何と答えさせる?</label>` + O.options.map(o=>
+      `<button class="opt ${draft.target.orderId===o.id?'on':''}" data-t="orderId" data-v="${esc(o.id)}">
+        ${esc(o.label)}<span class="s">質問:「${esc(o.questionText)}」</span></button>`).join('');
+    return h;
+  }
+  if(d.targetType==='playerQuestion'){
+    let h = `<label>誰に?</label>${sel(chars,'charId',draft.target.charId)}`;
+    h += `<label>何を訊く?(全員に聞こえます)</label>` + (d.questions||[]).map(q=>
+      `<button class="opt ${draft.target.questionId===q.id?'on':''}" data-t="questionId" data-v="${esc(q.id)}">${esc(q.text)}</button>`).join('');
+    return h;
+  }
   if(d.targetType==='place')  return `<label>どこに?</label>${sel(places,'placeId',draft.target.placeId)}`;
   if(d.targetType==='door')   return `<label>どのドア?</label>${sel(d.doors,'doorId',draft.target.doorId)}`;
   if(d.targetType==='player') return `<label>誰に?</label>${sel(chars,'charId',draft.target.charId)}`;
@@ -386,16 +482,26 @@ function paneFinal(){
   const Q = priv.finalQuestions || [], G = priv.abilityGuess;
   const others = pub.scenario.characters.filter(c=>c.id!==priv.charId);
   let h = `<div class="todo" style="margin-bottom:6px">📌 ${nl(pub.phase.todo)}</div>`;
-  h += Q.map(q=>`<label>${esc(q.text)}</label><div class="grid2">${q.options.map(o=>
-    `<button class="opt ${answers.questions[q.id]===o.id?'on':''}" data-q="${esc(q.id)}" data-v="${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>`).join('');
-  h += `<hr style="margin:22px 0;border:none;border-top:2px dashed #ece2c5"><label>${esc(G.text)}</label>`;
-  others.forEach(c=>{
-    const cur = answers.abilities[c.id] || [];
-    h += `<div style="font-weight:900;font-size:14px;margin-top:12px;color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)} <span style="font-size:12px;color:#8a7a55">(${cur.length}/3)</span></div>
-      <div class="grid2">${G.pool.map(p=>
-        `<button class="opt ${cur.includes(p.id)?'on':''}" data-g="${esc(c.id)}" data-v="${esc(p.id)}">${esc(p.label)}</button>`).join('')}</div>`;
-  });
-  h += `<label>犯行の流れ(自由記述・あとで全員に公開されます)</label>
+  h += orderBox();
+  const ordered = {};
+  (priv.myOrders||[]).filter(o=>!o.void).forEach(o=>{ ordered[o.questionId] = o; });
+  h += Q.map(q=>{
+    const o = ordered[q.id];
+    return `<label>${esc(q.text)}${o?' <span class="tag" style="background:#d6455d">命令あり</span>':''}</label>
+      ${o?`<div class="note" style="margin-top:0">遠見の命令: 『${esc(o.answerLabel)}』と答えろ</div>`:''}
+      <div class="grid2">${q.options.map(x=>
+        `<button class="opt ${answers.questions[q.id]===x.id?'on':''}" data-q="${esc(q.id)}" data-v="${esc(x.id)}">${esc(x.label)}</button>`).join('')}</div>`;
+  }).join('');
+  if(G){
+    h += `<hr style="margin:22px 0;border:none;border-top:2px dashed #ece2c5"><label>${esc(G.text)}</label>`;
+    others.forEach(c=>{
+      const cur = answers.abilities[c.id] || [];
+      h += `<div style="font-weight:900;font-size:14px;margin-top:12px;color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)} <span style="font-size:12px;color:#8a7a55">(${cur.length}/3)</span></div>
+        <div class="grid2">${G.pool.map(p=>
+          `<button class="opt ${cur.includes(p.id)?'on':''}" data-g="${esc(c.id)}" data-v="${esc(p.id)}">${esc(p.label)}</button>`).join('')}</div>`;
+    });
+  }
+  h += `<label>あなたの推理(自由記述・あとで全員に公開されます)</label>
     <textarea id="fnote" placeholder="誰が、どうやって、ケーキをどうしたのか">${esc(answers.note)}</textarea>
     <button class="btn wide" id="btnSubmit" style="margin-top:16px">提出する</button><div class="err" id="e5"></div>`;
   return h;
@@ -412,10 +518,14 @@ function bindNow(){
   if(act) act.onclick = () => {
     const d = ST.priv.abilityActions[draft.abilityId];
     if(d){
-      const need = { place:'placeId', door:'doorId', player:'charId', object:'objId' }[d.targetType];
+      const need = { place:'placeId', door:'doorId', player:'charId', object:'objId', card:'cardId' }[d.targetType];
       if(need && !draft.target[need]) return $('e4').textContent = '対象を選んでください';
       if(d.targetType==='playerAbility' && (!draft.target.charId || !draft.target.abilityId))
         return $('e4').textContent = '相手と能力を選んでください';
+      if(d.targetType==='order' && (!draft.target.charId || !draft.target.orderId))
+        return $('e4').textContent = '相手と命令の内容を選んでください';
+      if(d.targetType==='playerQuestion' && (!draft.target.charId || !draft.target.questionId))
+        return $('e4').textContent = '相手と質問を選んでください';
     }
     socket.emit('mm:act', { abilityId: draft.abilityId, target: draft.target },
       r => { if(!r.ok) $('e4').textContent = r.msg||''; else draft={abilityId:null,target:{}}; });
@@ -445,9 +555,13 @@ function paneSheet(){
     <div class="big" style="color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)}(${esc(c.gender)})</div>
     <h3>あなたのミッション</h3>
     ${h.missions.map((m,i)=>`<div class="mission">${'①②③④⑤'[i]||''} ${esc(m.text)} <span style="color:#e0708c">(${esc(String(m.points))}${typeof m.points==='number'?'ポイント':''})</span></div>`).join('')}
-    <h3>あなたの能力(残り${priv.usesLeft}回)</h3>
+    ${orderBox()}
+    <h3>あなたにできること(残り${priv.usesLeft}回)</h3>
     ${c.abilities.map(a=>`<div class="abl"><span class="kw">${esc(a.keyword)}</span><b>${esc(a.name)}</b>
       <div class="nt">${esc(a.note||'')}${a.copied?` ／ ${esc(a.from)}からコピー中`:''}</div></div>`).join('')}
+    ${(priv.cards&&priv.cards.length)?`<h3>あなたの手札(証言)</h3>${priv.cards.map(x=>
+      `<div class="abl" style="${x.played?'opacity:.45':''}"><b>${esc(x.title)}</b>${x.played?' <span class="tag">公開済み</span>':''}
+       <div class="nt">${esc(x.text)}</div></div>`).join('')}`:''}
     ${priv.known.length?`<h3>掴んでいるキーワード</h3>${priv.known.map(k=>`<div class="abl"><span class="kw">${esc(k.keyword)}</span><b>${esc(k.charName)}</b></div>`).join('')}`:''}
     <h3>あなたの記憶(4月1日)</h3>
     <div class="tl">${h.timeline.map(t=>`<div class="it"><div class="tm">${esc(t.time)}</div><div class="tx">${nl(t.text)}</div></div>`).join('')}</div>
@@ -460,11 +574,11 @@ function paneSheet(){
     <details><summary>みんなが見ていること(${pub.publicLog.length}件)</summary><div class="inner">
       ${pub.publicLog.length ? pub.publicLog.slice().reverse().map(x=>`<div class="logit"><div class="h">${esc(x.phase)}</div><div class="b">${nl(x.text)}</div></div>`).join('') : '<div class="note">まだありません。</div>'}
     </div></details>
-    <details><summary>プロローグ・間取り・ルール</summary><div class="inner">
+    <details><summary>プロローグ・共通情報・ルール</summary><div class="inner">
       <p style="margin-top:10px">${nl(s.prologue)}</p>
       <p style="margin-top:14px">${nl(s.commonInfo)}</p>
-      <img class="map" src="madori.png" alt="間取り図">
-      <div class="note" style="text-align:center">${esc(s.map.note)}</div>
+      ${s.map&&s.map.image?`<img class="map" src="${esc(s.map.image)}" alt="間取り図">`:''}
+      ${s.map&&s.map.note?`<div class="note" style="text-align:center">${esc(s.map.note)}</div>`:''}
       <p style="margin-top:12px">${s.rules.map((r,i)=>`${i+1}. ${esc(r)}`).join('<br>')}</p>
     </div></details>
   </div>`;
@@ -483,6 +597,7 @@ function bindMemo(){
 /* ── エンディング ── */
 function renderEnd(){
   show('end');
+  if(ST.pub && ST.pub.scenario) applyTheme(ST.pub.scenario.theme);
   const R = ST.pub.result;
   if(!R){ $('endBody').innerHTML = '<div class="card">集計中…</div>'; return; }
   const T = R.truth;
@@ -504,7 +619,7 @@ function renderEnd(){
     ${R.reveal.map(q=>`<div style="margin-top:12px"><div style="font-weight:900;font-size:13.5px">${esc(q.text)}</div>
       <div class="note">正解: <b style="color:#e0708c">${esc(q.answerLabel)}</b></div>
       <table>${q.byChar.map(b=>`<tr><td style="width:108px">${esc(b.name)}</td><td>${esc(b.label)}</td></tr>`).join('')}</table></div>`).join('')}</div>`;
-  h += `<div class="card"><div style="font-weight:900;font-size:16px">✨ 能力の答え合わせ</div>
+  if(R.hasAbilityGuess) h += `<div class="card"><div style="font-weight:900;font-size:16px">✨ 能力の答え合わせ</div>
     ${R.abilityReveal.map(c=>`<div style="margin-top:12px"><div style="font-weight:900">${esc(c.name)}</div>
       ${c.abilities.map(a=>`<div class="abl"><span class="kw">${esc(a.keyword)}</span><b>${esc(a.name)}</b>
         <div class="nt">${a.exposed?`🔓 バレていた(${esc(a.guessedBy.join('・'))})`:'🔒 誰にもバレなかった(+2pt)'}</div></div>`).join('')}

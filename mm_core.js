@@ -66,6 +66,10 @@ class Game {
     this.copied = {};
     this.known = {};
     this.cams = [];                     // {placeId, byChar}
+    this.playedCards = {};              // charId -> [cardId] 出した証言
+    this.orders = [];                   // {by, target, questionId, answerId, void}
+    this.authorityDeclared = false;     // 船長権限が宣言されたか
+    this.recalled = {};                 // charId -> 何回思い出したか
     this.log = {};                      // charId -> [{phase,title,text}] 本人だけの記録
     this.moves = {};                    // phaseIdx -> {charId: move}
     this.lastResults = {};              // charId -> [{title,text}] 直近フェーズの結果
@@ -75,6 +79,7 @@ class Game {
 
     this.sc.characters.forEach(c => {
       this.used[c.id] = 0; this.known[c.id] = []; this.log[c.id] = []; this.copied[c.id] = null;
+      this.playedCards[c.id] = []; this.recalled[c.id] = 0;
     });
     Object.entries(this.sc.initialKnown || {}).forEach(([cid, arr]) =>
       arr.forEach(k => this.known[cid].push({ char: k.char, abilityId: k.abilityId })));
@@ -251,6 +256,90 @@ class Game {
       push(cam.byChar, '📹 カメラの映像', t);
     }
 
+    /* ── ここから『海の上でいちばん偉い人』系の行動 ── */
+
+    /* 船長権限の宣言(いちばん先に解決する。以後の命令をすべて無効にする) */
+    for (const [cid, m] of of('declare_authority')) {
+      const AU = this.sc.authority || {};
+      if (this.authorityDeclared) { push(cid, A('k_auth').label, 'すでに宣言している。'); continue; }
+      this.useUp(cid, m);
+      this.authorityDeclared = true;
+      this.orders.forEach(o => { o.void = true; });
+      push(cid, A(m.abilityId).label, AU.declareText || '船長権限を宣言した。');
+      this.publicLog.push({ phase: phaseName, text: AU.publicText || '船長権限が宣言された。', big: true });
+      if (AU.declareText) this.publicLog.push({ phase: phaseName, text: AU.declareText });
+      // 代償: 指定された証言カードが強制的に公開される
+      const card = (this.char(cid).cards || []).find(c => c.id === AU.costCardId);
+      if (card && !this.playedCards[cid].includes(card.id)) {
+        this.playedCards[cid].push(card.id);
+        this.publicLog.push({ phase: phaseName, text: `【${this.char(cid).name}／${card.title}】\n${card.text}` });
+        push(cid, '——引き換えに', `あなたの証言「${card.title}」が、全員の前に出された。`);
+      }
+    }
+
+    /* 命令(権限宣言後は出せない) */
+    for (const [cid, m] of of('give_order')) {
+      const OD = this.sc.orders || {};
+      const tc = this.char(m.target?.charId);
+      const opt = (OD.options || []).find(o => `${o.questionId}:${o.answerId}` === m.target?.orderId);
+      if (!tc || tc.id === cid || !opt) { push(cid, A(m.abilityId).label, '対象が見つからなかった。'); continue; }
+      if (this.authorityDeclared) {
+        push(cid, A(m.abilityId).label, '……鏑木がこちらを見ている。もう、命令は通らない。');
+        continue;
+      }
+      this.useUp(cid, m);
+      this.orders.push({ by: cid, target: tc.id, questionId: opt.questionId, answerId: opt.answerId, label: opt.label, void: false });
+      const q = this.sc.finalQuestions.find(x => x.id === opt.questionId);
+      const ans = q && (q.options.find(o => o.id === opt.answerId) || {}).label;
+      push(cid, A(m.abilityId).label, `${tc.name}に命じた。\n「${q ? q.text : ''}」——『${ans}』と答えろ。`);
+      push(tc.id, '⚠ 命令',
+        (OD.targetText || '命令: 「{question}」——『{answer}』と答えろ。')
+          .replace('{question}', q ? q.text : '').replace('{answer}', ans || ''));
+      this.publicLog.push({
+        phase: phaseName,
+        text: (OD.publicText || '{name}が{target}に何かを命じた。')
+          .replace('{name}', this.char(cid).name).replace('{target}', tc.name),
+      });
+    }
+
+    /* 証言カードを出す(全員に公開) */
+    for (const [cid, m] of of('reveal_card')) {
+      const card = (this.char(cid).cards || []).find(c => c.id === m.target?.cardId);
+      if (!card) { push(cid, A(m.abilityId).label, '対象が見つからなかった。'); continue; }
+      if (this.playedCards[cid].includes(card.id)) { push(cid, A(m.abilityId).label, 'その証言はもう出している。'); continue; }
+      this.useUp(cid, m);
+      this.playedCards[cid].push(card.id);
+      push(cid, A(m.abilityId).label, `証言「${card.title}」を全員の前に出した。`);
+      this.publicLog.push({ phase: phaseName, text: `【${this.char(cid).name}／${card.title}】\n${card.text}` });
+    }
+
+    /* 問いかけ(全員に聞こえる。答えるかは本人次第) */
+    for (const [cid, m] of of('ask_player')) {
+      const AA = A(m.abilityId);
+      const tc = this.char(m.target?.charId);
+      const q = (AA.questions || []).find(x => x.id === m.target?.questionId);
+      if (!tc || tc.id === cid || !q) { push(cid, AA.label, '対象が見つからなかった。'); continue; }
+      this.useUp(cid, m);
+      push(cid, AA.label, `${tc.name}に問いかけた。\n「${q.text}」`);
+      push(tc.id, '⚠ 問いかけられた', `${this.char(cid).name}から、全員の前で問われた。\n「${q.text}」\n\n答えるかどうかは、あなた次第。`);
+      this.publicLog.push({
+        phase: phaseName,
+        text: (AA.publicText || '{name}が{target}に問いかけた——「{question}」')
+          .replace('{name}', this.char(cid).name).replace('{target}', tc.name).replace('{question}', q.text),
+      });
+    }
+
+    /* 思い出す(使うたびに次の記憶が開く) */
+    for (const [cid, m] of of('recall')) {
+      const AA = A(m.abilityId);
+      const i = this.recalled[cid] || 0;
+      const t = (AA.texts || [])[i];
+      if (!t) { push(cid, AA.label, 'これ以上は、思い出せない。'); continue; }
+      this.useUp(cid, m);
+      this.recalled[cid] = i + 1;
+      push(cid, AA.label, t);
+    }
+
     /* ⑥ キーワード / コピー */
     for (const [cid, m] of of('steal_keyword')) {
       const tc = this.char(m.target?.charId);
@@ -357,6 +446,27 @@ class Game {
         const h = hits[rule.char] || 0;
         got = Math.floor(h / (rule.per || 2)) * rule.points;
         note = `${h}個正解`;
+      } else if (rule.rule === 'notCorrect') {
+        // 他の誰にも正解されなければ達成
+        const solvers = chars.filter(o => o.id !== rule.char)
+          .filter(o => q && ans[o.id]?.questions?.[rule.question] === q.answer).map(o => o.name);
+        got = solvers.length === 0 ? rule.points : 0;
+        note = solvers.length === 0 ? '誰にも突き止められなかった' : `${solvers.join('・')}に突き止められた`;
+      } else if (rule.rule === 'orderObeyed') {
+        const live = this.orders.filter(o => !o.void);
+        const obeyed = live.filter(o => ans[o.target]?.questions?.[o.questionId] === o.answerId);
+        got = obeyed.length * rule.points;
+        note = this.authorityDeclared
+          ? `命令${this.orders.length}件は船長権限で無効化された`
+          : `${obeyed.length}/${live.length} 件が守られた`;
+      } else if (rule.rule === 'orderFollowed') {
+        const mine = this.orders.filter(o => o.target === rule.char && !o.void);
+        const followed = mine.filter(o => ans[rule.char]?.questions?.[o.questionId] === o.answerId);
+        got = followed.length * rule.points;
+        note = mine.length ? `${followed.length}/${mine.length} 件に従った` : '命令されなかった';
+      } else if (rule.rule === 'authority') {
+        got = this.authorityDeclared ? rule.points : 0;
+        note = this.authorityDeclared ? '宣言した' : '宣言しなかった';
       }
       d.total += got;
       d.lines.push({ label: rule.label, points: got, note });
@@ -368,6 +478,7 @@ class Game {
 
     this.result = {
       detail, ranking, winner,
+      hasAbilityGuess: !!this.sc.abilityGuess,
       reveal: Q.map(q => ({
         id: q.id, text: q.text, answerLabel: this.labelOf(q, q.answer),
         byChar: chars.map(c => ({ id: c.id, name: c.name, label: this.labelOf(q, ans[c.id]?.questions?.[q.id]) })),
@@ -399,6 +510,7 @@ class Game {
       scenario: {
         id: this.sc.id, title: this.sc.title, subtitle: this.sc.subtitle,
         icon: this.sc.icon, theme: this.sc.theme, duration: this.sc.duration,
+        intro: this.sc.intro || null,
         prologue: this.sc.prologue, commonInfo: this.sc.commonInfo,
         rules: this.sc.rules, map: this.sc.map,
         phases: this.sc.phases.map(p => ({ id: p.id, type: p.type, title: p.title, minutes: p.minutes, brief: p.brief, todo: p.todo })),
@@ -416,6 +528,9 @@ class Game {
       answeredCount: Object.keys(this.answers).length,
       playerCount: this.sc.characters.length,
       publicLog: this.publicLog,
+      authorityDeclared: this.authorityDeclared,
+      // 「誰が誰に命じたか」だけ公開。中身は対象者にしか送らない
+      orderCount: this.orders.filter(o => !o.void).length,
       result: this.result,
     };
   }
@@ -445,6 +560,28 @@ class Game {
       known: this.known[charId].map(k => ({
         charName: this.char(k.char).name, keyword: this.ability(k.char, k.abilityId).keyword,
       })),
+      // ★自分の手札だけ。出したかどうかも自分にしか分からない
+      cards: (c.cards || []).map(x => ({ ...x, played: this.playedCards[charId].includes(x.id) })),
+      // ★自分に向けられた命令だけ
+      myOrders: this.orders.filter(o => o.target === charId).map(o => {
+        const q = this.sc.finalQuestions.find(x => x.id === o.questionId);
+        return {
+          questionId: o.questionId, answerId: o.answerId, void: o.void,
+          questionText: q ? q.text : '',
+          answerLabel: q ? (q.options.find(op => op.id === o.answerId) || {}).label : '',
+        };
+      }),
+      canOrder: (this.sc.orders && this.sc.orders.by === charId && !this.authorityDeclared) ? {
+        ...this.sc.orders,
+        options: this.sc.orders.options.map(o => {
+          const q = this.sc.finalQuestions.find(x => x.id === o.questionId);
+          return { ...o, id: `${o.questionId}:${o.answerId}`, questionText: q ? q.text : '' };
+        }),
+      } : null,
+      authority: (this.sc.authority && this.sc.authority.by === charId) ? {
+        ...this.sc.authority, declared: this.authorityDeclared,
+      } : null,
+      authorityDeclared: this.authorityDeclared,
       log: this.log[charId],
       lastResults: this.lastResults[charId] || [],
       ready: this.ready.has(charId),
