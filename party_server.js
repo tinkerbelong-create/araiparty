@@ -9,9 +9,9 @@ module.exports = function attach(io, opts = {}) {
   const rooms = new Map();
   const GAMES = [
     { id: 'nepleague',   name: 'ネプリーグ',       icon: '🧩',   ready: true, external: false },
-    { id: 'quadcolor',   name: 'クアドルカラー',   icon: '🟥🟦', ready: true, external: true, url: '/quadcolor/' },
+    { id: 'quadcolor',   name: 'クアドルカラー',   icon: '🟥🟦', ready: false, external: false },
     { id: 'shuzomas',    name: 'シュゾマス',       icon: '🍺',   ready: true, external: false },
-    { id: 'countfruits', name: 'カウントフルーツ', icon: '🍓',   ready: true, external: true, url: '/countfruits/' },
+    { id: 'countfruits', name: 'カウントフルーツ', icon: '🍓',   ready: false, external: false },
   ];
   const READY = GAMES.filter(g => g.ready).map(g => g.id);
   const gameOf = (id) => GAMES.find(g => g.id === id) || GAMES[0];

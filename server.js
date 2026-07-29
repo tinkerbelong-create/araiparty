@@ -429,4 +429,7 @@ require('./np_server.js')(io, {});
 // パーティモード(1部屋でチーム対抗・通算得点。中でネプリーグ等を遊ぶ)
 require('./party_server.js')(io, {});
 
+// マーダーミステリー(シナリオJSON差し替え式。HO・真相はサーバー保持)
+require('./mm_server.js')(io, {});
+
 server.listen(PORT, () => console.log(`あらいの遊び場 : http://localhost:${PORT}`));

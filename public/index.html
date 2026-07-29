@@ -173,7 +173,7 @@ footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px
   <div id="empty" class="hidden"><div class="big">🙈</div>みつからなかった…<br><button class="tagchip" onclick="clearFilters()" style="margin-top:10px">条件をぜんぶクリア</button></div>
 </div>
 
-<footer>© arai — 大学祭で展示したボードゲームのデジタル化プロジェクト+新作ゲームたち<br>アカウント不要、名前だけで遊べます</footer>
+<footer>© arai — 大学祭で展示したボードゲームのデジタル化プロジェクト+新作ゲームたち<br>アカウント不要、名前だけで遊べます ・ <b>ver v0.4</b></footer>
 
 <script>
 'use strict';
@@ -181,6 +181,9 @@ footer{max-width:1080px;margin:10px auto 0;padding:14px 16px 40px;font-size:12px
  * src: 'オリジナル' | '元ネタあり' | 'AI作'
  * cat: 'solo'(1人用) | 'multi'(みんなで) | 'both'(両方) | 'party'(パーティモード内・一覧に出さない) */
 const GAMES = [
+  { id:'mystery', url:'/mystery/', icon:'🍰🕯', title:'マーダーミステリー', src:'オリジナル', isNew:true, featured:true, cat:'multi',
+    players:'3人', time:'約45分', grad:'linear-gradient(135deg,#ffd23f,#f7a8b8)',
+    desc:'通話しながら遊ぶ本格マダミス。第1弾は『ケーキを食べた能力者』——能力を隠す3人の同居人と、消えたひと切れのケーキ。ハンドアウト配布から採点まで全部おまかせ。', tags:['マーダーミステリー','推理','なりきり','オンライン対戦','通話推奨'] },
   { id:'party', url:'/party/', icon:'🎉', title:'パーティモード', src:'オリジナル', isNew:true, featured:false, cat:'party',
     players:'チーム戦・個人戦', time:'自由', grad:'linear-gradient(135deg,#ffd23f,#ff4d8d,#3fa9ff)',
     desc:'1つの部屋で、テレビにホスト画面・スマホがコントローラー。チームを作って通算得点で対抗! いまはネプリーグを収録。', tags:['パーティー','チーム戦','ホスト画面＋スマホ','大人数OK'] },

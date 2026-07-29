@@ -125,14 +125,51 @@ label{display:block;text-align:left;color:var(--muted);font-size:13px;font-weigh
 </head>
 <body>
 <div id="root"></div>
-<script src="/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js">
+/* ══ シュゾマス実物をiframe埋め込み（プレイヤーのスマホ） ══ */
+function renderPlayerSzEmbed(){
+  if(!szFrame){
+    root.className=''; root.innerHTML='';
+    const fr=document.createElement('iframe'); fr.id='szf'; fr.src='/shuzomas/embed.html';
+    fr.setAttribute('allow','autoplay');
+    fr.style.cssText='border:0;position:fixed;inset:0;width:100%;height:100%;display:block;background:#eaf3fb;z-index:1';
+    document.body.appendChild(fr); szFrame=fr; szFrameReady=false;
+  }
+  if(szFrameReady) szPostState();
+}
+function szMapPub(){
+  const g=state.game; if(!g) return null;
+  return { code:state.code, phase:g.sub, round:g.round, stars:g.stars, starName:g.starName,
+    ingredients:g.ingredients, dosSet:g.dosSet, deadline:null,
+    seats:(g.seats||[]).map(s=>Object.assign({},s,{isCpu:false})), takenMyIds:g.takenMyIds||[], endInfo:g.endInfo||null };
+}
+function szPostState(){
+  if(!szFrame||!szFrameReady) return; const pub=szMapPub(); if(!pub) return;
+  const p=(priv&&priv.sz)?priv.sz:{myIdx:0};
+  try{ szFrame.contentWindow.postMessage({sz:'state',payload:{pub,priv:p}},'*'); }catch(e){}
+}
+function szPostReveal(rv){
+  if(!szFrame||!szFrameReady) return;
+  const endInfo=(state.game&&state.game.endInfo)||null;
+  try{ szFrame.contentWindow.postMessage({sz:'reveal',payload:Object.assign({},rv,{endInfo})},'*'); }catch(e){}
+}
+window.addEventListener('message', function(e){
+  const d=e.data||{};
+  if(d.sz==='ready'){ szFrameReady=true; szPostState(); }
+  else if(d.sz==='act'){
+    if(d.ev==='chooseMy') socket.emit('pt:sz:chooseMy', d.data);
+    else if(d.ev==='submit') socket.emit('pt:sz:submit', d.data);
+  }
+});
+</script>
 <script>
+const PT_VERSION='v0.5';
 const socket = io();
 const GENRES = ['一般常識','生活・雑学','エンタメ','歴史・地理','ことば'];
 const TEAMCOL=['#ff5a5f','#3a9bff','#ffb23e','#37c86b','#a86cff','#2ad2c9','#ff7ac0','#ff8f3e'];
 const TEAMCOLD=['#d6454a','#2b74c4','#e0912a','#28a355','#8a52d6','#1fa89f','#d65fa0','#e0692a'];
 const root = document.getElementById('root');
-let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='', extOrder=[], szPicks=[], szReveal=null;
+let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='', extOrder=[], szPicks=[], szReveal=null, szFrame=null, szFrameReady=false;
 const qs = new URLSearchParams(location.search);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const chars = s => Array.from(s||'');
@@ -147,7 +184,7 @@ socket.on('connect', () => {
   renderHome();
 });
 socket.on('pt:state', ({pub,priv:pv}) => { state=pub; priv=pv; if(pub.curGame!=='shuzomas') szReveal=null; render(); });
-socket.on('pt:sz:reveal', rv=>{ szReveal=rv; szPicks=[]; render(); });
+socket.on('pt:sz:reveal', rv=>{ szReveal=rv; szPicks=[]; if(szFrame&&szFrameReady) szPostReveal(rv); render(); });
 
 function renderHome(err){
   state=null; const code=(qs.get('code')||'').toUpperCase();
@@ -164,7 +201,7 @@ function renderHome(err){
     socket.emit('pt:joinRoom',{code:c,name:n},r=>{ if(r&&r.ok) sessionStorage.setItem('pt_player',JSON.stringify({code:c,name:n})); else renderHome(r&&r.error||'参加できませんでした'); });};
 }
 
-function render(){ if(!state) return; priv&&priv.isHost ? renderHost() : renderPlayer(); }
+function render(){ if(!state) return; const keep=(state.phase==='ingame'&&state.curGame==='shuzomas'&&priv&&!priv.isHost); if(szFrame&&!keep){ try{szFrame.remove();}catch(e){} szFrame=null; szFrameReady=false; } priv&&priv.isHost ? renderHost() : renderPlayer(); }
 const orderedTeams=()=>Object.values(state.teams).sort((a,b)=>a.order-b.order);
 const teamColor=t=>TEAMCOL[t.order%TEAMCOL.length];
 const teamColorD=t=>TEAMCOLD[t.order%TEAMCOLD.length];
@@ -329,7 +366,7 @@ function renderHostResult(){
 /* ════ プレイヤー ════ */
 function renderPlayer(){
   if(state.phase==='ingame' && state.curGameExternal){ lastPlayerSig=''; return renderPlayerExternal(); }
-  if(state.phase==='ingame' && state.curGame==='shuzomas'){ lastPlayerSig=''; return renderPlayerShuzomas(); }
+  if(state.phase==='ingame' && state.curGame==='shuzomas'){ lastPlayerSig=''; return renderPlayerSzEmbed(); }
   if(state.phase==='ingame' && state.curGame==='nepleague'){ return renderPlayerNep(); }
   lastPlayerSig='';
   const me=state.players[priv.youId];
@@ -548,6 +585,7 @@ function szEndedHTML(isHost){
     <p class="sub" style="text-align:center;margin-top:10px">順位に応じてチームに加点しました（1位+30 / 2位+20 / 3位+10）</p>
     ${isHost?`<div class="row" style="justify-content:center;margin-top:10px"><button id="szNextM" class="green">▶ 次の試合へ</button></div>`:`<p class="status">ホストの操作を待っています…</p>`}</div>`;
 }
+try{document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;bottom:6px;right:8px;font-size:11px;color:#8a96b0;font-weight:700;z-index:9999;background:#fff;border:1px solid #dbe6f5;border-radius:8px;padding:2px 8px">'+PT_VERSION+'</div>');}catch(e){}
 </script>
 </body>
 </html>
