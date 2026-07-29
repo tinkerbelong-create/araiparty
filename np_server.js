@@ -53,14 +53,49 @@ module.exports = function attach(io, opts = {}) {
     });
   }
 
-  function newGame(room) {
+  /* ファイブリーグ: 難易度1→5の5問を、全員正解で勝ち上がる */
+  function newGame(room, unitId) {
     return {
-      activeUnitId: null, activeUnitName: '',
-      difficulty: 2, genre: NP.GENRES[0],
-      question: null, length: 0,
+      activeUnitId: unitId || null,
+      activeUnitName: unitId ? unitName(room, unitId) : '',
+      stage: 0,                 // 0=まだ始めていない / 1〜5=挑戦中の問題番号
+      cleared: 0,               // クリアした問題数
+      genre: NP.GENRES[0],
+      used: [],                 // 既出の問題文
+      question: null,
       slots: [], revealed: false, results: null, correctAll: false,
-      message: '手番のチーム/人を選んでください',
+      assembled: '',            // ★できあがってしまった言葉(珍解答)
+      finished: false, gained: null,
+      stagePoints: NP.STAGE_POINTS, stages: NP.STAGES,
+      message: '挑戦するチーム/人を選んでください',
     };
+  }
+
+  /* 次の問題を出す(stage は 1〜5) */
+  function dealStage(room) {
+    const g = room.game;
+    const members = unitMembers(room, g.activeUnitId);
+    if (!members.length) { g.message = 'このチームに参加者がいません'; return; }
+    g.stage = g.cleared + 1;
+    const q = NP.pickQuestion(g.stage, g.genre, g.used);
+    g.used.push(q.t);
+    g.question = { text: q.t, answer: q.a, genre: q.g, difficulty: q.d };
+    g.slots = NP.assignSlots(members);
+    g.revealed = false; g.results = null; g.correctAll = false; g.assembled = '';
+    g.message = '第' + g.stage + '問（難易度' + g.stage + '）— 5文字を1人1文字ずつ入れてください';
+  }
+
+  /* 挑戦終了。点を清算する */
+  function finishRun(room) {
+    const g = room.game;
+    const sc = NP.scoreFor(g.cleared);
+    g.finished = true;
+    g.gained = sc;
+    if (room.mode === 'team' && room.teams[g.activeUnitId]) room.teams[g.activeUnitId].score += sc.total;
+    else if (room.players[g.activeUnitId]) room.players[g.activeUnitId].score += sc.total;
+    g.message = sc.perfect
+      ? 'パーフェクト！ ' + sc.base + ' ＋ ボーナス' + sc.bonus + ' ＝ ' + sc.total + 'ポイント獲得！'
+      : g.cleared + '問正解！ ' + sc.total + 'ポイント獲得';
   }
 
   /* ══ 接続処理 ══ */
@@ -146,57 +181,72 @@ module.exports = function attach(io, opts = {}) {
       room.phase = 'play'; room.game = newGame(room);
       broadcast(room);
     });
+
+    /* 挑戦するチーム/人を決める */
     socket.on('np:selectUnit', ({ unitId } = {}) => {
       const room = host(socket); if (!room || !room.game) return;
       const g = room.game;
-      g.activeUnitId = unitId; g.activeUnitName = unitName(room, unitId);
-      g.question = null; g.slots = []; g.revealed = false; g.results = null; g.correctAll = false;
-      g.message = g.activeUnitName + ' の番です。難易度と傾向を選んで問題を出してください';
+      if (g.stage > 0 && !g.finished) { g.message = '挑戦の途中です'; return broadcast(room); }
+      room.game = newGame(room, unitId);
+      room.game.message = unitName(room, unitId) + ' の挑戦です。傾向を選んでスタート！';
       broadcast(room);
     });
-    socket.on('np:deal', ({ difficulty, genre } = {}) => {
+
+    /* 傾向(ジャンル)を選ぶ */
+    socket.on('np:setGenre', ({ genre } = {}) => {
+      const room = host(socket); if (!room || !room.game) return;
+      if (NP.GENRES.includes(genre)) room.game.genre = genre;
+      broadcast(room);
+    });
+
+    /* 第1問を出す/次の問題へ進む */
+    socket.on('np:deal', () => {
       const room = host(socket); if (!room || !room.game) return;
       const g = room.game;
-      if (!g.activeUnitId) { g.message = '先に手番のチーム/人を選んでください'; return broadcast(room); }
-      const members = unitMembers(room, g.activeUnitId);
-      if (members.length === 0) { g.message = 'このチームに参加者がいません'; return broadcast(room); }
-      g.difficulty = Math.min(5, Math.max(1, Number(difficulty) || 2));
-      g.genre = NP.GENRES.includes(genre) ? genre : NP.GENRES[0];
-      const length = Math.min(5, Math.max(3, members.length)); // 文字数=人数(3〜5)
-      const q = NP.pickQuestion(g.difficulty, g.genre, length);
-      g.question = { text: q.text, answer: q.answer, genre: q.genre, difficulty: q.difficulty };
-      g.length = NP.chars(q.answer).length;
-      g.slots = [];
-      for (let i = 0; i < g.length; i++) {
-        const owner = members[i % members.length];
-        g.slots.push({ index: i, playerId: owner.id, playerName: owner.name, char: '', locked: false });
-      }
-      g.revealed = false; g.results = null; g.correctAll = false;
-      g.message = '各自1文字ずつ入力してロックしてください';
+      if (!g.activeUnitId) { g.message = '先に挑戦するチーム/人を選んでください'; return broadcast(room); }
+      if (g.finished) { g.message = 'この挑戦は終わりました'; return broadcast(room); }
+      dealStage(room);
       broadcast(room);
     });
+
+    /* ★オープン! */
     socket.on('np:open', () => {
       const room = host(socket); if (!room || !room.game || !room.game.question) return;
       const g = room.game;
+      if (g.revealed) return;
       const j = NP.judge(g.slots, g.question.answer);
-      g.results = j.results; g.correctAll = j.correctAll; g.revealed = true;
-      if (g.correctAll) {
-        const pts = POINTS ? g.question.difficulty : 1;
-        if (room.mode === 'team' && room.teams[g.activeUnitId]) room.teams[g.activeUnitId].score += pts;
-        else if (room.players[g.activeUnitId]) room.players[g.activeUnitId].score += pts;
-        g.message = '正解！ +' + pts + '点';
+      g.results = j.results;
+      g.correctAll = j.correctAll;
+      g.revealed = true;
+      g.assembled = NP.assembled(g.slots);   // 珍解答
+      if (j.correctAll) {
+        g.cleared += 1;
+        if (g.cleared >= NP.STAGES) {
+          finishRun(room);
+        } else {
+          g.message = '第' + g.stage + '問 正解！ 次は難易度' + (g.cleared + 1) +
+            '（クリアで＋' + NP.pointsOfStage(g.cleared + 1) + '点）';
+        }
       } else {
-        g.message = 'ざんねん！正解は「' + g.question.answer + '」';
+        g.message = 'ざんねん！ 正解は「' + g.question.answer + '」';
+        finishRun(room);
       }
       broadcast(room);
     });
+
+    /* 結果を見たあと、次の問題へ */
     socket.on('np:next', () => {
       const room = host(socket); if (!room || !room.game) return;
       const g = room.game;
-      g.question = null; g.slots = []; g.revealed = false; g.results = null; g.correctAll = false;
-      g.message = g.activeUnitName ? (g.activeUnitName + ' の番です。次の問題を選んでください') : '手番のチーム/人を選んでください';
+      if (g.finished) {
+        room.game = newGame(room);
+        room.game.message = '次に挑戦するチーム/人を選んでください';
+        return broadcast(room);
+      }
+      dealStage(room);
       broadcast(room);
     });
+
     socket.on('np:home', () => {
       const room = host(socket); if (!room) return;
       room.phase = 'lobby'; room.game = null;
