@@ -49,12 +49,39 @@ label{display:block;text-align:left;color:var(--muted);font-size:13px;margin:0 0
 .my-slot{font-size:19px;color:var(--muted);text-align:center}
 .status{text-align:center;color:var(--muted)}
 .back{position:fixed;top:12px;left:12px}
+
+/* ── ファイブリーグ モニター ── */
+.fl-head{padding:16px 18px}
+.fl-unit{font-size:clamp(18px,2.4vw,26px);font-weight:800;color:var(--accent);margin-bottom:12px}
+.fl-ladder{display:flex;gap:8px}
+.fl-step{flex:1;text-align:center;border:2px solid var(--line);border-radius:12px;padding:9px 4px;background:#0d1030;opacity:.5}
+.fl-step .n{font-size:13px;font-weight:800}
+.fl-step .d{font-size:11px;color:var(--muted);margin-top:2px}
+.fl-step .p{font-size:15px;font-weight:800;margin-top:4px}
+.fl-step.done{opacity:1;background:var(--red);border-color:var(--red);color:#fff}
+.fl-step.done .d{color:rgba(255,255,255,.75)}
+.fl-step.now{opacity:1;border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,210,63,.25)}
+.fl-tally{margin-top:12px;font-size:15px;font-weight:700}
+.fl-tally b{font-size:22px;color:var(--accent)}
+.fl-open{font-size:24px;padding:16px 46px;letter-spacing:.14em}
+.fl-read{margin-top:18px;text-align:center;border-radius:16px;padding:16px 18px;border:3px solid var(--line);background:#0d1030}
+.fl-read .lbl{font-size:12px;color:var(--muted);letter-spacing:.14em}
+.fl-read .word{font-size:clamp(34px,6vw,68px);font-weight:800;letter-spacing:.16em;margin-top:6px}
+.fl-read .ans{margin-top:8px;font-size:15px;color:var(--muted)}
+.fl-read.ok{border-color:var(--red)} .fl-read.ok .word{color:var(--red)}
+.fl-read.ng{border-color:var(--blue)} .fl-read.ng .word{color:var(--blue)}
+.fl-final{margin-top:16px;text-align:center;border-radius:16px;padding:18px;background:#0d1030;border:3px solid var(--accent)}
+.fl-final .line{font-size:16px;font-weight:700}
+.fl-final .total{font-size:clamp(30px,5vw,52px);font-weight:800;color:var(--accent);margin-top:6px}
+.fl-final.perfect{border-color:var(--red)}
+.fl-final .pf{font-size:clamp(22px,3.5vw,38px);font-weight:800;color:var(--red);letter-spacing:.2em;margin-bottom:8px}
 </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="sfx.js"></script>
 <script>
 const socket = io();
 const GENRES = ['一般常識','生活・雑学','エンタメ','歴史・地理','ことば'];
@@ -104,7 +131,18 @@ function renderHome(err){
   };
 }
 
-function render(){ if(!state) return; priv&&priv.isHost ? renderHost() : renderPlayer(); }
+let sfxSig='';
+function playSfx(){
+  const g=state&&state.game; if(!g||!priv||!priv.isHost) return;
+  const sig=(g.stage||0)+':'+(g.revealed?'rev':'live')+':'+(g.finished?'fin':'-');
+  if(sig===sfxSig) return; sfxSig=sig;
+  if(!g.revealed||!window.NpSfx) return;
+  NpSfx.stop();
+  if(g.finished && g.gained && g.gained.perfect) NpSfx.perfect();
+  else if(g.correctAll) NpSfx.correct();
+  else NpSfx.wrong();
+}
+function render(){ if(!state) return; priv&&priv.isHost ? renderHost() : renderPlayer(); playSfx(); }
 
 /* ══════════ ホスト（テレビ） ══════════ */
 function renderHost(){
@@ -168,49 +206,94 @@ function renderHostGame(){
   const units = state.mode==='team'
     ? Object.values(state.teams).sort((a,b)=>a.order-b.order).map(t=>({id:t.id,name:t.name}))
     : Object.values(state.players).sort((a,b)=>a.order-b.order).map(p=>({id:p.id,name:p.name}));
+  const STAGES = g.stages||5, PTS = g.stagePoints||[10,20,30,40,50];
+
   let h=`<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center">
-    <h2 style="margin:0">🧩 ネプリーグ</h2><button class="ghost" id="home">← ホームに戻る</button></div>${scoreboard()}<div style="height:12px"></div>`;
-  h+=`<div class="card"><label>手番を選ぶ（他は待機）</label><div class="row">`;
-  h+= units.length?units.map(u=>`<button data-unit="${u.id}" class="${g.activeUnitId===u.id?'':'ghost'}">${esc(u.name)}${g.activeUnitId===u.id?' ▶':''}</button>`).join(''):'<span class="sub">先にホームでチーム/参加者を用意してください</span>';
-  h+=`</div>`;
-  if(g.activeUnitId&&!g.question){
-    h+=`<div class="row" style="margin-top:14px;align-items:end">
-      <div style="min-width:110px"><label>難易度</label><select id="diff">${[1,2,3,4,5].map(n=>`<option value="${n}" ${ui.difficulty===n?'selected':''}>★${n}</option>`).join('')}</select></div>
-      <div style="min-width:150px"><label>傾向</label><select id="genre">${GENRES.map(x=>`<option ${ui.genre===x?'selected':''}>${x}</option>`).join('')}</select></div>
-      <button id="deal">問題を出す</button></div>`;
+    <h2 style="margin:0">🧩 ファイブリーグ</h2><button class="ghost" id="home">← ホームに戻る</button></div>${scoreboard()}<div style="height:12px"></div>`;
+
+  /* ── 進行バー: 第何問か・何問クリアか・次で何点か ── */
+  if(g.activeUnitId){
+    const cur = g.finished ? 0 : (g.stage||0);
+    h+=`<div class="card fl-head">
+      <div class="fl-unit">▶ ${esc(g.activeUnitName)}</div>
+      <div class="fl-ladder">`;
+    for(let i=1;i<=STAGES;i++){
+      const st = i<=g.cleared ? 'done' : (i===cur ? 'now' : '');
+      h+=`<div class="fl-step ${st}"><div class="n">第${i}問</div><div class="d">難易度${i}</div><div class="p">+${PTS[i-1]}</div></div>`;
+    }
+    h+=`</div>
+      <div class="fl-tally">クリア <b>${g.cleared}</b> / ${STAGES}　　現在の獲得予定 <b>${flScore(g.cleared,PTS)}</b> ポイント</div>
+    </div>`;
   }
-  h+=`</div>`;
+
+  /* ── 挑戦者を選ぶ ── */
+  if(!g.activeUnitId || g.finished){
+    h+=`<div class="card"><label>挑戦するチーム/人を選ぶ</label><div class="row">`;
+    h+= units.length?units.map(u=>`<button data-unit="${u.id}" class="ghost">${esc(u.name)}</button>`).join(''):'<span class="sub">先にホームでチーム/参加者を用意してください</span>';
+    h+=`</div></div>`;
+  }
+
+  /* ── 問題が出ていないとき(傾向を選んでスタート) ── */
+  if(g.activeUnitId && !g.question && !g.finished){
+    h+=`<div class="card"><div class="row" style="align-items:end">
+      <div style="min-width:170px"><label>傾向</label><select id="genre">${GENRES.map(x=>`<option ${g.genre===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <button id="deal">第${(g.cleared||0)+1}問を出す（難易度${(g.cleared||0)+1}）</button></div>
+      <p class="waiting" style="margin-top:12px">${esc(g.message)}</p></div>`;
+  }
+
+  /* ── 出題中 ── */
   if(g.question){
-    h+=`<div class="card"><div class="board"><div class="pill">${esc(g.question.genre)}・難易度★${g.question.difficulty}・${g.length}文字</div>
+    h+=`<div class="card"><div class="board">
+      <div class="pill">第${g.stage}問　${esc(g.question.genre)}　難易度★${g.question.difficulty}　クリアで＋${PTS[g.stage-1]}点</div>
       <div class="qtext">${esc(g.question.text)}</div><div class="slots">`;
     h+=g.slots.map(s=>{
       const cls=g.revealed&&g.results?g.results[s.index]:'';
-      const shown=g.revealed?(chars(g.question.answer)[s.index]||''):(s.char||'');
+      const shown=g.revealed?(s.char||'　'):(s.char?'●':'');
       const bc='box'+(s.locked&&!g.revealed?' locked':'');
       return `<div class="slot ${cls}"><div class="${bc}">${esc(shown)}</div><div class="name">${esc(s.playerName)}<small>${g.revealed?'':(s.locked?'ロック済':'入力中…')}</small></div></div>`;
     }).join('');
     h+=`</div>`;
+
     if(g.revealed){
-      h+=`<div class="result-line ${g.correctAll?'ok':'ng'}">${g.correctAll?'⭕ 正解！':'❌ ざんねん'}</div><div class="row"><button id="next">次の問題へ</button></div>`;
+      /* ★珍解答: できあがってしまった言葉 */
+      h+=`<div class="fl-read ${g.correctAll?'ok':'ng'}">
+            <div class="lbl">${g.correctAll?'よみあげ':'よみあげ（できあがった言葉）'}</div>
+            <div class="word">${esc(g.assembled||'')}</div>
+            ${g.correctAll?'':`<div class="ans">正解は「${esc(g.question.answer)}」</div>`}
+          </div>`;
+      h+=`<div class="result-line ${g.correctAll?'ok':'ng'}">${g.correctAll?'⭕ 正解！':'❌ ざんねん'}</div>`;
+      if(g.finished){
+        const s=g.gained||{base:0,bonus:0,total:0,perfect:false};
+        h+=`<div class="fl-final ${s.perfect?'perfect':''}">
+              ${s.perfect?'<div class="pf">★ ＰＥＲＦＥＣＴ ★</div>':''}
+              <div class="line">${g.cleared}問クリア　${s.base}ポイント${s.bonus?`　＋ ボーナス ${s.bonus}`:''}</div>
+              <div class="total">${s.total} ポイント獲得</div>
+            </div>
+            <div class="row"><button id="next">次の挑戦者へ</button></div>`;
+      }else{
+        h+=`<div class="waiting">${esc(g.message)}</div><div class="row"><button id="next">第${g.cleared+1}問へ進む</button></div>`;
+      }
     }else{
       const allLocked=g.slots.length&&g.slots.every(s=>s.locked);
-      h+=`<div class="waiting">${esc(g.message)}</div><div class="row"><button id="open" ${allLocked?'':'disabled'}>オープン（判定）</button><button id="redeal" class="ghost">問題を変える</button></div>`;
+      h+=`<div class="waiting">${esc(g.message)}</div>
+          <div class="row"><button id="open" class="fl-open" ${allLocked?'':'disabled'}>オープン！</button></div>`;
     }
     h+=`</div></div>`;
-  }else{
-    h+=`<div class="card"><p class="waiting">${esc(g.message)}</p></div>`;
+  }else if(g.activeUnitId && g.finished){
+    const s=g.gained||{total:0};
+    h+=`<div class="card"><p class="waiting">${esc(g.message)}　合計 ${s.total} ポイント</p></div>`;
   }
+
   h+=`</div>`;
   root.innerHTML=h;
   el('home').onclick=()=>socket.emit('np:home');
   root.querySelectorAll('button[data-unit]').forEach(b=>b.onclick=()=>socket.emit('np:selectUnit',{unitId:b.dataset.unit}));
-  if(el('diff')) el('diff').onchange=()=>ui.difficulty=parseInt(el('diff').value,10);
-  if(el('genre')) el('genre').onchange=()=>ui.genre=el('genre').value;
-  if(el('deal')) el('deal').onclick=()=>socket.emit('np:deal',{difficulty:ui.difficulty,genre:ui.genre});
-  if(el('open')) el('open').onclick=()=>socket.emit('np:open');
+  if(el('genre')) el('genre').onchange=()=>socket.emit('np:setGenre',{genre:el('genre').value});
+  if(el('deal')) el('deal').onclick=()=>socket.emit('np:deal');
+  if(el('open')) el('open').onclick=()=>{ if(window.NpSfx) NpSfx.roll(); setTimeout(()=>socket.emit('np:open'),1500); };
   if(el('next')) el('next').onclick=()=>socket.emit('np:next');
-  if(el('redeal')) el('redeal').onclick=()=>socket.emit('np:next');
 }
+function flScore(n,PTS){ let s=0; for(let i=0;i<n;i++) s+=PTS[i]; return n>=PTS.length ? s+50 : s; }
 
 /* ══════════ プレイヤー（スマホ） ══════════ */
 function mySlots(){ const g=state.game; if(!g||!g.slots) return []; return g.slots.filter(s=>s.playerId===priv.youId); }
