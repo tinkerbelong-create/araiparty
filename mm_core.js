@@ -1,18 +1,15 @@
 /* マーダーミステリー共通エンジン (core)
- * シナリオJSONを読み込み、フェーズ進行・行動解決・採点を行う。
- * 秘匿情報(他人のHO・真相・未取得の手がかり)は一切ここから外に出さない。
+ * シナリオJSONを読み込み、フェーズ進行・能力解決・採点を行う。
+ * 秘匿情報(他人のHO・真相・能力の中身)は一切ここから外に出さない。
  * server側は必ず publicView() / privateView() 経由でクライアントへ配信すること。
  *
- * ── 行動フェーズの考え方 ──
- * 全員が毎回「1か所へ調べに行く」。能力はその上に1つだけ重ねられる(ゲーム中2回まで)。
- * 調査を全員に開放したことで、各能力に固有の役割が生まれる:
- *   ドア開閉  = 他人の調査を封じる
- *   偽物設置  = 他人の調査結果を汚染する
- *   カメラ    = 自分が行かない場所の人の動きを掴む
- *   すり抜け  = 閉ざされた場所へ手を伸ばす(ドア封じの対抗手段)
- *   同化      = 自分がいる場所の来訪者を目撃する
- *   水        = 自分がいる場所の証拠を消す
- *   キーワード= 相手の能力を確定させる(得点＋相手の秘匿点を潰す)
+ * ── 進行の考え方(初心者向け) ──
+ * 各フェーズは brief(案内) → main(本編) → result(結果) の3ステップ。
+ * ステップは「全員が完了を押す」ことでしか進まない。ホストが勝手に進めることはない。
+ *
+ * ── 行動の考え方 ──
+ * 原作どおり「能力を使うか、使わないか」だけ。共通の調査アクションは無い。
+ * 能力の対象に場所を選んだ人は、その場所に動いたものとして扱う(同化・カメラが検知する)。
  */
 'use strict';
 const fs = require('fs');
@@ -24,46 +21,45 @@ const SCENARIO_DIR = path.join(__dirname, 'scenarios');
 const cache = new Map();
 function loadScenario(id) {
   if (cache.has(id)) return cache.get(id);
-  const file = path.join(SCENARIO_DIR, `${id}.json`);
-  const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const data = JSON.parse(fs.readFileSync(path.join(SCENARIO_DIR, `${id}.json`), 'utf8'));
   cache.set(id, data);
   return data;
 }
 function listScenarios() {
   if (!fs.existsSync(SCENARIO_DIR)) return [];
-  return fs.readdirSync(SCENARIO_DIR)
-    .filter(f => f.endsWith('.json'))
-    .map(f => {
-      const s = loadScenario(f.replace(/\.json$/, ''));
-      return {
-        id: s.id, title: s.title, subtitle: s.subtitle || '',
-        players: s.players, duration: s.duration, icon: s.icon || '🕯',
-        theme: s.theme || null,
-      };
-    });
+  return fs.readdirSync(SCENARIO_DIR).filter(f => f.endsWith('.json')).map(f => {
+    const s = loadScenario(f.replace(/\.json$/, ''));
+    return {
+      id: s.id, title: s.title, subtitle: s.subtitle || '',
+      players: s.players, duration: s.duration, icon: s.icon || '🕯', theme: s.theme || null,
+    };
+  });
 }
+
+const STEPS = { BRIEF: 'brief', MAIN: 'main', RESULT: 'result' };
 
 /* ── ゲーム本体 ── */
 class Game {
   constructor(scenarioId) {
     this.sc = loadScenario(scenarioId);
     this.scenarioId = scenarioId;
-    this.phaseIdx = -1;                 // -1 = 未開始(キャラ選択中)
-    this.assign = {};                   // charId -> seatIdx
+    this.phaseIdx = 0;
+    this.step = STEPS.BRIEF;
+    this.ready = new Set();             // このステップで完了を押した charId
+    this.assign = {};                   // charId -> seatIdx(ランダム配布)
 
     this.fridgePower = !!(this.sc.world && this.sc.world.fridgePower);
-    this.doors = {};                    // doorId -> 'open' | 'closed'
+    this.doors = {};
     (this.sc.abilityActions?.k1?.doors || []).forEach(d => { this.doors[d.id] = 'open'; });
     this.doors.fridge = 'closed';       // ナツキが22:00に勢いよく閉めたまま
 
-    this.used = {};                     // charId -> 能力使用回数
-    this.copied = {};                   // charId -> コピー中の abilityId(1回分)
-    this.known = {};                    // charId -> [{char, abilityId}]
-    this.erased = new Set();            // 水で流された placeId
-    this.fakes = [];                    // {objId, objName, placeId, byChar, phaseIdx}
-    this.cams = [];                     // {placeId, byChar, label}
-    this.log = {};                      // charId -> [{phase, title, text}] 本人だけの記録
-    this.moves = {};                    // phaseIdx -> { charId: move }
+    this.used = {};
+    this.copied = {};
+    this.known = {};
+    this.cams = [];                     // {placeId, byChar}
+    this.log = {};                      // charId -> [{phase,title,text}] 本人だけの記録
+    this.moves = {};                    // phaseIdx -> {charId: move}
+    this.lastResults = {};              // charId -> [{title,text}] 直近フェーズの結果
     this.publicLog = [];                // 全員に見える出来事
     this.answers = {};
     this.result = null;
@@ -71,47 +67,68 @@ class Game {
     this.sc.characters.forEach(c => {
       this.used[c.id] = 0; this.known[c.id] = []; this.log[c.id] = []; this.copied[c.id] = null;
     });
-    // シナリオ開始時点ですでに掴んでいるキーワード(HOに書かれているもの)
-    Object.entries(this.sc.initialKnown || {}).forEach(([cid, arr]) => {
-      arr.forEach(k => this.known[cid].push({ char: k.char, abilityId: k.abilityId }));
-    });
-    // 開始時点ですでに仕掛かっているもの
-    (this.sc.initialCams || []).forEach(c => this.cams.push({ ...c }));
+    Object.entries(this.sc.initialKnown || {}).forEach(([cid, arr]) =>
+      arr.forEach(k => this.known[cid].push({ char: k.char, abilityId: k.abilityId })));
   }
 
-  get phase() { return this.phaseIdx >= 0 ? this.sc.phases[this.phaseIdx] : null; }
-  get phaseType() { return this.phase ? this.phase.type : 'select'; }
+  /* キャラをランダムに配る */
+  assignRandom(seatCount) {
+    const ids = this.sc.characters.map(c => c.id);
+    for (let i = ids.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ids[i], ids[j]] = [ids[j], ids[i]];
+    }
+    const out = [];
+    for (let i = 0; i < seatCount; i++) { this.assign[ids[i]] = i; out.push(ids[i]); }
+    return out; // seatIdx -> charId
+  }
+
+  get phase() { return this.sc.phases[this.phaseIdx]; }
+  get phaseType() { return this.phase.type; }
+  get isLast() { return this.phaseIdx >= this.sc.phases.length - 1; }
   char(id) { return this.sc.characters.find(c => c.id === id); }
-  ability(charId, abId) { return this.char(charId)?.abilities.find(a => a.id === abId); }
+  ability(cid, aid) { return this.char(cid)?.abilities.find(a => a.id === aid); }
   place(id) { return (this.sc.places || []).find(p => p.id === id); }
   maxUses() { return 2; }
 
-  /* すり抜け先が明るいか。部屋は基本明るく、冷蔵庫だけ電源＋扉に依存する */
+  /* すり抜け先が明るいか。冷蔵庫だけ電源＋扉に依存する(理由はプレイヤーに明かさない) */
   isLit(placeId) {
     const p = this.place(placeId);
     if (!p || !p.dark) return true;
     return this.fridgePower && this.doors.fridge === 'open';
   }
-  /* ドアが閉められていて入れない場所か */
-  isBlocked(placeId) {
-    const p = this.place(placeId);
-    if (!p || !p.door) return false;
-    return this.doors[placeId] === 'closed';
+
+  /* ── ステップ進行: 全員が完了を押したときだけ進む ── */
+  markReady(charId) {
+    this.ready.add(charId);
+    return this.ready.size >= this.sc.characters.length;
+  }
+  readyCount() { return this.ready.size; }
+  /* 次のステップへ。戻り値 'next' = 次のフェーズへ / 'ok' / 'end' */
+  nextStep() {
+    this.ready.clear();
+    if (this.step === STEPS.BRIEF) { this.step = STEPS.MAIN; return 'ok'; }
+    if (this.step === STEPS.MAIN) {
+      if (this.phaseType === 'ability') { this.step = STEPS.RESULT; return 'ok'; }
+      if (this.phaseType === 'final') { this.score(); }
+      return this.gotoNextPhase();
+    }
+    return this.gotoNextPhase(); // RESULT
+  }
+  gotoNextPhase() {
+    if (this.isLast) return 'end';
+    this.phaseIdx++;
+    this.step = this.phaseType === 'ending' ? STEPS.MAIN : STEPS.BRIEF;
+    if (this.phaseType === 'ending') { if (!this.result) this.score(); return 'end'; }
+    return 'next';
   }
 
-  advance() {
-    if (this.phaseIdx < this.sc.phases.length - 1) { this.phaseIdx++; return true; }
-    return false;
-  }
-
-  /* ── 行動の登録(同時提出) ──
-   * move = { placeId, extra, abilityId, target } */
+  /* ── 能力の提出 ── */
   submitMove(charId, move) {
-    if (this.phaseType !== 'ability') return { ok: false, msg: '今は行動できません' };
+    if (this.phaseType !== 'ability' || this.step !== STEPS.MAIN) return { ok: false, msg: '今は能力を使えません' };
     const bucket = (this.moves[this.phaseIdx] ||= {});
-    if (bucket[charId]) return { ok: false, msg: 'このフェーズではもう行動しています' };
+    if (bucket[charId]) return { ok: false, msg: 'もう決定しています' };
     move = move || {};
-    if (!move.placeId || !this.place(move.placeId)) return { ok: false, msg: '調べに行く場所を選んでください' };
     if (move.abilityId) {
       const isCopy = this.copied[charId] === move.abilityId;
       if (!isCopy) {
@@ -125,197 +142,145 @@ class Game {
     return { ok: true };
   }
   allMoved() {
-    const bucket = this.moves[this.phaseIdx] || {};
-    return this.sc.characters.every(c => !!bucket[c.id]);
+    const b = this.moves[this.phaseIdx] || {};
+    return this.sc.characters.every(c => !!b[c.id]);
   }
+  movedCount() { return Object.keys(this.moves[this.phaseIdx] || {}).length; }
 
   /* ── 同時解決 ──
-   * ①ドア → ②偽物 → ③カメラ → ④電源 → ⑤移動＆調査 → ⑥すり抜け
-   * → ⑦水(証拠隠滅) → ⑧同化/カメラ報告 → ⑨キーワード/コピー */
+   * ①ドア → ②偽物/水(その場で全員に見える) → ③カメラ設置
+   * → ④すり抜け → ⑤同化・カメラ報告 → ⑥キーワード/コピー */
   resolvePhase() {
+    if (this.resolved && this.resolved[this.phaseIdx]) return this.lastResults; // 二重解決の防止
+    (this.resolved ||= {})[this.phaseIdx] = true;
     const bucket = this.moves[this.phaseIdx] || {};
-    const phaseName = this.sc.phases[this.phaseIdx].title;
+    const phaseName = this.phase.title;
     const out = {};
     const push = (cid, title, text) => { (out[cid] ||= []).push({ title, text }); };
-    const act = id => this.sc.abilityActions[id];
+    const A = id => this.sc.abilityActions[id];
     const entries = Object.entries(bucket);
-    const withAbility = r => entries.filter(([cid, m]) =>
-      m.abilityId && act(m.abilityId) && act(m.abilityId).resolve === r);
+    const of = r => entries.filter(([, m]) => m.abilityId && A(m.abilityId) && A(m.abilityId).resolve === r);
 
-    // 誰がどこへ動いたか(同化・カメラの検知に使う)
+    // 能力の対象に場所を選んだ人＝その場所へ動いた人
     const presence = {};
-    entries.forEach(([cid, m]) => { (presence[m.placeId] ||= []).push(cid); });
+    entries.forEach(([cid, m]) => {
+      const d = m.abilityId && A(m.abilityId);
+      if (d && ['peek_place', 'observe_place', 'watch_place'].includes(d.resolve) && m.target?.placeId) {
+        (presence[m.target.placeId] ||= []).push(cid);
+      }
+    });
 
     /* ① ドア開閉 */
-    for (const [cid, m] of withAbility('toggle_door')) {
-      const d = act('k1').doors.find(x => x.id === m.target?.doorId);
-      if (!d) { push(cid, act('k1').label, '対象が見つからなかった。'); continue; }
+    for (const [cid, m] of of('toggle_door')) {
+      const d = A('k1').doors.find(x => x.id === m.target?.doorId);
+      if (!d) { push(cid, A('k1').label, '対象が見つからなかった。'); continue; }
       this.useUp(cid, m);
       const opening = this.doors[d.id] === 'closed';
       this.doors[d.id] = opening ? 'open' : 'closed';
-      let t = `${d.name}を${opening ? '開けた' : '閉めた'}。`;
-      if (d.id === 'fridge') {
-        t += this.fridgePower
-          ? (opening ? ' 庫内灯がついた。' : ' 庫内は暗くなった。')
-          : ' ……電源が入っていないので、庫内は暗いままだ。';
-      } else {
-        t += opening ? ' これで誰でも入れる。' : ' これでもう、誰もここには入れない。';
-      }
-      push(cid, act('k1').label, t);
-      this.publicLog.push({ phase: phaseName, text: `${d.name}が${opening ? '開いている' : '閉まっている'}。` });
+      push(cid, A('k1').label, `${d.name}を${opening ? '開けた' : '閉めた'}。`);
     }
 
-    /* ② 偽物設置 */
-    for (const [cid, m] of withAbility('plant_fake')) {
-      const A = act('r2');
-      const obj = A.objects.find(o => o.id === m.target?.objId);
-      const pl = this.place(m.target?.placeId);
-      if (!obj || !pl) { push(cid, A.label, '対象が見つからなかった。'); continue; }
+    /* ② その場で全員に見える能力(水・偽物) */
+    for (const [cid, m] of of('show_water')) {
       this.useUp(cid, m);
-      this.fakes.push({ objId: obj.id, objName: obj.name, placeId: pl.id, byChar: cid, phaseIdx: this.phaseIdx });
-      push(cid, A.label, `${obj.name}の偽物を作り、${pl.name}に置いた。3時間で消える。触っても機能はしないし、味も匂いもない。`);
+      push(cid, A('r1').label, A('r1').text);
+      this.publicLog.push({ phase: phaseName, text: A('r1').publicText.replace('{name}', this.char(cid).name) });
+    }
+    for (const [cid, m] of of('show_fake')) {
+      const obj = A('r2').objects.find(o => o.id === m.target?.objId);
+      if (!obj) { push(cid, A('r2').label, '対象が見つからなかった。'); continue; }
+      this.useUp(cid, m);
+      push(cid, A('r2').label, A('r2').text.replace('{obj}', obj.name));
+      this.publicLog.push({ phase: phaseName, text: A('r2').publicText.replace('{name}', this.char(cid).name).replace('{obj}', obj.name) });
     }
 
     /* ③ カメラ設置 */
-    for (const [cid, m] of withAbility('watch_place')) {
-      const A = act('r3');
+    for (const [cid, m] of of('watch_place')) {
       const pl = this.place(m.target?.placeId);
-      if (!pl) { push(cid, A.label, '対象が見つからなかった。'); continue; }
+      if (!pl) { push(cid, A('r3').label, '対象が見つからなかった。'); continue; }
       this.useUp(cid, m);
-      this.cams.push({ placeId: pl.id, byChar: cid, label: `${phaseName}に仕込んだカメラ` });
-      push(cid, A.label, `${pl.name}にカメラを仕込んだ。以後、ここに来た人が分かる。`);
+      this.cams.push({ placeId: pl.id, byChar: cid });
+      push(cid, A('r3').label, `${pl.name}にカメラを仕込んだ。`);
     }
 
-    /* ④ 電源など、場所ごとの操作 */
-    for (const [cid, m] of entries) {
-      if (m.extra !== 'action') continue;
-      const pl = this.place(m.placeId);
-      if (!pl || !pl.action || this.isBlocked(pl.id)) continue;
-      if (pl.action.id === 'power') {
-        this.fridgePower = !this.fridgePower;
-        push(cid, pl.action.id === 'power' ? '電源コード' : pl.action.id,
-          this.fridgePower ? pl.action.onText : pl.action.offText);
-        this.publicLog.push({ phase: phaseName, text: `冷蔵庫の電源が${this.fridgePower ? '入っている' : '切れている'}。` });
-      }
-    }
-
-    /* ⑤ 移動して調べる(全員) */
-    for (const [cid, m] of entries) {
-      const pl = this.place(m.placeId);
-      if (this.isBlocked(pl.id)) {
-        push(cid, `${pl.name}へ`, 'ドアが閉まっていて、中に入れなかった。……誰かが閉めたらしい。');
-        continue;
-      }
-      if (pl.openOnVisit && this.doors.fridge === 'closed') this.doors.fridge = 'open';
-      push(cid, `${pl.name}を調べた`, this.clueText(pl.id, cid));
-    }
-
-    /* ⑥ すり抜け(調べに行った場所とは別の1か所へ手を伸ばす) */
-    for (const [cid, m] of withAbility('peek_place')) {
-      const A = act('n1');
+    /* ④ すり抜け */
+    for (const [cid, m] of of('peek_place')) {
       const pl = this.place(m.target?.placeId);
-      if (!pl) { push(cid, A.label, '対象が見つからなかった。'); continue; }
-      if (!this.isLit(pl.id)) { push(cid, A.label, A.failIfDark); continue; } // 失敗なので回数を消費しない
+      if (!pl) { push(cid, A('n1').label, '対象が見つからなかった。'); continue; }
+      if (!this.isLit(pl.id)) { push(cid, `${A('n1').label} → ${pl.name}`, A('n1').failText); continue; }
       this.useUp(cid, m);
-      push(cid, `${A.label} → ${pl.name}`, this.clueText(pl.id, cid));
+      push(cid, `${A('n1').label} → ${pl.name}`, pl.touch);
     }
 
-    /* ⑦ 水で洗い流す(自分が調べに行った場所) */
-    for (const [cid, m] of withAbility('wash_here')) {
-      const A = act('r1');
-      const pl = this.place(m.placeId);
-      if (this.isBlocked(pl.id)) { push(cid, A.label, 'そこには入れなかった。'); continue; }
-      this.useUp(cid, m);
-      if (this.erased.has(pl.id)) { push(cid, A.label, A.emptyText); continue; }
-      this.erased.add(pl.id);
-      push(cid, A.label, `${A.text}\n(${pl.name}の手がかりは、もう誰にも見つからない)`);
-    }
-
-    /* ⑧ 同化 — 調べに行った場所の来訪者を目撃 */
-    for (const [cid, m] of withAbility('observe_here')) {
-      const A = act('n3');
-      const pl = this.place(m.placeId);
-      if (this.isBlocked(pl.id)) { push(cid, A.label, 'ドアが閉まっていて、同化する壁にたどり着けなかった。'); continue; }
+    /* ⑤ 同化 */
+    for (const [cid, m] of of('observe_place')) {
+      const pl = this.place(m.target?.placeId);
+      if (!pl) { push(cid, A('n3').label, '対象が見つからなかった。'); continue; }
       this.useUp(cid, m);
       const others = (presence[pl.id] || []).filter(x => x !== cid);
-      push(cid, A.label, others.length
-        ? `${pl.name}の壁になりきった。\nこの場所に現れたのは——${others.map(x => this.char(x).name).join('、')}。`
-        : `${pl.name}の壁になりきった。\nこのあいだ、ここには誰も来なかった。`);
+      push(cid, `${A('n3').label} → ${pl.name}`, others.length
+        ? `壁になりきって様子をうかがった。\nここに現れたのは——${others.map(x => this.char(x).name).join('、')}。`
+        : '壁になりきって様子をうかがった。\nここには、誰も来なかった。');
     }
 
-    /* ⑧' カメラの報告(設置済みのものすべて) */
-    const camReported = new Set();
+    /* ⑤' カメラの報告(設置済みすべて) */
+    const done = new Set();
     for (const cam of this.cams) {
       const key = cam.byChar + ':' + cam.placeId;
-      if (camReported.has(key)) continue;
-      camReported.add(key);
+      if (done.has(key)) continue;
+      done.add(key);
+      const pl = this.place(cam.placeId); if (!pl) continue;
       const others = (presence[cam.placeId] || []).filter(x => x !== cam.byChar);
-      const pl = this.place(cam.placeId);
-      if (!pl) continue;
       let t;
-      if (!others.length) t = `${pl.name}——このあいだ、誰も来なかった。`;
+      if (!others.length) t = `${pl.name}——誰も来なかった。`;
       else if (this.isLit(cam.placeId)) t = `${pl.name}——映像に映った。${others.map(x => this.char(x).name).join('、')}が来ている。`;
-      else t = `${pl.name}——${act('r3').darkText} 誰かがここにいる。だが暗くて、誰かまでは分からない。`;
+      else t = `${pl.name}——${A('r3').darkText} 誰かがここにいる。だが暗くて、誰かまでは分からない。`;
       push(cam.byChar, '📹 カメラの映像', t);
     }
 
-    /* ⑨ キーワード / コピー */
-    for (const [cid, m] of withAbility('steal_keyword')) {
-      const A = act('k2');
+    /* ⑥ キーワード / コピー */
+    for (const [cid, m] of of('steal_keyword')) {
       const tc = this.char(m.target?.charId);
-      if (!tc || tc.id === cid) { push(cid, A.label, '対象が見つからなかった。'); continue; }
+      if (!tc || tc.id === cid) { push(cid, A('k2').label, '対象が見つからなかった。'); continue; }
       const got = this.known[cid].filter(k => k.char === tc.id).map(k => k.abilityId);
       const rest = tc.abilities.filter(a => !got.includes(a.id));
-      if (!rest.length) { push(cid, A.label, A.emptyText); continue; }
+      if (!rest.length) { push(cid, A('k2').label, A('k2').emptyText); continue; }
       this.useUp(cid, m);
       const pick = rest[Math.floor(Math.random() * rest.length)];
       this.known[cid].push({ char: tc.id, abilityId: pick.id });
-      push(cid, A.label, `${tc.name}に触れた。頭に流れ込んできたキーワードは——「${pick.keyword}」。`);
+      push(cid, A('k2').label, `${tc.name}に触れた。頭に流れ込んできたキーワードは——「${pick.keyword}」。`);
     }
-    for (const [cid, m] of withAbility('copy_ability')) {
-      const A = act('n2');
+    for (const [cid, m] of of('copy_ability')) {
       const tc = this.char(m.target?.charId);
       const ok = tc && tc.id !== cid && tc.abilities.some(a => a.id === m.target?.abilityId);
       this.useUp(cid, m);
       if (ok) {
         this.copied[cid] = m.target.abilityId;
-        push(cid, A.label, `${A.successText}\n\nコピーした能力: 「${this.ability(tc.id, m.target.abilityId).name}」`);
+        push(cid, A('n2').label, `${A('n2').successText}\n\nコピーした能力: 「${this.ability(tc.id, m.target.abilityId).name}」`);
       } else {
-        push(cid, A.label, A.failText);
+        push(cid, A('n2').label, A('n2').failText);
       }
     }
-    for (const [cid, m] of withAbility('unusable')) {
-      push(cid, act(m.abilityId).label, act(m.abilityId).text);
-    }
 
-    // 能力を使った人は全員に伝わる(原作の「宣言する」ルール)
+    // 使わなかった人にも一言
+    entries.filter(([, m]) => !m.abilityId).forEach(([cid]) =>
+      push(cid, '能力を使わなかった', 'あなたは動かなかった。'));
+
+    // ★誰が能力を使ったかだけを全員に公開(何を使ったかは伏せる)
     const users = entries.filter(([, m]) => m.abilityId).map(([cid]) => this.char(cid).name);
     this.publicLog.push({
       phase: phaseName,
       text: users.length ? `${users.join('、')}が能力を使った。` : '誰も能力を使わなかった。',
     });
 
-    Object.entries(out).forEach(([cid, arr]) => {
-      arr.forEach(r => this.log[cid].push({ phase: phaseName, ...r }));
-    });
+    this.lastResults = out;
+    Object.entries(out).forEach(([cid, arr]) => arr.forEach(r => this.log[cid].push({ phase: phaseName, ...r })));
     return out;
   }
 
   useUp(cid, m) {
     if (this.copied[cid] === m.abilityId) this.copied[cid] = null;
     else this.used[cid]++;
-  }
-
-  /* 場所の手がかり(消された場所・置かれた偽物・仕込まれたカメラを反映) */
-  clueText(placeId, viewerId) {
-    const pl = this.place(placeId);
-    if (this.erased.has(placeId)) return '床がうっすら濡れている。……それ以外、めぼしいものは何も残っていない。';
-    let t = pl.clue;
-    const fakes = this.fakes.filter(f => f.placeId === placeId && f.byChar !== viewerId);
-    if (fakes.length) t += `\n\nそして——${fakes.map(f => f.objName).join('と')}が置かれている。`;
-    const cams = this.cams.filter(c => c.placeId === placeId && c.byChar !== viewerId);
-    if (cams.length) t += '\n\nさらに、目を凝らすと——ゴマ粒ほどの黒い異物が貼りついている。カメラ、だろうか。';
-    return t;
   }
 
   /* ── 最終回答 ── */
@@ -332,30 +297,26 @@ class Game {
 
   /* ── 採点 ── */
   score() {
-    const chars = this.sc.characters;
-    const Q = this.sc.finalQuestions;
-    const ans = this.answers;
+    const chars = this.sc.characters, Q = this.sc.finalQuestions, ans = this.answers;
 
     const exposed = {};
     chars.forEach(t => t.abilities.forEach(a => { exposed[`${t.id}:${a.id}`] = false; }));
-    chars.forEach(guesser => {
-      const g = ans[guesser.id]?.abilities || {};
-      Object.entries(g).forEach(([targetId, ids]) => {
-        if (targetId === guesser.id) return;
-        (ids || []).forEach(id => { if (exposed[`${targetId}:${id}`] === false) exposed[`${targetId}:${id}`] = true; });
+    chars.forEach(g => {
+      Object.entries(ans[g.id]?.abilities || {}).forEach(([tid, ids]) => {
+        if (tid === g.id) return;
+        (ids || []).forEach(id => { if (exposed[`${tid}:${id}`] === false) exposed[`${tid}:${id}`] = true; });
       });
     });
 
-    const guessHits = {};
-    chars.forEach(guesser => {
-      let hit = 0;
-      const g = ans[guesser.id]?.abilities || {};
-      Object.entries(g).forEach(([targetId, ids]) => {
-        if (targetId === guesser.id) return;
-        const t = this.char(targetId); if (!t) return;
-        (ids || []).forEach(id => { if (t.abilities.some(a => a.id === id)) hit++; });
+    const hits = {};
+    chars.forEach(g => {
+      let h = 0;
+      Object.entries(ans[g.id]?.abilities || {}).forEach(([tid, ids]) => {
+        if (tid === g.id) return;
+        const t = this.char(tid); if (!t) return;
+        (ids || []).forEach(id => { if (t.abilities.some(a => a.id === id)) h++; });
       });
-      guessHits[guesser.id] = hit;
+      hits[g.id] = h;
     });
 
     const detail = {};
@@ -371,18 +332,18 @@ class Game {
         got = ok ? rule.points : 0;
         note = ok ? '正解' : `不正解(あなたの回答: ${this.labelOf(q, my)})`;
       } else if (rule.rule === 'notAccused') {
-        const accusers = chars.filter(o => o.id !== rule.char)
+        const acc = chars.filter(o => o.id !== rule.char)
           .filter(o => ans[o.id]?.questions?.[rule.question] === rule.char).map(o => o.name);
-        got = accusers.length === 0 ? rule.points : 0;
-        note = accusers.length === 0 ? '誰にも指摘されなかった' : `${accusers.join('・')}に指摘された`;
+        got = acc.length === 0 ? rule.points : 0;
+        note = acc.length === 0 ? '誰にも指摘されなかった' : `${acc.join('・')}に指摘された`;
       } else if (rule.rule === 'hideAbility') {
         const safe = this.char(rule.char).abilities.filter(a => !exposed[`${rule.char}:${a.id}`]);
         got = safe.length * rule.points;
         note = `バレていない能力 ${safe.length}/3` + (safe.length ? `(${safe.map(a => a.keyword).join('・')})` : '');
       } else if (rule.rule === 'guessAbility') {
-        const hit = guessHits[rule.char] || 0;
-        got = Math.floor(hit / (rule.per || 2)) * rule.points;
-        note = `${hit}個正解`;
+        const h = hits[rule.char] || 0;
+        got = Math.floor(h / (rule.per || 2)) * rule.points;
+        note = `${h}個正解`;
       }
       d.total += got;
       d.lines.push({ label: rule.label, points: got, note });
@@ -392,22 +353,21 @@ class Game {
       .sort((a, b) => b.total - a.total);
     const winner = ranking[0];
 
-    const reveal = Q.map(q => ({
-      id: q.id, text: q.text, answerLabel: this.labelOf(q, q.answer),
-      byChar: chars.map(c => ({ id: c.id, name: c.name, label: this.labelOf(q, ans[c.id]?.questions?.[q.id]) })),
-    }));
-    const notes = chars.map(c => ({ id: c.id, name: c.name, note: ans[c.id]?.note || '' }));
-    const abilityReveal = chars.map(c => ({
-      id: c.id, name: c.name,
-      abilities: c.abilities.map(a => ({
-        keyword: a.keyword, name: a.name, note: a.note,
-        exposed: exposed[`${c.id}:${a.id}`],
-        guessedBy: chars.filter(o => o.id !== c.id && (ans[o.id]?.abilities?.[c.id] || []).includes(a.id)).map(o => o.name),
-      })),
-    }));
-
     this.result = {
-      detail, ranking, winner, reveal, notes, abilityReveal,
+      detail, ranking, winner,
+      reveal: Q.map(q => ({
+        id: q.id, text: q.text, answerLabel: this.labelOf(q, q.answer),
+        byChar: chars.map(c => ({ id: c.id, name: c.name, label: this.labelOf(q, ans[c.id]?.questions?.[q.id]) })),
+      })),
+      notes: chars.map(c => ({ id: c.id, name: c.name, note: ans[c.id]?.note || '' })),
+      abilityReveal: chars.map(c => ({
+        id: c.id, name: c.name,
+        abilities: c.abilities.map(a => ({
+          keyword: a.keyword, name: a.name, note: a.note,
+          exposed: exposed[`${c.id}:${a.id}`],
+          guessedBy: chars.filter(o => o.id !== c.id && (ans[o.id]?.abilities?.[c.id] || []).includes(a.id)).map(o => o.name),
+        })),
+      })),
       truth: this.sc.truth,
       outro: this.sc.truth.outro.replace('{{WINNER}}', winner.name),
     };
@@ -428,63 +388,59 @@ class Game {
         icon: this.sc.icon, theme: this.sc.theme, duration: this.sc.duration,
         prologue: this.sc.prologue, commonInfo: this.sc.commonInfo,
         rules: this.sc.rules, map: this.sc.map,
-        phases: this.sc.phases.map(p => ({ id: p.id, type: p.type, title: p.title, minutes: p.minutes, desc: p.desc })),
-        // ★公開プロフィールのみ。handout は絶対に含めない
-        characters: this.sc.characters.map(c => ({
-          id: c.id, name: c.name, gender: c.gender, color: c.color, icon: c.icon, catch: c.catch,
-        })),
-        // clue は含めない。入れるかどうかの判定に必要な最低限だけ
-        places: (this.sc.places || []).map(p => ({ id: p.id, name: p.name, door: !!p.door, dark: !!p.dark })),
+        phases: this.sc.phases.map(p => ({ id: p.id, type: p.type, title: p.title, minutes: p.minutes, brief: p.brief, todo: p.todo })),
+        // ★名前だけ。handout も abilities も含めない
+        characters: this.sc.characters.map(c => ({ id: c.id, name: c.name, gender: c.gender, color: c.color, icon: c.icon })),
+        places: (this.sc.places || []).map(p => ({ id: p.id, name: p.name })), // touch は含めない
       },
       phaseIdx: this.phaseIdx,
       phase: this.phase,
+      step: this.step,
+      total: this.sc.phases.length,
       assign: this.assign,
-      usesLeft: Object.fromEntries(this.sc.characters.map(c => [c.id, this.maxUses() - this.used[c.id]])),
-      board: {
-        doors: this.doors,
-        fridgePower: this.fridgePower,
-        log: this.publicLog,
-      },
-      moved: Object.keys(this.moves[this.phaseIdx] || {}),
-      answered: Object.keys(this.answers),
+      readyCount: this.readyCount(),
+      movedCount: this.movedCount(),
+      answeredCount: Object.keys(this.answers).length,
+      playerCount: this.sc.characters.length,
+      publicLog: this.publicLog,
       result: this.result,
     };
   }
 
-  /* ★自分のぶんだけ。他人の handout は決して入れない */
+  /* ★自分のぶんだけ */
   privateView(charId) {
     const c = this.char(charId);
     if (!c) return null;
     const list = c.abilities.map(a => ({ ...a }));
     if (this.copied[charId]) {
       const src = this.sc.characters.find(x => x.abilities.some(a => a.id === this.copied[charId]));
-      const a = src.abilities.find(a => a.id === this.copied[charId]);
-      list.push({ ...a, copied: true, from: src.name });
+      list.push({ ...src.abilities.find(a => a.id === this.copied[charId]), copied: true, from: src.name });
     }
     const acts = {};
     list.forEach(a => {
       const def = this.sc.abilityActions[a.id];
-      if (def) acts[a.id] = { ...def, copied: !!a.copied, usable: a.usableInGame !== false || !!a.copied };
+      if (def) acts[a.id] = { ...def, copied: !!a.copied, usable: a.usableInGame !== false || !!a.copied, unusableReason: a.unusableReason || '' };
     });
     const isFinal = this.phaseType === 'final' || this.phaseType === 'ending';
     return {
       charId,
       character: { id: c.id, name: c.name, gender: c.gender, color: c.color, icon: c.icon, abilities: list, handout: c.handout },
       abilityActions: acts,
-      // コピー時の宣言候補。ダミーを含む全候補を出す(実在する9個だけを見せると答えが割れてしまう)
       abilityPool: this.sc.abilityGuess ? this.sc.abilityGuess.pool : [],
       usesLeft: this.maxUses() - this.used[charId],
       copied: this.copied[charId],
       known: this.known[charId].map(k => ({
-        charId: k.char, charName: this.char(k.char).name, keyword: this.ability(k.char, k.abilityId).keyword,
+        charName: this.char(k.char).name, keyword: this.ability(k.char, k.abilityId).keyword,
       })),
       log: this.log[charId],
+      lastResults: this.lastResults[charId] || [],
+      ready: this.ready.has(charId),
       moved: !!(this.moves[this.phaseIdx] || {})[charId],
       answered: !!this.answers[charId],
-      finalQuestions: isFinal ? this.sc.finalQuestions.map(q => ({ id: q.id, text: q.text, type: q.type, options: q.options })) : null,
+      finalQuestions: isFinal ? this.sc.finalQuestions.map(q => ({ id: q.id, text: q.text, options: q.options })) : null,
       abilityGuess: isFinal ? this.sc.abilityGuess : null,
     };
   }
 }
 
-module.exports = { Game, loadScenario, listScenarios };
+module.exports = { Game, loadScenario, listScenarios, STEPS };

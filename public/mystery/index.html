@@ -3,101 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>マーダーミステリー 🕯</title>
+<title>マーダーミステリー 🍰</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{ --ink:#3a3a44; --line:#f0dca8; --bg:#ffe066; --accent:#f7a8b8; --red:#d6455d; --paper:#fffdf6; }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{
-  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
-  color:var(--ink);min-height:100vh;
-  background:
-    radial-gradient(circle at 8% 6%, rgba(247,168,184,.35), transparent 34%),
-    radial-gradient(circle at 92% 90%, rgba(247,168,184,.3), transparent 34%),
-    var(--bg);
-}
-.wrap{max-width:960px;margin:0 auto;padding:14px 12px 60px}
-h1{font-size:28px;font-weight:900;text-align:center;letter-spacing:.03em}
-h1 .pill{background:var(--accent);color:#fff;border-radius:14px;padding:2px 16px;display:inline-block}
-.sub{text-align:center;font-weight:700;color:#8a7a55;font-size:12px;margin-top:4px}
+body{font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;color:var(--ink);min-height:100vh;
+  background:radial-gradient(circle at 8% 6%, rgba(247,168,184,.35), transparent 34%),
+             radial-gradient(circle at 92% 92%, rgba(247,168,184,.3), transparent 34%), var(--bg);}
+.wrap{max-width:760px;margin:0 auto;padding:14px 12px 60px}
+h1{font-size:26px;font-weight:900;text-align:center}
+h1 .pill{background:var(--accent);color:#fff;border-radius:14px;padding:2px 18px;display:inline-block}
+.sub{text-align:center;font-weight:700;color:#8a7a55;font-size:12px;margin-top:5px}
 .card{background:var(--paper);border:3px solid #fff;border-radius:20px;padding:18px;margin-top:14px;box-shadow:0 8px 22px rgba(140,110,40,.13)}
-.btn{border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#fff;border-radius:12px;padding:10px 22px;font-size:15px;
-  background:linear-gradient(135deg,#f7a8b8,#ec7f97);box-shadow:0 4px 12px rgba(236,127,151,.4);transition:transform .1s}
+.btn{border:none;cursor:pointer;font-family:inherit;font-weight:900;color:#fff;border-radius:14px;padding:13px 24px;font-size:16px;
+  background:linear-gradient(135deg,#f7a8b8,#ec7f97);box-shadow:0 4px 14px rgba(236,127,151,.45);transition:transform .1s}
 .btn:hover{transform:translateY(-2px)} .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn.dark{background:linear-gradient(135deg,#5c5c6e,#3a3a44);box-shadow:0 4px 12px rgba(58,58,68,.3)}
 .btn.gray{background:#bdb6a4;box-shadow:none}
-.btn.small{padding:6px 13px;font-size:13px;border-radius:9px}
-.btn.wide{width:100%;padding:13px}
-input[type=text],textarea,select{font-family:inherit;font-weight:700;font-size:16px;color:var(--ink);
-  border:2px solid var(--line);border-radius:10px;padding:9px 12px;outline:none;width:100%;background:#fff}
-textarea{min-height:90px;line-height:1.6;font-weight:500}
-input:focus,textarea:focus,select:focus{border-color:var(--accent)}
-label{font-size:12.5px;font-weight:900;color:#8a7a55;display:block;margin:12px 0 4px}
+.btn.small{padding:7px 15px;font-size:13px;border-radius:10px}
+.btn.wide{width:100%;padding:15px;font-size:17px}
+input[type=text],textarea{font-family:inherit;font-weight:700;font-size:16px;color:var(--ink);
+  border:2px solid var(--line);border-radius:10px;padding:10px 12px;outline:none;width:100%;background:#fff}
+textarea{min-height:90px;line-height:1.7;font-weight:500}
+input:focus,textarea:focus{border-color:var(--accent)}
+label{font-size:12.5px;font-weight:900;color:#8a7a55;display:block;margin:14px 0 5px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .err{color:var(--red);font-weight:900;font-size:13px;min-height:18px;margin-top:8px}
 .hidden{display:none!important}
-.codebox{font-size:27px;font-weight:900;letter-spacing:.22em;color:#e0708c;background:#fff2f5;border:2px dashed var(--accent);border-radius:12px;padding:6px 16px;display:inline-block}
-.seat{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 13px;font-weight:900;margin-top:7px;font-size:14px}
+.codebox{font-size:28px;font-weight:900;letter-spacing:.22em;color:#e0708c;background:#fff2f5;border:2px dashed var(--accent);border-radius:12px;padding:7px 18px;display:inline-block}
+.seat{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:9px 14px;font-weight:900;margin-top:7px;font-size:14px}
 .dot{width:9px;height:9px;border-radius:50%;background:#57c08a} .dot.off{background:#c9c2b2}
 .tag{font-size:11px;font-weight:900;background:var(--accent);color:#fff;border-radius:7px;padding:2px 8px}
+.note{font-size:12px;color:#8a7a55;line-height:1.75;margin-top:8px}
 
 /* 進行バー */
-.bar{position:sticky;top:0;z-index:30;background:rgba(255,253,246,.96);backdrop-filter:blur(6px);
-  border:3px solid #fff;border-radius:16px;padding:10px 14px;margin-top:10px;box-shadow:0 6px 18px rgba(140,110,40,.16)}
-.bar .ph{font-weight:900;font-size:16px} .bar .desc{font-size:12px;color:#8a7a55;margin-top:2px;line-height:1.5}
-.clock{font-size:26px;font-weight:900;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.bar{position:sticky;top:0;z-index:30;background:rgba(255,253,246,.97);backdrop-filter:blur(6px);
+  border:3px solid #fff;border-radius:16px;padding:11px 15px;margin-top:8px;box-shadow:0 6px 18px rgba(140,110,40,.16)}
+.bar .num{font-size:11px;font-weight:900;color:#c9a94a}
+.bar .ph{font-weight:900;font-size:17px;margin-top:1px}
+.clock{font-size:24px;font-weight:900;font-variant-numeric:tabular-nums}
 .clock.warn{color:var(--red)}
-.steps{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
-.step{font-size:10.5px;font-weight:900;padding:2px 8px;border-radius:20px;background:#f2ecd9;color:#a89b7c}
-.step.now{background:var(--ink);color:#fff} .step.done{background:#ffd9e2;color:#c95d7b}
+.prog{height:6px;background:#f2ecd9;border-radius:6px;margin-top:9px;overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ec7f97);border-radius:6px;transition:width .3s}
 
 /* タブ */
-.tabs{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
-.tab{cursor:pointer;font-weight:900;font-size:13px;padding:8px 14px;border-radius:12px 12px 0 0;background:#fff5d0;color:#a89b7c;border:2px solid transparent;border-bottom:none}
-.tab.on{background:var(--paper);color:var(--ink);border-color:#fff}
+.tabs{display:flex;gap:6px;margin-top:12px}
+.tab{flex:1;text-align:center;cursor:pointer;font-weight:900;font-size:13.5px;padding:10px 6px;border-radius:14px 14px 0 0;background:#fff5d0;color:#a89b7c}
+.tab.on{background:var(--paper);color:var(--ink)}
 
-/* キャラカード */
-.chars{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
-.chr{background:#fff;border:3px solid #fff;border-radius:18px;padding:14px;box-shadow:0 6px 16px rgba(140,110,40,.12);cursor:pointer;transition:transform .12s}
-.chr:hover{transform:translateY(-3px)}
-.chr.taken{opacity:.45;cursor:not-allowed;transform:none}
-.chr .nm{font-size:19px;font-weight:900;display:flex;align-items:center;gap:7px}
-.chr .ct{font-size:12.5px;line-height:1.65;color:#6d6d7d;margin-top:8px}
+/* 案内画面 */
+.brief{text-align:center;padding:16px 6px}
+.brief .step{font-size:12px;font-weight:900;color:#c9a94a;letter-spacing:.1em}
+.brief .ttl{font-size:26px;font-weight:900;margin:8px 0 12px}
+.brief .msg{font-size:15px;font-weight:700;line-height:1.9}
+.brief .todo{background:#fff2f5;border:2px solid var(--accent);border-radius:14px;padding:14px 16px;margin:18px 0;font-size:14px;line-height:1.85;text-align:left;font-weight:700}
+.waiting{font-size:13px;font-weight:900;color:#8a7a55;margin-top:12px}
 
-/* HO */
-.ho h3{font-size:15px;font-weight:900;margin:18px 0 7px;padding-left:9px;border-left:5px solid var(--accent)}
-.ho p{font-size:13.5px;line-height:1.85;white-space:pre-wrap}
-.tl{margin-top:6px}
-.tl .it{display:flex;gap:11px;padding:9px 0;border-bottom:1px dashed #ece2c5}
+/* シート */
+.ho h3{font-size:15px;font-weight:900;margin:20px 0 8px;padding-left:9px;border-left:5px solid var(--accent)}
+.ho p{font-size:13.5px;line-height:1.9;white-space:pre-wrap}
+.tl .it{display:flex;gap:11px;padding:10px 0;border-bottom:1px dashed #ece2c5}
 .tl .tm{font-weight:900;color:#e0708c;font-size:13.5px;min-width:52px;font-variant-numeric:tabular-nums}
-.tl .tx{font-size:13.5px;line-height:1.8;flex:1}
+.tl .tx{font-size:13.5px;line-height:1.85;flex:1}
 .mission{background:#fff2f5;border:2px solid var(--accent);border-radius:12px;padding:11px 14px;margin-top:8px;font-size:13.5px;font-weight:700;line-height:1.7}
-.abl{background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 13px;margin-top:8px}
+.abl{background:#fff;border:2px solid var(--line);border-radius:12px;padding:11px 14px;margin-top:8px}
 .abl .kw{font-size:11px;font-weight:900;background:var(--ink);color:#fff;border-radius:6px;padding:2px 8px;margin-right:6px}
-.abl .nt{font-size:12px;color:#8a7a55;margin-top:4px;line-height:1.6}
+.abl .nt{font-size:12px;color:#8a7a55;margin-top:5px;line-height:1.65}
+details{margin-top:10px;border:2px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+details summary{cursor:pointer;font-weight:900;font-size:13.5px;padding:11px 14px;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:'▶ ';color:var(--accent)}
+details[open] summary::before{content:'▼ '}
+details .inner{padding:0 14px 14px}
 
-/* 能力使用 */
-.opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:12px;padding:11px 14px;margin-top:8px;
-  font-family:inherit;font-weight:900;font-size:14px;color:var(--ink);cursor:pointer;transition:.12s}
+/* 選択肢 */
+.opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;padding:13px 16px;margin-top:9px;
+  font-family:inherit;font-weight:900;font-size:14.5px;color:var(--ink);cursor:pointer;transition:.12s}
 .opt:hover{border-color:var(--accent);background:#fff8fa}
-.opt.on{border-color:var(--accent);background:#fff2f5}
-.opt .s{display:block;font-weight:500;font-size:12px;color:#8a7a55;margin-top:3px;line-height:1.6}
-.opt:disabled{opacity:.4;cursor:not-allowed}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px}
+.opt.on{border-color:var(--accent);background:#fff2f5;box-shadow:0 3px 10px rgba(236,127,151,.25)}
+.opt .s{display:block;font-weight:500;font-size:12px;color:#8a7a55;margin-top:4px;line-height:1.65}
+.opt:disabled{opacity:.42;cursor:not-allowed}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px;margin-top:9px}
 .grid2 .opt{margin-top:0}
 
-/* ログ・結果 */
-.logit{background:#fff;border:2px solid var(--line);border-left:6px solid var(--accent);border-radius:12px;padding:12px 14px;margin-top:10px}
-.logit .h{font-size:12px;font-weight:900;color:#e0708c} .logit .b{font-size:13.5px;line-height:1.8;white-space:pre-wrap;margin-top:5px}
+/* 結果 */
+.logit{background:#fff;border:2px solid var(--line);border-left:6px solid var(--accent);border-radius:12px;padding:13px 15px;margin-top:11px}
+.logit .h{font-size:12px;font-weight:900;color:#e0708c} .logit .b{font-size:14px;line-height:1.85;white-space:pre-wrap;margin-top:6px}
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
 th,td{border:1px solid #ece2c5;padding:7px 9px;text-align:left} th{background:#fff5d0;font-weight:900}
-.big{font-size:22px;font-weight:900;text-align:center;margin:10px 0}
-.rank{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:8px;font-weight:900}
+.big{font-size:21px;font-weight:900;text-align:center;margin:12px 0}
+.rank{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:11px 15px;margin-top:8px;font-weight:900}
 .rank .no{font-size:20px;width:34px;text-align:center}
 .rank.win{border-color:var(--accent);background:#fff2f5}
-.map{width:100%;max-width:420px;display:block;margin:8px auto;border-radius:12px;border:2px solid var(--line);background:#fff}
-.note{font-size:12px;color:#8a7a55;line-height:1.7;margin-top:6px}
-.back{position:fixed;left:10px;top:10px;z-index:40;background:rgba(255,255,255,.9);border:2px solid #fff;border-radius:11px;
+.map{width:100%;max-width:400px;display:block;margin:10px auto;border-radius:12px;border:2px solid var(--line);background:#fff}
+.back{position:fixed;left:10px;top:10px;z-index:40;background:rgba(255,255,255,.92);border:2px solid #fff;border-radius:11px;
   padding:6px 12px;font-weight:900;font-size:12.5px;color:var(--ink);text-decoration:none;box-shadow:0 3px 10px rgba(140,110,40,.18)}
 </style>
 </head>
@@ -105,87 +105,62 @@ th,td{border:1px solid #ece2c5;padding:7px 9px;text-align:left} th{background:#f
 <a class="back" href="/">← 遊び場</a>
 <div class="wrap">
 
-<!-- ══ 入口 ══ -->
+<!-- 入口 -->
 <div id="s-entry">
   <h1><span class="pill">マダミス</span></h1>
-  <div class="sub">あらいの遊び場 / マーダーミステリー</div>
-
+  <div class="sub">3人で遊ぶマーダーミステリー ／ 通話をつなぎながら</div>
   <div class="card">
     <label>あなたの名前</label>
     <input type="text" id="name" maxlength="12" placeholder="なまえ">
     <label>シナリオ</label>
     <div id="sclist"></div>
-    <div class="row" style="margin-top:14px">
-      <button class="btn" id="btnCreate">部屋を作る</button>
-    </div>
-    <hr style="margin:18px 0;border:none;border-top:2px dashed #ece2c5">
-    <label>招待コードで参加</label>
+    <button class="btn wide" id="btnCreate" style="margin-top:14px">部屋を作る</button>
+    <hr style="margin:20px 0;border:none;border-top:2px dashed #ece2c5">
+    <label>招待コードで参加する</label>
     <div class="row">
       <input type="text" id="code" maxlength="5" placeholder="MXXXX" style="flex:1;text-transform:uppercase;letter-spacing:.18em;font-weight:900">
-      <button class="btn dark" id="btnJoin">参加する</button>
+      <button class="btn dark" id="btnJoin">参加</button>
     </div>
     <div class="err" id="e1"></div>
-    <div class="note">※ 通話(Discord等)をつなぎながら遊ぶ想定です。この画面はハンドアウト配布・能力処理・採点を担当します。</div>
+    <div class="note">通話(Discord・LINEなど)をつなぎながら遊びます。この画面が進行役をやってくれるので、GMは要りません。</div>
   </div>
 </div>
 
-<!-- ══ ロビー ══ -->
+<!-- ロビー -->
 <div id="s-lobby" class="hidden">
   <h1><span class="pill" id="lbTitle">—</span></h1>
   <div class="sub" id="lbSub">—</div>
   <div class="card" style="text-align:center">
     <div style="font-size:12px;font-weight:900;color:#8a7a55">招待コード</div>
     <div class="codebox" id="lbCode">—</div>
-    <div class="note">このコードを友達に送ってください</div>
+    <div class="note">このコードを友達2人に送ってください</div>
   </div>
   <div class="card">
     <div style="font-weight:900;font-size:14px" id="lbCount">参加者</div>
     <div id="lbSeats"></div>
-    <div class="row" style="margin-top:14px">
-      <button class="btn wide" id="btnToSelect">キャラクターを選ぶ →</button>
-    </div>
+    <button class="btn wide" id="btnStart" style="margin-top:16px">3人そろった! はじめる</button>
+    <div class="note">キャラクターはランダムに配られます。</div>
     <div class="err" id="e2"></div>
   </div>
 </div>
 
-<!-- ══ キャラ選択 ══ -->
-<div id="s-select" class="hidden">
-  <h1><span class="pill">キャラクター選択</span></h1>
-  <div class="sub">読んでから選んでください(早い者勝ち)</div>
-  <div class="chars" id="selChars"></div>
-  <div class="card">
-    <div id="selStatus" style="font-weight:900;font-size:14px"></div>
-    <div class="row" style="margin-top:12px">
-      <button class="btn gray small" id="btnUnpick">選び直す</button>
-      <button class="btn" id="btnStart">全員そろった! 開始する</button>
-    </div>
-    <div class="err" id="e3"></div>
-  </div>
-</div>
-
-<!-- ══ プレイ ══ -->
+<!-- プレイ -->
 <div id="s-play" class="hidden">
   <div class="bar">
     <div class="row" style="justify-content:space-between">
-      <div style="flex:1;min-width:180px">
+      <div style="flex:1;min-width:150px">
+        <div class="num" id="phNum"></div>
         <div class="ph" id="phTitle">—</div>
-        <div class="desc" id="phDesc"></div>
       </div>
-      <div class="clock" id="clock">--:--</div>
+      <div class="clock" id="clock"></div>
     </div>
-    <div class="steps" id="steps"></div>
-    <div class="row hidden" id="hostBar" style="margin-top:9px">
-      <button class="btn dark small" id="btnExtend">＋5分</button>
-      <button class="btn small" id="btnNext">次のフェーズへ →</button>
-      <span class="note" id="waitInfo"></span>
-    </div>
+    <div class="prog"><i id="progBar" style="width:0%"></i></div>
   </div>
-
   <div class="tabs" id="tabs"></div>
-  <div class="card" id="pane" style="margin-top:0;border-top-left-radius:0"></div>
+  <div class="card" id="pane" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0"></div>
 </div>
 
-<!-- ══ エンディング ══ -->
+<!-- エンディング -->
 <div id="s-end" class="hidden">
   <h1><span class="pill">エンディング</span></h1>
   <div id="endBody"></div>
@@ -202,12 +177,11 @@ const socket = io();
 
 let ST = { lobby:null, pub:null, priv:null };
 let scenarios = [], pickedScenario = null;
-let tab = 'story';
-let draft = { placeId:null, extra:null, abilityId:null, target:{} };
+let tab = 'now';
+let draft = { abilityId:null, target:{} };
 let answers = { questions:{}, abilities:{}, note:'' };
 
-/* ── 画面切替 ── */
-function show(v){ ['entry','lobby','select','play','end'].forEach(x => $('s-'+x).classList.toggle('hidden', x!==v)); }
+function show(v){ ['entry','lobby','play','end'].forEach(x => $('s-'+x).classList.toggle('hidden', x!==v)); }
 
 /* ── 入口 ── */
 socket.emit('mm:scenarios', {}, r => {
@@ -216,55 +190,42 @@ socket.emit('mm:scenarios', {}, r => {
   $('sclist').innerHTML = scenarios.map(s => `
     <button class="opt ${s.id===pickedScenario?'on':''}" data-sc="${esc(s.id)}">
       ${esc(s.icon)} ${esc(s.title)}
-      <span class="s">${esc(s.subtitle)}<br>${s.players.min}〜${s.players.max}人 / ${esc(s.duration)}</span>
+      <span class="s">${esc(s.subtitle)}<br>${s.players.min}人 / ${esc(s.duration)}</span>
     </button>`).join('');
   $('sclist').querySelectorAll('[data-sc]').forEach(b => b.onclick = () => {
     pickedScenario = b.dataset.sc;
     $('sclist').querySelectorAll('.opt').forEach(x => x.classList.toggle('on', x.dataset.sc===pickedScenario));
   });
 });
-
-const savedName = localStorage.getItem('arai_mm_name') || '';
-$('name').value = savedName;
-
+$('name').value = localStorage.getItem('arai_mm_name') || '';
 $('btnCreate').onclick = () => {
   const name = $('name').value.trim(); if(!name) return $('e1').textContent='名前を入れてください';
   localStorage.setItem('arai_mm_name', name);
   socket.emit('mm:create', { name, scenarioId: pickedScenario }, r => { if(!r.ok) $('e1').textContent = r.msg||'失敗しました'; });
 };
 $('btnJoin').onclick = () => {
-  const name = $('name').value.trim(); const code = $('code').value.trim().toUpperCase();
+  const name = $('name').value.trim(), code = $('code').value.trim().toUpperCase();
   if(!name) return $('e1').textContent='名前を入れてください';
   if(!code) return $('e1').textContent='招待コードを入れてください';
   localStorage.setItem('arai_mm_name', name);
   socket.emit('mm:join', { name, code }, r => { if(!r.ok) $('e1').textContent = r.msg||'参加できませんでした'; });
 };
-$('btnToSelect').onclick = () => socket.emit('mm:toSelect', {}, r => { if(!r.ok) $('e2').textContent = r.msg||''; });
-$('btnUnpick').onclick  = () => socket.emit('mm:unpick', {}, ()=>{});
-$('btnStart').onclick   = () => socket.emit('mm:start', {}, r => { if(!r.ok) $('e3').textContent = r.msg||''; });
-$('btnNext').onclick    = () => socket.emit('mm:next', {}, ()=>{});
-$('btnExtend').onclick  = () => socket.emit('mm:extend', { minutes:5 }, ()=>{});
+$('btnStart').onclick = () => socket.emit('mm:start', {}, r => { if(!r.ok) $('e2').textContent = r.msg||''; });
 
-/* ── 状態受信 ── */
 socket.on('mm:state', st => { ST = st; render(); });
-socket.on('mm:reveal', ({results}) => {
-  if(!results || !results.length) return;
-  tab = 'log'; render();
-});
 
 /* ── 描画 ── */
 function render(){
-  const { lobby, pub, priv } = ST;
+  const { lobby } = ST;
   if(!lobby){ show('entry'); return; }
-  if(lobby.stage === 'lobby')  return renderLobby();
-  if(lobby.stage === 'select') return renderSelect();
-  if(lobby.stage === 'ended')  return renderEnd();
-  return renderPlay();
+  if(lobby.stage === 'lobby') return renderLobby();
+  if(lobby.stage === 'ended') return renderEnd();
+  renderPlay();
 }
 
 function renderLobby(){
   show('lobby');
-  const { lobby, pub } = ST;
+  const { lobby, pub, priv } = ST;
   const sc = pub.scenario || {};
   $('lbTitle').textContent = sc.title || 'マダミス';
   $('lbSub').textContent = sc.subtitle || '';
@@ -273,273 +234,250 @@ function renderLobby(){
   $('lbCount').textContent = `参加者 ${lobby.seats.length} / ${max}`;
   $('lbSeats').innerHTML = lobby.seats.map(s =>
     `<div class="seat"><span class="dot ${s.connected?'':'off'}"></span>${esc(s.name)}${s.idx===lobby.hostIdx?'<span class="tag">ホスト</span>':''}</div>`).join('');
-  $('btnToSelect').classList.toggle('hidden', ST.priv.myIdx !== lobby.hostIdx);
-}
-
-function renderSelect(){
-  show('select');
-  const { lobby, pub, priv } = ST;
-  const taken = {}; lobby.seats.forEach(s => { if(s.charId) taken[s.charId] = s.name; });
-  $('selChars').innerHTML = pub.scenario.characters.map(c => {
-    const by = taken[c.id];
-    return `<div class="chr ${by?'taken':''}" data-c="${esc(c.id)}" style="border-color:${esc(c.color)}">
-      <div class="nm">${esc(c.icon)} ${esc(c.name)} <span style="font-size:12px;color:#8a7a55">(${esc(c.gender)})</span></div>
-      <div class="ct">${nl(c.catch)}</div>
-      ${by?`<div class="tag" style="margin-top:9px;display:inline-block">${esc(by)} が選択中</div>`:''}
-    </div>`;
-  }).join('');
-  $('selChars').querySelectorAll('.chr:not(.taken)').forEach(el => el.onclick = () =>
-    socket.emit('mm:pick', { charId: el.dataset.c }, r => { if(!r.ok) $('e3').textContent = r.msg||''; }));
-  const mine = lobby.seats[priv.myIdx];
-  $('selStatus').innerHTML = lobby.seats.map(s =>
-    `${esc(s.name)}: ${s.charId ? esc((pub.scenario.characters.find(c=>c.id===s.charId)||{}).name) : '<span style="color:#c9c2b2">選択中…</span>'}`).join(' ／ ');
-  $('btnUnpick').classList.toggle('hidden', !mine.charId);
   $('btnStart').classList.toggle('hidden', priv.myIdx !== lobby.hostIdx);
 }
 
-/* ── プレイ画面 ── */
 const TABS = [
-  { id:'story', label:'📖 ストーリー' },
-  { id:'ho',    label:'🎴 あなたのHO' },
-  { id:'act',   label:'🚶 行動' },
-  { id:'board', label:'🏠 家のようす' },
-  { id:'log',   label:'📜 調査ログ' },
+  { id:'now',   label:'▶ いまやること' },
+  { id:'sheet', label:'🎴 あなたのシート' },
   { id:'memo',  label:'📝 メモ' },
 ];
 function renderPlay(){
   show('play');
-  const { lobby, pub, priv } = ST;
-  const ph = pub.phase || {};
-  $('phTitle').textContent = `${ph.title||''}`;
-  $('phDesc').textContent = ph.desc || '';
-  $('steps').innerHTML = pub.scenario.phases.map((p,i) =>
-    `<span class="step ${i===pub.phaseIdx?'now':(i<pub.phaseIdx?'done':'')}">${esc(p.title)}</span>`).join('');
-  $('hostBar').classList.toggle('hidden', !priv.isHost);
-  if(priv.isHost){
-    let w = '';
-    if(ph.type==='ability') w = `行動済み ${pub.moved.length}/${lobby.seats.length}`;
-    if(ph.type==='final')   w = `提出済み ${pub.answered.length}/${lobby.seats.length}`;
-    $('waitInfo').textContent = w;
-  }
-  if(ph.type==='final' && tab!=='final') tab='final';
-  const tabList = ph.type==='final' ? [...TABS, {id:'final',label:'🗳 最終回答'}] : TABS;
-  $('tabs').innerHTML = tabList.map(t => `<div class="tab ${t.id===tab?'on':''}" data-t="${t.id}">${t.label}</div>`).join('');
-  $('tabs').querySelectorAll('[data-t]').forEach(el => el.onclick = () => { tab = el.dataset.t; render(); });
-  paint();
-  tick();
+  const { pub } = ST;
+  $('phNum').textContent = `ステップ ${pub.phaseIdx+1} / ${pub.total}`;
+  $('phTitle').textContent = pub.phase.title;
+  $('progBar').style.width = Math.round((pub.phaseIdx)/(pub.total-1)*100) + '%';
+  $('tabs').innerHTML = TABS.map(t => `<div class="tab ${t.id===tab?'on':''}" data-t="${t.id}">${t.label}</div>`).join('');
+  $('tabs').querySelectorAll('[data-t]').forEach(el => el.onclick = () => { tab = el.dataset.t; paint(); });
+  paint(); tick();
 }
-
 function paint(){
-  const { pub, priv } = ST;
   const P = $('pane');
-  if(tab==='story')      P.innerHTML = paneStory();
-  else if(tab==='ho')    P.innerHTML = paneHO();
-  else if(tab==='act')   { P.innerHTML = paneAct(); bindAct(); }
-  else if(tab==='board') P.innerHTML = paneBoard();
-  else if(tab==='log')   P.innerHTML = paneLog();
-  else if(tab==='memo')  { P.innerHTML = paneMemo(); bindMemo(); }
-  else if(tab==='final') { P.innerHTML = paneFinal(); bindFinal(); }
+  if(tab==='now')       { P.innerHTML = paneNow(); bindNow(); }
+  else if(tab==='sheet'){ P.innerHTML = paneSheet(); }
+  else                  { P.innerHTML = paneMemo(); bindMemo(); }
 }
 
-function paneStory(){
-  const s = ST.pub.scenario;
+/* 完了ボタン(共通) */
+function readyBtn(label){
+  const { pub, priv } = ST;
+  if(priv.ready) return `<div class="waiting" style="text-align:center">
+      ✅ 完了しました — ほかの人を待っています(${pub.readyCount} / ${pub.playerCount})</div>`;
+  return `<button class="btn wide" id="btnReady" style="margin-top:18px">${esc(label)}</button>
+    <div class="waiting" style="text-align:center">完了した人: ${pub.readyCount} / ${pub.playerCount}</div>
+    <div class="err" id="eR"></div>`;
+}
+
+/* ── ▶ いまやること ── */
+function paneNow(){
+  const { pub, priv } = ST;
+  const ph = pub.phase, step = pub.step;
+
+  if(step==='brief') return `<div class="brief">
+      <div class="step">つぎは ステップ ${pub.phaseIdx+1} / ${pub.total}</div>
+      <div class="ttl">${esc(ph.title)}</div>
+      <div class="msg">${nl(ph.brief||'')}</div>
+      <div class="todo">📌 ${nl(ph.todo||'')}</div>
+    </div>${readyBtn('準備できた!')}`;
+
+  if(step==='result') return `<div class="big">🔎 わかったこと</div>
+    ${(priv.lastResults||[]).map(r=>`<div class="logit"><div class="h">${esc(r.title)}</div><div class="b">${nl(r.text)}</div></div>`).join('')}
+    <div class="note">この内容はあなたにしか見えていません。話すか黙っているかは自由です。</div>
+    ${readyBtn('読んだ! 次へ')}`;
+
+  if(ph.type==='read')    return paneRead();
+  if(ph.type==='discuss') return paneTalk();
+  if(ph.type==='ability') return paneAbility();
+  if(ph.type==='final')   return paneFinal();
+  return '';
+}
+
+function paneRead(){
+  const { pub, priv } = ST;
+  const s = pub.scenario, c = priv.character, h = c.handout;
   return `<div class="ho">
+    <div class="note">📌 ${esc(pub.phase.todo)}</div>
     <h3>プロローグ</h3><p>${nl(s.prologue)}</p>
-    <h3>共通情報</h3><p>${nl(s.commonInfo)}</p>
-    <h3>間取り</h3>
-    <img class="map" src="madori.png" alt="間取り図">
-    <div class="note" style="text-align:center">${esc(s.map.note)}</div>
-    <h3>基本ルール</h3>
-    <p>${s.rules.map((r,i)=>`${i+1}. ${esc(r)}`).join('<br>')}</p>
-    <h3>参加者</h3>
-    <div class="chars">${s.characters.map(c=>{
-      const seat = ST.lobby.seats.find(x=>x.charId===c.id);
-      return `<div class="chr" style="border-color:${esc(c.color)};cursor:default">
-        <div class="nm">${esc(c.icon)} ${esc(c.name)}</div>
-        <div class="ct">${nl(c.catch)}</div>
-        ${seat?`<div class="tag" style="margin-top:9px;display:inline-block">${esc(seat.name)}</div>`:''}
-      </div>`;}).join('')}</div>
-  </div>`;
-}
-
-function paneHO(){
-  const c = ST.priv.character;
-  if(!c) return '<p>キャラクターが割り当てられていません。</p>';
-  const h = c.handout;
-  return `<div class="ho">
-    <div class="big" style="color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)}(${esc(c.gender)})</div>
-    <h3>あなたの能力</h3>
-    ${c.abilities.map(a=>`<div class="abl">
-        <span class="kw">${esc(a.keyword)}</span><b>${esc(a.name)}</b>
-        <div class="nt">${esc(a.note||'')}${a.copied?` ／ ${esc(a.from)}からコピー中`:''}</div>
-      </div>`).join('')}
+    <h3>あなたは ${esc(c.name)}(${esc(c.gender)})</h3>
+    ${c.abilities.map(a=>`<div class="abl"><span class="kw">${esc(a.keyword)}</span><b>${esc(a.name)}</b>
+      <div class="nt">${esc(a.note||'')}</div></div>`).join('')}
     <h3>あなたの記憶(4月1日)</h3>
     <div class="tl">${h.timeline.map(t=>`<div class="it"><div class="tm">${esc(t.time)}</div><div class="tx">${nl(t.text)}</div></div>`).join('')}</div>
-    <h3>性格</h3><p>${nl(h.personality)}</p>
     <h3>二人に対して</h3>
     ${h.others.map(o=>`<p><b>● ${esc(o.name)}</b><br>${nl(o.text)}</p>`).join('<br>')}
     <h3>3日間過ごしてみて思うこと</h3><p>${nl(h.thoughts)}</p>
-    <h3>ミッション</h3>
+    <h3>あなたのミッション</h3>
     ${h.missions.map((m,i)=>`<div class="mission">${'①②③④⑤'[i]||''} ${esc(m.text)} <span style="color:#e0708c">(${esc(String(m.points))}${typeof m.points==='number'?'ポイント':''})</span></div>`).join('')}
-    ${ST.priv.known.length?`<h3>掴んだキーワード</h3>${ST.priv.known.map(k=>`<div class="abl"><span class="kw">${esc(k.keyword)}</span><b>${esc(k.charName)}</b></div>`).join('')}`:''}
-  </div>`;
+    <h3>この家のこと</h3><p>${nl(s.commonInfo)}</p>
+    <img class="map" src="madori.png" alt="間取り図">
+    <div class="note" style="text-align:center">${esc(s.map.note)}</div>
+    <h3>ルール</h3><p>${s.rules.map((r,i)=>`${i+1}. ${esc(r)}`).join('<br>')}</p>
+  </div>${readyBtn('読み終えた!')}`;
 }
 
-function paneAct(){
+function paneTalk(){
   const { pub, priv } = ST;
-  const ph = pub.phase || {};
-  if(ph.type!=='ability'){
-    return `<p style="font-size:13.5px;line-height:1.8">いまは行動フェーズではありません。<br>
-      <b>能力の残り使用回数: ${priv.usesLeft}回</b>${priv.copied?' ／ コピー保持中':''}</p>
-      <div class="note">行動フェーズになると、<b>家の中を1か所だけ調べに行けます</b>(能力を使わなくても調べられます)。
-      あわせて能力を1つ重ねられます。誰が能力を使ったかは全員に伝わりますが、<b>何を使ったかは伝わりません</b>。</div>`;
+  const h = priv.character.handout;
+  let out = `<div class="brief" style="padding:8px 4px 0"><div class="msg">🗣 ${nl(pub.phase.brief)}</div></div>
+    <div class="todo" style="margin:14px 0">📌 ${nl(pub.phase.todo)}</div>`;
+  out += `<label>あなたのミッション(忘れずに)</label>`;
+  out += h.missions.map((m,i)=>`<div class="mission">${'①②③④⑤'[i]||''} ${esc(m.text)}</div>`).join('');
+  if(priv.known.length) out += `<label>あなたが掴んでいるキーワード</label>` +
+    priv.known.map(k=>`<div class="abl"><span class="kw">${esc(k.keyword)}</span><b>${esc(k.charName)}</b></div>`).join('');
+  if(priv.log.length){
+    out += `<details><summary>これまでに分かったこと(${priv.log.length}件)</summary><div class="inner">` +
+      priv.log.slice().reverse().map(x=>`<div class="logit"><div class="h">${esc(x.phase)} ／ ${esc(x.title)}</div><div class="b">${nl(x.text)}</div></div>`).join('') +
+      `</div></details>`;
   }
-  if(priv.moved) return `<div class="big">行動を提出しました</div><div class="note" style="text-align:center">全員がそろうと結果が届きます。</div>`;
+  if(pub.publicLog.length){
+    out += `<details><summary>みんなが見ていること(${pub.publicLog.length}件)</summary><div class="inner">` +
+      pub.publicLog.slice().reverse().map(x=>`<div class="logit"><div class="h">${esc(x.phase)}</div><div class="b">${nl(x.text)}</div></div>`).join('') +
+      `</div></details>`;
+  }
+  return out + readyBtn('話し合い終了!');
+}
 
-  const places = pub.scenario.places;
-  const doors  = pub.board.doors;
-  let h = `<label>① どこを調べに行く?(必須)</label>
-    <div class="grid2">${places.map(p=>{
-      const blocked = p.door && doors[p.id]==='closed';
-      return `<button class="opt ${draft.placeId===p.id?'on':''}" data-t="placeId" data-v="${esc(p.id)}">
-        ${esc(p.name)}${blocked?' 🚪':''}${p.dark?' 🌑':''}
-        ${blocked?'<span class="s">ドアが閉まっている</span>':''}</button>`;
-    }).join('')}</div>`;
-
-  // 場所ごとの追加操作(キッチンの電源コードなど)
-  const PA = PLACE_ACTIONS[draft.placeId];
-  if(PA) h += `<label>その場でできること</label>
-    <button class="opt ${draft.extra==='action'?'on':''}" data-t="extra" data-v="action">
-      ${esc(pub.board.fridgePower ? PA.off : PA.on)}<span class="s">${esc(PA.note)}</span></button>`;
-
+function paneAbility(){
+  const { pub, priv } = ST;
   const acts = priv.abilityActions;
-  h += `<label>② 能力を使う?(残り ${priv.usesLeft}回)</label>`;
+  if(priv.moved) return `<div class="big">✨ 決定しました</div>
+    <div class="note" style="text-align:center">ほかの人の決定を待っています。全員そろうと結果が届きます。</div>
+    ${readyBtn('OK')}`;
+
+  let h = `<div class="brief" style="padding:8px 4px 0"><div class="msg">✨ ${nl(pub.phase.brief)}</div></div>
+    <div class="todo" style="margin:14px 0">📌 ${nl(pub.phase.todo)}<br>
+    <span style="font-weight:500;font-size:12.5px">※ 使うと「あなたが能力を使った」ことだけが全員に伝わります。何を使ったかは伝わりません。</span></div>
+    <label>残り使用回数: ${priv.usesLeft}回${priv.copied?' ／ コピー保持中':''}</label>`;
   h += priv.character.abilities.map(a=>{
     const d = acts[a.id]; if(!d) return '';
     const usable = d.usable !== false;
     const dis = (!usable || (!a.copied && priv.usesLeft<=0)) ? 'disabled' : '';
     return `<button class="opt ${draft.abilityId===a.id?'on':''}" data-ab="${esc(a.id)}" ${dis}>
-      ${esc(d.label)}${a.copied?' <span class="tag">コピー</span>':''}${!usable?' <span class="tag" style="background:#bdb6a4">今は使えない</span>':''}
-      <span class="s">${esc(d.purpose||'')}<br>${esc(d.hint||a.note||'')}</span></button>`;
+      ${esc(d.label)}${a.copied?' <span class="tag">コピー</span>':''}${!usable?' <span class="tag" style="background:#bdb6a4">使えない</span>':''}
+      <span class="s">${esc(!usable ? (d.unusableReason||'') : (d.hint||a.note||''))}</span></button>`;
   }).join('');
-  h += `<button class="opt ${draft.abilityId===null?'on':''}" data-ab="">使わない<span class="s">調べるだけにする</span></button>`;
-
+  h += `<button class="opt ${draft.abilityId===null?'on':''}" data-ab="">使わない<span class="s">今回は何もしない</span></button>`;
   if(draft.abilityId && acts[draft.abilityId]) h += targetUI(acts[draft.abilityId]);
-  h += `<div class="row" style="margin-top:14px"><button class="btn wide" id="btnAct">この行動で決定</button></div><div class="err" id="e4"></div>`;
+  h += `<button class="btn wide" id="btnAct" style="margin-top:18px">これで決定</button><div class="err" id="e4"></div>`;
   return h;
 }
-const PLACE_ACTIONS = {
-  kitchen: { on:'電源コードを挿し直す', off:'電源コードを抜く', note:'冷蔵庫の中が明るくなる/暗くなる' },
-};
 function targetUI(d){
   const places = ST.pub.scenario.places;
   const chars  = ST.pub.scenario.characters.filter(c=>c.id!==ST.priv.charId);
-  const sel = (list, key, cur) => `<div class="grid2">${list.map(o=>
+  const sel = (list,key,cur) => `<div class="grid2">${list.map(o=>
     `<button class="opt ${cur===o.id?'on':''}" data-t="${esc(key)}" data-v="${esc(o.id)}">${esc(o.name||o.label)}</button>`).join('')}</div>`;
-  if(d.targetType==='place')  return `<label>どこに?</label>${sel(places,'placeId2',draft.target.placeId)}`;
+  if(d.targetType==='place')  return `<label>どこに?</label>${sel(places,'placeId',draft.target.placeId)}`;
   if(d.targetType==='door')   return `<label>どのドア?</label>${sel(d.doors,'doorId',draft.target.doorId)}`;
   if(d.targetType==='player') return `<label>誰に?</label>${sel(chars,'charId',draft.target.charId)}`;
-  if(d.targetType==='objectPlace')
-    return `<label>何の偽物を?</label>${sel(d.objects,'objId',draft.target.objId)}<label>どこに置く?</label>${sel(places,'placeId2',draft.target.placeId)}`;
+  if(d.targetType==='object') return `<label>何の偽物を?</label>${sel(d.objects,'objId',draft.target.objId)}`;
   if(d.targetType==='playerAbility'){
     let h = `<label>誰の能力を?</label>${sel(chars,'charId',draft.target.charId)}`;
-    if(draft.target.charId) h += `<label>どの能力だと思う?(外れたら1回ぶんの無駄)</label>${sel(ST.priv.abilityPool||[],'abilityId',draft.target.abilityId)}`;
+    if(draft.target.charId) h += `<label>どの能力だと思う?</label>${sel(ST.priv.abilityPool||[],'abilityId',draft.target.abilityId)}`;
     return h;
   }
   return '';
 }
-function bindAct(){
-  const P = $('pane');
-  P.querySelectorAll('[data-ab]').forEach(b => b.onclick = () => {
-    draft.abilityId = b.dataset.ab || null; draft.target = {}; paint();
-  });
-  P.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
-    const k = b.dataset.t, v = b.dataset.v;
-    if(k==='placeId'){ draft.placeId = (draft.placeId===v ? null : v); if(draft.placeId!==v) draft.extra=null; }
-    else if(k==='extra'){ draft.extra = (draft.extra==='action' ? null : 'action'); }
-    else if(k==='placeId2'){ draft.target.placeId = v; }
-    else draft.target[k] = v;
-    paint();
-  });
-  const go = $('btnAct'); if(!go) return;
-  go.onclick = () => {
-    if(!draft.placeId) return $('e4').textContent = '調べに行く場所を選んでください';
-    socket.emit('mm:act', { placeId: draft.placeId, extra: draft.extra, abilityId: draft.abilityId, target: draft.target },
-      r => { if(!r.ok) $('e4').textContent = r.msg||''; else draft={placeId:null,extra:null,abilityId:null,target:{}}; });
-  };
-}
 
-function paneBoard(){
-  const B = ST.pub.board;
-  const names = { fridge:'冷蔵庫の扉', r_natsuki:'ナツキの部屋', r_kaito:'カイトの部屋', r_ryusei:'リュウセイの部屋', genkan:'玄関' };
-  let h = `<div class="note">ここは全員が見ている情報です。ドアの開け閉めや電源の変化、誰が能力を使ったかは全員に伝わります。</div>`;
-  h += `<label>いまの家のようす</label><div class="grid2">
-    ${Object.entries(B.doors).map(([id,st])=>
-      `<div class="opt" style="cursor:default">${esc(names[id]||id)}<span class="s">${st==='closed'?'🚪 閉まっている':'✅ 開いている'}</span></div>`).join('')}
-    <div class="opt" style="cursor:default">冷蔵庫の電源<span class="s">${B.fridgePower?'⚡ 入っている(庫内は扉を開ければ明るい)':'🌑 切れている(庫内は真っ暗)'}</span></div>
-  </div>`;
-  h += `<label>できごと</label>`;
-  h += B.log.length ? B.log.slice().reverse().map(x=>
-    `<div class="logit"><div class="h">${esc(x.phase)}</div><div class="b">${nl(x.text)}</div></div>`).join('')
-    : `<div class="note">まだ何も起きていません。</div>`;
+function paneFinal(){
+  const { pub, priv } = ST;
+  if(priv.answered) return `<div class="big">🗳 提出しました</div>
+    <div class="note" style="text-align:center">全員の提出がそろうと、真相が明かされます。</div>${readyBtn('OK')}`;
+  const Q = priv.finalQuestions || [], G = priv.abilityGuess;
+  const others = pub.scenario.characters.filter(c=>c.id!==priv.charId);
+  let h = `<div class="todo" style="margin-bottom:6px">📌 ${nl(pub.phase.todo)}</div>`;
+  h += Q.map(q=>`<label>${esc(q.text)}</label><div class="grid2">${q.options.map(o=>
+    `<button class="opt ${answers.questions[q.id]===o.id?'on':''}" data-q="${esc(q.id)}" data-v="${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>`).join('');
+  h += `<hr style="margin:22px 0;border:none;border-top:2px dashed #ece2c5"><label>${esc(G.text)}</label>`;
+  others.forEach(c=>{
+    const cur = answers.abilities[c.id] || [];
+    h += `<div style="font-weight:900;font-size:14px;margin-top:12px;color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)} <span style="font-size:12px;color:#8a7a55">(${cur.length}/3)</span></div>
+      <div class="grid2">${G.pool.map(p=>
+        `<button class="opt ${cur.includes(p.id)?'on':''}" data-g="${esc(c.id)}" data-v="${esc(p.id)}">${esc(p.label)}</button>`).join('')}</div>`;
+  });
+  h += `<label>犯行の流れ(自由記述・あとで全員に公開されます)</label>
+    <textarea id="fnote" placeholder="誰が、どうやって、ケーキをどうしたのか">${esc(answers.note)}</textarea>
+    <button class="btn wide" id="btnSubmit" style="margin-top:16px">提出する</button><div class="err" id="e5"></div>`;
   return h;
 }
 
-function paneLog(){
-  const L = ST.priv.log || [];
-  if(!L.length) return `<div class="note">まだ何も調べていません。能力使用フェーズで能力を使うと、ここに結果が残ります(あなたにしか見えません)。</div>`;
-  return L.slice().reverse().map(x=>`<div class="logit"><div class="h">${esc(x.phase)} ／ ${esc(x.title)}</div><div class="b">${nl(x.text)}</div></div>`).join('');
+function bindNow(){
+  const P = $('pane');
+  const rb = $('btnReady');
+  if(rb) rb.onclick = () => socket.emit('mm:ready', {}, r => { if(!r.ok && $('eR')) $('eR').textContent = r.msg||''; });
+
+  P.querySelectorAll('[data-ab]').forEach(b => b.onclick = () => { draft.abilityId = b.dataset.ab||null; draft.target={}; paint(); });
+  P.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { draft.target[b.dataset.t] = b.dataset.v; paint(); });
+  const act = $('btnAct');
+  if(act) act.onclick = () => {
+    const d = ST.priv.abilityActions[draft.abilityId];
+    if(d){
+      const need = { place:'placeId', door:'doorId', player:'charId', object:'objId' }[d.targetType];
+      if(need && !draft.target[need]) return $('e4').textContent = '対象を選んでください';
+      if(d.targetType==='playerAbility' && (!draft.target.charId || !draft.target.abilityId))
+        return $('e4').textContent = '相手と能力を選んでください';
+    }
+    socket.emit('mm:act', { abilityId: draft.abilityId, target: draft.target },
+      r => { if(!r.ok) $('e4').textContent = r.msg||''; else draft={abilityId:null,target:{}}; });
+  };
+
+  P.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { answers.questions[b.dataset.q]=b.dataset.v; paint(); });
+  P.querySelectorAll('[data-g]').forEach(b => b.onclick = () => {
+    const arr = answers.abilities[b.dataset.g] || (answers.abilities[b.dataset.g]=[]);
+    const i = arr.indexOf(b.dataset.v);
+    if(i>=0) arr.splice(i,1); else if(arr.length<3) arr.push(b.dataset.v);
+    paint();
+  });
+  const t = $('fnote'); if(t) t.oninput = () => { answers.note = t.value; };
+  const sb = $('btnSubmit');
+  if(sb) sb.onclick = () => {
+    const Q = ST.priv.finalQuestions||[];
+    if(Q.some(q=>!answers.questions[q.id])) return $('e5').textContent='すべての質問に答えてください';
+    socket.emit('mm:answers', answers, r => { if(!r.ok) $('e5').textContent = r.msg||''; });
+  };
+}
+
+/* ── 🎴 あなたのシート(いつでも見られる) ── */
+function paneSheet(){
+  const { pub, priv } = ST;
+  const c = priv.character, h = c.handout, s = pub.scenario;
+  return `<div class="ho">
+    <div class="big" style="color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)}(${esc(c.gender)})</div>
+    <h3>あなたのミッション</h3>
+    ${h.missions.map((m,i)=>`<div class="mission">${'①②③④⑤'[i]||''} ${esc(m.text)} <span style="color:#e0708c">(${esc(String(m.points))}${typeof m.points==='number'?'ポイント':''})</span></div>`).join('')}
+    <h3>あなたの能力(残り${priv.usesLeft}回)</h3>
+    ${c.abilities.map(a=>`<div class="abl"><span class="kw">${esc(a.keyword)}</span><b>${esc(a.name)}</b>
+      <div class="nt">${esc(a.note||'')}${a.copied?` ／ ${esc(a.from)}からコピー中`:''}</div></div>`).join('')}
+    ${priv.known.length?`<h3>掴んでいるキーワード</h3>${priv.known.map(k=>`<div class="abl"><span class="kw">${esc(k.keyword)}</span><b>${esc(k.charName)}</b></div>`).join('')}`:''}
+    <h3>あなたの記憶(4月1日)</h3>
+    <div class="tl">${h.timeline.map(t=>`<div class="it"><div class="tm">${esc(t.time)}</div><div class="tx">${nl(t.text)}</div></div>`).join('')}</div>
+    <h3>二人に対して</h3>
+    ${h.others.map(o=>`<p><b>● ${esc(o.name)}</b><br>${nl(o.text)}</p>`).join('<br>')}
+    <h3>3日間過ごしてみて思うこと</h3><p>${nl(h.thoughts)}</p>
+    <details><summary>これまでに分かったこと(${priv.log.length}件)</summary><div class="inner">
+      ${priv.log.length ? priv.log.slice().reverse().map(x=>`<div class="logit"><div class="h">${esc(x.phase)} ／ ${esc(x.title)}</div><div class="b">${nl(x.text)}</div></div>`).join('') : '<div class="note">まだありません。</div>'}
+    </div></details>
+    <details><summary>みんなが見ていること(${pub.publicLog.length}件)</summary><div class="inner">
+      ${pub.publicLog.length ? pub.publicLog.slice().reverse().map(x=>`<div class="logit"><div class="h">${esc(x.phase)}</div><div class="b">${nl(x.text)}</div></div>`).join('') : '<div class="note">まだありません。</div>'}
+    </div></details>
+    <details><summary>プロローグ・間取り・ルール</summary><div class="inner">
+      <p style="margin-top:10px">${nl(s.prologue)}</p>
+      <p style="margin-top:14px">${nl(s.commonInfo)}</p>
+      <img class="map" src="madori.png" alt="間取り図">
+      <div class="note" style="text-align:center">${esc(s.map.note)}</div>
+      <p style="margin-top:12px">${s.rules.map((r,i)=>`${i+1}. ${esc(r)}`).join('<br>')}</p>
+    </div></details>
+  </div>`;
 }
 
 function paneMemo(){
   const key = 'arai_mm_memo_'+ST.lobby.code;
   return `<label>あなただけのメモ(この端末に保存されます)</label>
-    <textarea id="memo" style="min-height:280px" placeholder="時系列・矛盾・仮説など">${esc(localStorage.getItem(key)||'')}</textarea>`;
+    <textarea id="memo" style="min-height:320px" placeholder="時系列・矛盾・仮説など">${esc(localStorage.getItem(key)||'')}</textarea>`;
 }
 function bindMemo(){
   const key = 'arai_mm_memo_'+ST.lobby.code;
   const t = $('memo'); if(t) t.oninput = () => localStorage.setItem(key, t.value);
-}
-
-function paneFinal(){
-  const { priv } = ST;
-  if(priv.answered) return `<div class="big">提出しました</div><div class="note" style="text-align:center">全員の提出がそろうと、真相が明かされます。</div>`;
-  const Q = priv.finalQuestions || [];
-  const G = priv.abilityGuess;
-  const others = ST.pub.scenario.characters.filter(c=>c.id!==priv.charId);
-  let h = `<div class="note">「ケーキはどうなったのか?」——あなたの結論を提出してください。提出後は変更できません。</div>`;
-  h += Q.map(q=>`<label>${esc(q.text)}</label><div class="grid2">${q.options.map(o=>
-    `<button class="opt ${answers.questions[q.id]===o.id?'on':''}" data-q="${esc(q.id)}" data-v="${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>`).join('');
-  h += `<hr style="margin:20px 0;border:none;border-top:2px dashed #ece2c5">`;
-  h += `<label>${esc(G.text)}</label>`;
-  others.forEach(c=>{
-    const cur = answers.abilities[c.id] || [];
-    h += `<div style="font-weight:900;font-size:14px;margin-top:10px;color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)} <span style="font-size:12px;color:#8a7a55">(${cur.length}/3)</span></div>
-      <div class="grid2">${G.pool.map(p=>
-        `<button class="opt ${cur.includes(p.id)?'on':''}" data-g="${esc(c.id)}" data-v="${esc(p.id)}">${esc(p.label)}</button>`).join('')}</div>`;
-  });
-  h += `<label>犯行の流れ(自由記述・全員に公開されます)</label>
-    <textarea id="fnote" placeholder="誰が、どうやって、ケーキをどうしたのか">${esc(answers.note)}</textarea>`;
-  h += `<div class="row" style="margin-top:14px"><button class="btn wide" id="btnSubmit">提出する</button></div><div class="err" id="e5"></div>`;
-  return h;
-}
-function bindFinal(){
-  const P = $('pane');
-  P.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { answers.questions[b.dataset.q] = b.dataset.v; paint(); });
-  P.querySelectorAll('[data-g]').forEach(b => b.onclick = () => {
-    const c = b.dataset.g, v = b.dataset.v;
-    const arr = answers.abilities[c] || (answers.abilities[c] = []);
-    const i = arr.indexOf(v);
-    if(i>=0) arr.splice(i,1); else if(arr.length<3) arr.push(v);
-    paint();
-  });
-  const t = $('fnote'); if(t) t.oninput = () => { answers.note = t.value; };
-  const go = $('btnSubmit'); if(!go) return;
-  go.onclick = () => {
-    const Q = ST.priv.finalQuestions||[];
-    if(Q.some(q=>!answers.questions[q.id])) return $('e5').textContent = 'すべての設問に答えてください';
-    socket.emit('mm:answers', answers, r => { if(!r.ok) $('e5').textContent = r.msg||''; });
-  };
 }
 
 /* ── エンディング ── */
@@ -549,46 +487,40 @@ function renderEnd(){
   if(!R){ $('endBody').innerHTML = '<div class="card">集計中…</div>'; return; }
   const T = R.truth;
   let h = `<div class="card ho"><p>${nl(T.intro)}</p>
-    <div class="tl" style="margin-top:14px">${T.timeline.map(t=>
+    <div class="tl" style="margin-top:16px">${T.timeline.map(t=>
       `<div class="it"><div class="tm">${esc(t.time)}</div><div class="tx">${nl(t.text)}</div></div>`).join('')}</div>
-    <p style="margin-top:16px">${nl(R.outro)}</p></div>`;
-
+    <p style="margin-top:18px">${nl(R.outro)}</p></div>`;
   h += `<div class="card"><div class="big">🏆 結果発表</div>
     ${R.ranking.map((r,i)=>`<div class="rank ${i===0?'win':''}"><div class="no">${['🥇','🥈','🥉'][i]||i+1}</div>
       <div style="flex:1">${esc(r.name)}</div><div style="font-size:19px">${r.total}pt</div></div>`).join('')}</div>`;
-
   h += `<div class="card"><div style="font-weight:900;font-size:16px">📋 得点の内訳</div>
     ${Object.entries(R.detail).map(([cid,d])=>{
       const c = ST.pub.scenario.characters.find(x=>x.id===cid)||{};
       return `<div style="margin-top:14px"><div style="font-weight:900;color:${esc(c.color)}">${esc(c.icon)} ${esc(c.name)} — 合計 ${d.total}pt</div>
-        <table><tr><th>ミッション</th><th style="width:60px">獲得</th><th>判定</th></tr>
+        <table><tr><th>ミッション</th><th style="width:58px">獲得</th><th>判定</th></tr>
         ${d.lines.map(l=>`<tr><td>${esc(l.label)}</td><td><b>${l.points}pt</b></td><td>${esc(l.note)}</td></tr>`).join('')}</table></div>`;
     }).join('')}</div>`;
-
   h += `<div class="card"><div style="font-weight:900;font-size:16px">🗳 みんなの回答</div>
     ${R.reveal.map(q=>`<div style="margin-top:12px"><div style="font-weight:900;font-size:13.5px">${esc(q.text)}</div>
       <div class="note">正解: <b style="color:#e0708c">${esc(q.answerLabel)}</b></div>
-      <table>${q.byChar.map(b=>`<tr><td style="width:110px">${esc(b.name)}</td><td>${esc(b.label)}</td></tr>`).join('')}</table></div>`).join('')}</div>`;
-
+      <table>${q.byChar.map(b=>`<tr><td style="width:108px">${esc(b.name)}</td><td>${esc(b.label)}</td></tr>`).join('')}</table></div>`).join('')}</div>`;
   h += `<div class="card"><div style="font-weight:900;font-size:16px">✨ 能力の答え合わせ</div>
     ${R.abilityReveal.map(c=>`<div style="margin-top:12px"><div style="font-weight:900">${esc(c.name)}</div>
       ${c.abilities.map(a=>`<div class="abl"><span class="kw">${esc(a.keyword)}</span><b>${esc(a.name)}</b>
         <div class="nt">${a.exposed?`🔓 バレていた(${esc(a.guessedBy.join('・'))})`:'🔒 誰にもバレなかった(+2pt)'}</div></div>`).join('')}
     </div>`).join('')}</div>`;
-
   const notes = R.notes.filter(n=>n.note);
   if(notes.length) h += `<div class="card"><div style="font-weight:900;font-size:16px">📝 みんなの推理</div>
     ${notes.map(n=>`<div class="logit"><div class="h">${esc(n.name)}</div><div class="b">${nl(n.note)}</div></div>`).join('')}</div>`;
-
   h += `<div class="card" style="text-align:center"><a class="btn" href="/mystery/" style="text-decoration:none;display:inline-block">もう一度遊ぶ</a></div>`;
   $('endBody').innerHTML = h;
 }
 
-/* ── 時計 ── */
+/* ── 時計(表示だけ。自動では進まない) ── */
 function tick(){
-  const dl = ST.lobby && ST.lobby.deadline;
   const el = $('clock'); if(!el) return;
-  if(!dl){ el.textContent='--:--'; el.classList.remove('warn'); return; }
+  const dl = ST.lobby && ST.lobby.deadline;
+  if(!dl || (ST.pub && ST.pub.step!=='main')){ el.textContent=''; el.classList.remove('warn'); return; }
   const ms = Math.max(0, dl - Date.now());
   const m = Math.floor(ms/60000), s = Math.floor(ms%60000/1000);
   el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;

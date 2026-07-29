@@ -1,11 +1,12 @@
 /* マーダーミステリー オンライン版サーバー(モジュール) — server-authoritative
  * server.js から require('./mm_server.js')(io, opts) で差し込む。
- * 秘匿情報(他人のHO・真相・未取得の手がかり)はサーバーに保持し、本人にしか送らない。 */
+ * 秘匿情報(他人のHO・真相・能力の中身)はサーバーに保持し、本人にしか送らない。
+ * 進行は「全員が完了を押す」ことでしか進まない(ホスト操作なし)。 */
 'use strict';
 const MM = require('./mm_core.js');
 
 module.exports = function attach(io, opts = {}) {
-  const rooms = new Map(); // code -> room
+  const rooms = new Map();
   const ROOM_TTL = 12 * 60 * 60 * 1000;
 
   function genCode() {
@@ -18,17 +19,14 @@ module.exports = function attach(io, opts = {}) {
 
   function makeRoom(scenarioId, hostName, socketId) {
     const room = {
-      code: genCode(),
-      scenarioId,
-      stage: 'lobby',          // lobby | select | play | ended
+      code: genCode(), scenarioId,
+      stage: 'lobby',            // lobby | play | ended
       game: null,
-      seats: [],               // {name, socketId, connected, charId}
+      seats: [{ name: hostName, socketId, connected: true, charId: null }],
       hostIdx: 0,
-      deadline: null,
-      timer: null,
+      deadline: null, timer: null,
       createdAt: Date.now(),
     };
-    room.seats.push({ name: hostName, socketId, connected: true, charId: null });
     rooms.set(room.code, room);
     return room;
   }
@@ -41,73 +39,56 @@ module.exports = function attach(io, opts = {}) {
     return null;
   }
 
-  /* ── 配信 ── */
   function lobbyView(room) {
     return {
-      code: room.code,
-      stage: room.stage,
-      scenarioId: room.scenarioId,
-      hostIdx: room.hostIdx,
-      seats: room.seats.map((s, i) => ({ idx: i, name: s.name, connected: s.connected, charId: s.charId })),
+      code: room.code, stage: room.stage, scenarioId: room.scenarioId, hostIdx: room.hostIdx,
+      seats: room.seats.map((s, i) => ({ idx: i, name: s.name, connected: s.connected })),
       deadline: room.deadline,
     };
   }
   function broadcast(room) {
     const lobby = lobbyView(room);
-    const pub = room.game ? room.game.publicView() : { scenario: MM.listScenarios().find(s => s.id === room.scenarioId) || null };
+    const pub = room.game ? room.game.publicView()
+      : { scenario: MM.listScenarios().find(s => s.id === room.scenarioId) || null };
     room.seats.forEach((s, i) => {
       if (!s.connected || !s.socketId) return;
-      const priv = (room.game && s.charId) ? room.game.privateView(s.charId) : { charId: s.charId || null };
+      const priv = (room.game && s.charId) ? room.game.privateView(s.charId) : { charId: null };
       priv.myIdx = i;
       priv.isHost = i === room.hostIdx;
       io.to(s.socketId).emit('mm:state', { lobby, pub, priv });
     });
   }
 
-  /* ── フェーズタイマー ── */
+  /* 表示用タイマー(自動では進めない) */
   function clearTimer(room) {
     if (room.timer) { clearTimeout(room.timer); room.timer = null; }
     room.deadline = null;
   }
-  function startPhaseTimer(room) {
+  function startTimer(room) {
     clearTimer(room);
-    const ph = room.game && room.game.phase;
-    if (!ph || !ph.minutes) return;
-    room.deadline = Date.now() + ph.minutes * 60 * 1000;
-    room.timer = setTimeout(() => {
-      room.timer = null;
-      // 時間切れでは自動的に進めない(進行はホスト操作)。表示だけ 00:00 に。
-      broadcast(room);
-    }, ph.minutes * 60 * 1000 + 200);
+    const g = room.game;
+    if (!g || g.step !== MM.STEPS.MAIN) return;
+    const min = g.phase.minutes;
+    if (!min) return;
+    room.deadline = Date.now() + min * 60 * 1000;
+    room.timer = setTimeout(() => { room.timer = null; broadcast(room); }, min * 60 * 1000 + 200);
   }
 
-  function nextPhase(room) {
+  /* ステップを1つ進める */
+  function advanceStep(room) {
     const g = room.game;
-    if (!g) return;
-    // 能力フェーズを抜けるときに解決する
-    if (g.phaseType === 'ability') {
-      const results = g.resolvePhase();
-      Object.entries(results).forEach(([charId, arr]) => {
-        const seat = room.seats.find(s => s.charId === charId);
-        if (seat && seat.connected && seat.socketId) io.to(seat.socketId).emit('mm:reveal', { results: arr });
-      });
-    }
-    if (g.phaseType === 'final') {
-      g.score();
-    }
-    const moved = g.advance();
-    if (!moved) { room.stage = 'ended'; clearTimer(room); broadcast(room); return; }
-    if (g.phaseType === 'ending') { if (!g.result) g.score(); room.stage = 'ended'; clearTimer(room); broadcast(room); return; }
-    startPhaseTimer(room);
+    const before = g.step;
+    // 能力フェーズ本編 → 結果 のときに解決する
+    if (before === MM.STEPS.MAIN && g.phaseType === 'ability') g.resolvePhase();
+    const r = g.nextStep();
+    if (r === 'end') { room.stage = 'ended'; clearTimer(room); broadcast(room); return; }
+    if (g.step === MM.STEPS.MAIN) startTimer(room); else clearTimer(room);
     broadcast(room);
   }
 
-  /* ── ソケット ── */
   io.on('connection', socket => {
 
-    socket.on('mm:scenarios', (_, cb) => {
-      if (typeof cb === 'function') cb({ ok: true, list: MM.listScenarios() });
-    });
+    socket.on('mm:scenarios', (_, cb) => cb && cb({ ok: true, list: MM.listScenarios() }));
 
     socket.on('mm:create', ({ name, scenarioId }, cb) => {
       name = String(name || '').trim().slice(0, 12);
@@ -128,7 +109,6 @@ module.exports = function attach(io, opts = {}) {
       if (!room) return cb && cb({ ok: false, msg: '部屋が見つかりません' });
       if (!name) return cb && cb({ ok: false, msg: '名前を入れてください' });
 
-      // 同名の切断席があれば復帰
       const back = room.seats.find(s => s.name === name && !s.connected);
       if (back) { back.socketId = socket.id; back.connected = true; cb && cb({ ok: true, code, rejoined: true }); broadcast(room); return; }
 
@@ -141,84 +121,48 @@ module.exports = function attach(io, opts = {}) {
       broadcast(room);
     });
 
-    /* ホスト: キャラ選択フェーズへ */
-    socket.on('mm:toSelect', (_, cb) => {
-      const c = ctx(socket); if (!c || !c.isHost) return cb && cb({ ok: false, msg: 'ホストのみ' });
-      const { room } = c;
-      const sc = MM.loadScenario(room.scenarioId);
-      if (room.seats.length < sc.players.min) return cb && cb({ ok: false, msg: `${sc.players.min}人必要です` });
-      room.stage = 'select';
-      room.game = new MM.Game(room.scenarioId);
-      cb && cb({ ok: true });
-      broadcast(room);
-    });
-
-    /* キャラを選ぶ(早い者勝ち) */
-    socket.on('mm:pick', ({ charId }, cb) => {
-      const c = ctx(socket); if (!c) return cb && cb({ ok: false });
-      const { room, seat } = c;
-      if (room.stage !== 'select') return cb && cb({ ok: false, msg: '今は選べません' });
-      if (room.seats.some(s => s.charId === charId)) return cb && cb({ ok: false, msg: 'もう選ばれています' });
-      seat.charId = charId;
-      room.game.assign[charId] = room.seats.indexOf(seat);
-      cb && cb({ ok: true });
-      broadcast(room);
-    });
-    socket.on('mm:unpick', (_, cb) => {
-      const c = ctx(socket); if (!c) return cb && cb({ ok: false });
-      const { room, seat } = c;
-      if (room.stage !== 'select') return cb && cb({ ok: false });
-      if (seat.charId) delete room.game.assign[seat.charId];
-      seat.charId = null;
-      cb && cb({ ok: true });
-      broadcast(room);
-    });
-
-    /* ホスト: 開始 */
+    /* ホスト: 開始 → キャラをランダムに配る */
     socket.on('mm:start', (_, cb) => {
       const c = ctx(socket); if (!c || !c.isHost) return cb && cb({ ok: false, msg: 'ホストのみ' });
       const { room } = c;
-      if (room.stage !== 'select') return cb && cb({ ok: false });
-      if (room.seats.some(s => !s.charId)) return cb && cb({ ok: false, msg: '全員がキャラを選んでください' });
+      if (room.stage !== 'lobby') return cb && cb({ ok: false });
+      const sc = MM.loadScenario(room.scenarioId);
+      if (room.seats.length !== sc.players.max) return cb && cb({ ok: false, msg: `${sc.players.max}人そろってから始めてください` });
+      room.game = new MM.Game(room.scenarioId);
+      const bySeat = room.game.assignRandom(room.seats.length);
+      room.seats.forEach((s, i) => { s.charId = bySeat[i]; });
       room.stage = 'play';
-      room.game.advance(); // -1 -> 0 (read)
-      startPhaseTimer(room);
       cb && cb({ ok: true });
       broadcast(room);
     });
 
-    /* ホスト: 次のフェーズへ / 延長 */
-    socket.on('mm:next', (_, cb) => {
-      const c = ctx(socket); if (!c || !c.isHost) return cb && cb({ ok: false, msg: 'ホストのみ' });
-      if (c.room.stage !== 'play') return cb && cb({ ok: false });
-      nextPhase(c.room);
-      cb && cb({ ok: true });
-    });
-    socket.on('mm:extend', ({ minutes }, cb) => {
-      const c = ctx(socket); if (!c || !c.isHost) return cb && cb({ ok: false, msg: 'ホストのみ' });
+    /* 「完了」ボタン — 全員が押したらステップが進む */
+    socket.on('mm:ready', (_, cb) => {
+      const c = ctx(socket); if (!c || !c.seat.charId) return cb && cb({ ok: false });
       const { room } = c;
-      const add = Math.max(1, Math.min(30, parseInt(minutes, 10) || 5)) * 60 * 1000;
-      const base = Math.max(Date.now(), room.deadline || Date.now());
-      clearTimer(room);
-      room.deadline = base + add;
-      room.timer = setTimeout(() => { room.timer = null; broadcast(room); }, room.deadline - Date.now() + 200);
+      if (room.stage !== 'play') return cb && cb({ ok: false });
+      const g = room.game;
+      // 本編ステップでは、やることを済ませていないと完了できない
+      if (g.step === MM.STEPS.MAIN) {
+        if (g.phaseType === 'ability' && !(g.moves[g.phaseIdx] || {})[c.seat.charId])
+          return cb && cb({ ok: false, msg: '先に能力を決めてください' });
+        if (g.phaseType === 'final' && !g.answers[c.seat.charId])
+          return cb && cb({ ok: false, msg: '先に回答を提出してください' });
+      }
+      const all = g.markReady(c.seat.charId);
       cb && cb({ ok: true });
-      broadcast(room);
+      if (all) advanceStep(room); else broadcast(room);
     });
 
-    /* 行動(移動して調べる＋能力)の同時提出 */
-    socket.on('mm:act', ({ placeId, extra, abilityId, target }, cb) => {
+    /* 能力の決定 */
+    socket.on('mm:act', ({ abilityId, target }, cb) => {
       const c = ctx(socket); if (!c || !c.seat.charId) return cb && cb({ ok: false });
       const { room, seat } = c;
       if (room.stage !== 'play') return cb && cb({ ok: false });
-      const r = room.game.submitMove(seat.charId, {
-        placeId: placeId || null, extra: extra || null,
-        abilityId: abilityId || null, target: target || {},
-      });
+      const r = room.game.submitMove(seat.charId, { abilityId: abilityId || null, target: target || {} });
       if (!r.ok) return cb && cb(r);
       cb && cb({ ok: true });
       broadcast(room);
-      if (room.game.allMoved()) setTimeout(() => { if (rooms.has(room.code) && room.stage === 'play') nextPhase(room); }, 600);
     });
 
     /* 最終回答 */
@@ -229,7 +173,6 @@ module.exports = function attach(io, opts = {}) {
       if (!r.ok) return cb && cb(r);
       cb && cb({ ok: true });
       broadcast(room);
-      if (room.game.allAnswered()) setTimeout(() => { if (rooms.has(room.code) && room.stage === 'play') nextPhase(room); }, 600);
     });
 
     socket.on('disconnect', () => {
@@ -237,17 +180,15 @@ module.exports = function attach(io, opts = {}) {
       if (!c) return;
       c.seat.connected = false;
       c.seat.socketId = null;
-      // ロビー中の切断は席ごと削除
       if (c.room.stage === 'lobby') {
         c.room.seats.splice(c.idx, 1);
-        if (c.room.seats.length === 0) { clearTimer(c.room); rooms.delete(c.room.code); return; }
+        if (!c.room.seats.length) { clearTimer(c.room); rooms.delete(c.room.code); return; }
         if (c.room.hostIdx >= c.room.seats.length) c.room.hostIdx = 0;
       }
       broadcast(c.room);
     });
   });
 
-  /* 掃除 */
   setInterval(() => {
     const now = Date.now();
     for (const [code, room] of rooms) {
