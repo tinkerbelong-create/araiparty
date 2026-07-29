@@ -38,6 +38,15 @@ function listScenarios() {
 
 const STEPS = { BRIEF: 'brief', MAIN: 'main', RESULT: 'result' };
 
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 /* ── ゲーム本体 ── */
 class Game {
   constructor(scenarioId) {
@@ -69,6 +78,10 @@ class Game {
     });
     Object.entries(this.sc.initialKnown || {}).forEach(([cid, arr]) =>
       arr.forEach(k => this.known[cid].push({ char: k.char, abilityId: k.abilityId })));
+
+    // ★能力当ての候補は毎ゲームその場でシャッフルする。
+    //   JSONの並び順(本物→ダミー)のまま出すと、先頭が本物だと分かってしまう。
+    this.pool = shuffle((this.sc.abilityGuess && this.sc.abilityGuess.pool) || []);
   }
 
   /* キャラをランダムに配る */
@@ -180,12 +193,12 @@ class Game {
       push(cid, A('k1').label, `${d.name}を${opening ? '開けた' : '閉めた'}。`);
     }
 
-    /* ② その場で全員に見える能力(水・偽物) */
-    for (const [cid, m] of of('show_water')) {
+    /* ② 本人にしか結果が出ない能力(水) */
+    for (const [cid, m] of of('flavor')) {
       this.useUp(cid, m);
-      push(cid, A('r1').label, A('r1').text);
-      this.publicLog.push({ phase: phaseName, text: A('r1').publicText.replace('{name}', this.char(cid).name) });
+      push(cid, A(m.abilityId).label, A(m.abilityId).text);
     }
+    /* ②' その場で全員に見える能力(偽物を出す) */
     for (const [cid, m] of of('show_fake')) {
       const obj = A('r2').objects.find(o => o.id === m.target?.objId);
       if (!obj) { push(cid, A('r2').label, '対象が見つからなかった。'); continue; }
@@ -426,7 +439,7 @@ class Game {
       charId,
       character: { id: c.id, name: c.name, gender: c.gender, color: c.color, icon: c.icon, abilities: list, handout: c.handout },
       abilityActions: acts,
-      abilityPool: this.sc.abilityGuess ? this.sc.abilityGuess.pool : [],
+      abilityPool: this.pool,   // シャッフル済み(本物とダミーが混ざった順)
       usesLeft: this.maxUses() - this.used[charId],
       copied: this.copied[charId],
       known: this.known[charId].map(k => ({
@@ -438,7 +451,7 @@ class Game {
       moved: !!(this.moves[this.phaseIdx] || {})[charId],
       answered: !!this.answers[charId],
       finalQuestions: isFinal ? this.sc.finalQuestions.map(q => ({ id: q.id, text: q.text, options: q.options })) : null,
-      abilityGuess: isFinal ? this.sc.abilityGuess : null,
+      abilityGuess: isFinal ? { text: this.sc.abilityGuess.text, pool: this.pool } : null,
     };
   }
 }

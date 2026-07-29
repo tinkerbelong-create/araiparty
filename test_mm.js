@@ -30,8 +30,34 @@ console.log('\n── ★原作準拠: 余計なものが無い ──');
   T('場所ごとの調査アクションが無い', () => s.places.forEach(p => assert(p.action === undefined)));
   T('「調べに行く」フェーズが無い(能力フェーズだけ)', () =>
     assert(!s.phases.some(p => p.type === 'investigate')));
-  T('水の能力は原作どおり(証拠隠滅ではない)', () =>
-    assert.strictEqual(s.abilityActions.r1.resolve, 'show_water'));
+  T('水は「使う」能力ではなく、水が出るだけ', () =>
+    assert.strictEqual(s.abilityActions.r1.resolve, 'flavor'));
+  T('水を人前で披露する仕掛けが無い(使えば能力がバレるだけなので)', () =>
+    assert(s.abilityActions.r1.publicText === undefined));
+  T('水の結果文に誘導が入っていない', () =>
+    assert(!/言い訳|必要はない/.test(s.abilityActions.r1.text)));
+  T('★すり抜けの結果に創作の手がかりが無い', () => {
+    const ng = /紙ナプキン|甘い匂い|匂いがしない|へこみ跡|黒い異物|電源|ケース|クリーム/;
+    s.places.forEach(p => assert(!ng.test(p.touch), p.name + ': ' + p.touch));
+  });
+  T('★原作にある事実(紙コップ)だけは返す', () =>
+    assert(/紙コップ/.test(s.places.find(p=>p.id==='r_ryusei').touch)));
+  T('★ルールは原作の基本ルール3項目', () => {
+    assert.strictEqual(s.rules.length, 3);
+    assert(/嘘をつくのは自由ですが、キャラクターの記憶/.test(s.rules[2]));
+  });
+  T('★フェーズの説明は原作のゲームフロー文', () => {
+    const p = s.phases.find(x=>x.id==='talk1');
+    assert(/事件発生から現在までの情報をもとに、自由に話し合いを行います/.test(p.todo));
+  });
+  T('★紙コップの手がかりがリュウセイのシートにある', () =>
+    assert(/紙コップを常備/.test(s.characters.find(c=>c.id==='ryusei').handout.thoughts)));
+  T('★飲み物を買わない違和感がカイトのシートにある', () =>
+    assert(/飲み物が入ってない/.test(s.characters.find(c=>c.id==='kaito').handout.thoughts)));
+  T('★21:30の「のどが渇いた」がナツキとリュウセイ双方に残っている', () => {
+    const t = c => s.characters.find(x=>x.id===c).handout.timeline.find(t=>t.time==='21:30').text;
+    assert(/のどが渇いた/.test(t('natsuki')) && /のどが渇いた/.test(t('ryusei')));
+  });
 }
 
 console.log('\n── ★電源のことを明記しない ──');
@@ -64,9 +90,31 @@ console.log('\n── 秘匿性 ──');
   T('自分のHOは privateView にある', () => assert(priv.includes('ケーキを取る方法を真剣に考えて')));
   T('他人のHOは privateView に無い', () => assert(!priv.includes('おれの能力を最大限使う')));
   T('真相は privateView に無い', () => assert(!priv.includes('偽物のケーキを冷蔵庫に設置')));
-  T('コピー候補にダミーが混ざる', () => {
+  T('候補にダミーが混ざる', () => {
     const p = G.privateView('natsuki').abilityPool;
     assert(p.length > 9 && p.some(x => /^x/.test(x.id)));
+  });
+  T('★ダミーのほうが本物より多い', () => {
+    const p = G.privateView('natsuki').abilityPool;
+    assert(p.filter(x => /^x/.test(x.id)).length > 9);
+  });
+  T('★並び順がシャッフルされている(先頭9個が本物にならない)', () => {
+    let sortedRuns = 0;
+    for (let i = 0; i < 30; i++) {
+      const p = g().privateView('natsuki').abilityPool;
+      if (p.slice(0, 9).every(x => !/^x/.test(x.id))) sortedRuns++;
+    }
+    assert(sortedRuns === 0, `${sortedRuns}/30 回、先頭9個が本物だった`);
+  });
+  T('★ゲームごとに並びが変わる', () => {
+    const a = g().privateView('natsuki').abilityPool.map(x => x.id).join(',');
+    const b = g().privateView('natsuki').abilityPool.map(x => x.id).join(',');
+    assert(a !== b);
+  });
+  T('★最終フェーズで配る候補もシャッフル済み', () => {
+    const G2 = g(); G2.phaseIdx = 6; G2.step = 'main';
+    const p = G2.privateView('natsuki');
+    assert.deepStrictEqual(p.abilityGuess.pool.map(x=>x.id), p.abilityPool.map(x=>x.id));
   });
 }
 
@@ -132,8 +180,7 @@ console.log('\n── 能力: すり抜け ──');
   G.submitMove('natsuki', { abilityId:'n1', target:{ placeId:'r_ryusei' } });
   CH.slice(1).forEach(c => G.submitMove(c, {}));
   G.resolvePhase();
-  T('リュウセイの部屋に手を伸ばせる', () => assert(/紙コップが異様に多い/.test(txt(G,'natsuki'))));
-  T('決定打(甘い匂いの紙ナプキン)に届く', () => assert(/甘い匂い/.test(txt(G,'natsuki'))));
+  T('リュウセイの部屋に手を伸ばすと紙コップの山に当たる', () => assert(/紙コップ/.test(txt(G,'natsuki'))));
   T('回数を消費する', () => assert.strictEqual(G.used.natsuki, 1));
   T('使わなかった人には「動かなかった」', () => assert(/動かなかった/.test(txt(G,'ryusei'))));
 }
@@ -142,17 +189,19 @@ console.log('\n── 能力: すり抜け ──');
   G.submitMove('natsuki', { abilityId:'n1', target:{ placeId:'r_kaito' } });
   CH.slice(1).forEach(c => G.submitMove(c, {}));
   G.resolvePhase();
-  T('カイトの部屋: 匂いのしない皿', () => assert(/匂いがしない/.test(txt(G,'natsuki'))));
+  T('★他の部屋からは何も出てこない(創作を混ぜない)', () => assert(/特にない/.test(txt(G,'natsuki'))));
 }
 
-console.log('\n── 能力: 水と偽物は全員に見える ──');
+console.log('\n── ★水は使っても公開されない(使えば能力がバレるだけ) ──');
 {
   const G = toPhase(g(), 2);
   G.submitMove('ryusei', { abilityId:'r1' });
   G.submitMove('natsuki', {}); G.submitMove('kaito', {});
   G.resolvePhase();
-  T('水は本人に結果が届く', () => assert(/のどを潤した/.test(txt(G,'ryusei'))));
-  T('水を出したことが全員に見える', () => assert(G.publicLog.some(l => /リュウセイが、手のひらから水/.test(l.text))));
+  T('水は本人にだけ結果が届く', () => assert(/のどを潤した/.test(txt(G,'ryusei'))));
+  T('水を出したことは公開されない', () => assert(!/水/.test(JSON.stringify(G.publicLog))));
+  T('公開されるのは「能力を使った」事実だけ', () =>
+    assert(G.publicLog.some(l => /リュウセイが能力を使った/.test(l.text))));
 }
 {
   const G = toPhase(g(), 2);
