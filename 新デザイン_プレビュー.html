@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>あらいの遊び場 — アカウント不要で遊べるボードゲーム11本</title>
+<meta name="description" content="大学祭で作ったボードゲームを、そのままオンラインで。アカウント登録なし、名前を入れるだけ。ひとりでもCPUと遊べます。">
+<meta name="theme-color" content="#ffffff">
+
+<!-- OGP(SNSやチャットにURLを貼ったときの見え方) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="あらいの遊び場">
+<meta property="og:title" content="あらいの遊び場 — アカウント不要で遊べるボードゲーム11本">
+<meta property="og:description" content="大学祭で作ったボードゲームを、そのままオンラインで。登録なし、名前を入れるだけ。ひとりでもCPUと遊べます。">
+<meta property="og:image" content="/img/og/home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════════════════
+   デザインルール(3つだけ)
+   1. UIの色は 白・墨・青(#3b5bdb)の3つだけ。
+      カラフルさは「サムネイル画像の中」だけで表現する。
+   2. 太字(700以上)は見出しとボタンだけ。本文は500。
+   3. 絵文字は使わない。アイコンは全てインラインSVG。
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --ink:#16181d;        /* 見出し */
+  --body:#4d5563;       /* 本文 */
+  --muted:#7c8493;      /* 補助 */
+  --line:#e4e7ec;       /* 罫線 */
+  --surface:#f6f7f9;    /* 面 */
+  --accent:#3b5bdb;     /* 唯一のアクセント */
+  --accent-d:#2f49b0;
+  --radius:12px;
+  --max:1160px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans JP',system-ui,-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--body);background:#fff;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+.hidden{display:none!important}
+
+/* フォーカスリング(キーボード操作の人向け・全要素共通) */
+a:focus-visible,button:focus-visible,input:focus-visible{
+  outline:3px solid var(--accent);outline-offset:2px;border-radius:6px;
+}
+.skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:#fff;padding:10px 18px;z-index:100;font-weight:700}
+.skip:focus{left:12px;top:12px}
+
+/* ══ ヘッダー ══ */
+header{
+  position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);
+}
+.hrow{max-width:var(--max);margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--ink);font-size:18px;letter-spacing:.01em}
+.brand img{width:30px;height:30px;border-radius:8px}
+.search{margin-left:auto;position:relative;flex:0 1 300px;min-width:0}
+.search input{
+  width:100%;font-size:14px;font-weight:500;color:var(--ink);
+  border:1px solid var(--line);border-radius:999px;padding:9px 14px 9px 38px;background:var(--surface);
+}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{background:#fff;border-color:var(--accent);outline:none}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+
+/* ══ ヒーロー ══ */
+.hero{border-bottom:1px solid var(--line);background:#fff}
+.hero .inner{
+  max-width:var(--max);margin:0 auto;padding:44px 20px 48px;
+  display:grid;grid-template-columns:1fr 1.05fr;gap:44px;align-items:center;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+  color:var(--accent);background:#eef1fd;border-radius:999px;padding:5px 13px;letter-spacing:.02em;
+}
+.hero h1{
+  font-size:clamp(28px,3.6vw,42px);font-weight:900;color:var(--ink);
+  line-height:1.35;margin-top:16px;letter-spacing:-.01em;
+}
+.hero p.lead{font-size:15px;margin-top:14px;max-width:38em}
+.hero .cta{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:700;font-size:15px;border-radius:var(--radius);padding:13px 26px;
+  border:1px solid transparent;transition:background .12s,border-color .12s,color .12s;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-d)}
+.btn-ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:#c3cad6;background:var(--surface)}
+.heroArt{position:relative}
+.heroArt a{display:block;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface);transition:border-color .14s}
+.heroArt a:hover{border-color:#c3cad6}
+.heroArt img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.heroArt .cap{padding:14px 18px 16px;background:#fff;border-top:1px solid var(--line)}
+.heroArt .cap .k{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+.heroArt .cap h2{font-size:19px;font-weight:900;color:var(--ink);margin-top:2px}
+.heroArt .cap p{font-size:13px;color:var(--muted);margin-top:3px}
+
+/* ══ はじめての方へ(3ステップ) ══ */
+.steps{background:var(--surface);border-bottom:1px solid var(--line);padding:44px 0}
+.steps h2{font-size:20px;font-weight:900;color:var(--ink);text-align:center}
+.steps > .wrap > p{text-align:center;font-size:14px;color:var(--muted);margin-top:6px}
+.stepgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+.step{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 22px;text-align:center}
+.step .n{
+  display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+  border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;line-height:1;
+}
+.step svg{margin:14px auto 12px;display:block;color:var(--ink)}
+.step h3{font-size:15px;font-weight:700;color:var(--ink)}
+.step p{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.7}
+
+/* ══ 遊び方から選ぶ ══ */
+section.block{padding:52px 0;border-bottom:1px solid var(--line)}
+.shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.shead h2{font-size:22px;font-weight:900;color:var(--ink)}
+.shead p{font-size:14px;color:var(--muted)}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}
+.mode{
+  display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  background:#fff;transition:border-color .14s,transform .14s;
+}
+.mode:hover{border-color:#c3cad6;transform:translateY(-3px)}
+.mode img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--surface)}
+.mode .body{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1}
+.mode h3{font-size:17px;font-weight:900;color:var(--ink)}
+.mode .sub{font-size:12px;color:var(--accent);font-weight:700;margin-top:3px}
+.mode p{font-size:13px;color:var(--body);margin-top:9px;line-height:1.75;flex:1}
+.mode .go{margin-top:16px;font-size:14px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:5px}
+
+/* ══ フィルタ ══ */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.chip{
+  border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 17px;
+  font-size:13.5px;font-weight:500;color:var(--body);transition:all .12s;
+}
+.chip:hover{border-color:#c3cad6;background:var(--surface)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+.count{font-size:13px;color:var(--muted);margin-top:16px}
+
+/* ══ ゲームグリッド ══ */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:22px;margin-top:14px}
+.card{
+  display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  background:#fff;transition:border-color .14s,transform .14s,box-shadow .14s;
+}
+.card:hover{border-color:#c3cad6;transform:translateY(-3px);box-shadow:0 8px 24px rgba(22,24,29,.07)}
+.card .thumbwrap{position:relative;display:block}
+.card img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--surface)}
+.card .badge{
+  position:absolute;top:10px;left:10px;background:var(--ink);color:#fff;
+  font-size:10.5px;font-weight:700;border-radius:5px;padding:3px 9px;letter-spacing:.04em;
+}
+.card .body{padding:16px 18px 18px;display:flex;flex-direction:column;flex:1}
+.card h3{font-size:17px;font-weight:900;color:var(--ink);line-height:1.4}
+.meta{display:flex;gap:14px;margin-top:8px;font-size:12.5px;color:var(--muted);font-weight:500}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+.card p.desc{font-size:13px;color:var(--body);margin-top:11px;line-height:1.8;flex:1}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}
+.tag{font-size:11px;font-weight:500;color:var(--muted);background:var(--surface);border-radius:5px;padding:3px 9px;border:none}
+.tag:hover{background:#e9ecf3;color:var(--ink)}
+.cardfoot{display:flex;gap:8px;margin-top:16px}
+.cardfoot .btn{flex:1;padding:11px 14px;font-size:14px}
+.cardfoot .btn.solo{flex:0 0 auto;padding:11px 15px;font-size:13px}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+.empty strong{display:block;color:var(--ink);font-size:16px;font-weight:700;margin-bottom:8px}
+
+/* ══ フッター ══ */
+footer{background:var(--surface);padding:44px 0 52px}
+.fabout{max-width:640px}
+.fabout h2{font-size:17px;font-weight:900;color:var(--ink)}
+.fabout p{font-size:13.5px;margin-top:10px;line-height:1.9}
+.fmeta{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
+
+/* ══ レスポンシブ ══ */
+@media (max-width:900px){
+  .hero .inner{grid-template-columns:1fr;gap:30px;padding:32px 20px 38px}
+  .modes{grid-template-columns:1fr}
+  .stepgrid{grid-template-columns:1fr}
+  .search{flex-basis:100%;order:3;margin-left:0}
+  .hrow{flex-wrap:wrap;gap:10px}
+}
+@media (max-width:560px){
+  .grid{grid-template-columns:1fr}
+  section.block{padding:38px 0}
+  .cardfoot{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#games">ゲーム一覧へスキップ</a>
+
+<header>
+  <div class="hrow">
+    <a class="brand" href="/" aria-label="あらいの遊び場 トップへ">
+      <img src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%20width%3D%22512%22%20height%3D%22512%22%3E%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22113%22%20fill%3D%22%231f2733%22%2F%3E%20%3Ccircle%20cx%3D%22256%22%20cy%3D%22157%22%20r%3D%2266%22%20fill%3D%22%23e8b923%22%2F%3E%20%3Ccircle%20cx%3D%22142%22%20cy%3D%22362%22%20r%3D%2266%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Ccircle%20cx%3D%22370%22%20cy%3D%22362%22%20r%3D%2266%22%20fill%3D%22%233f7fd6%22%2F%3E%20%3C%2Fsvg%3E" width="30" height="30" alt="">
+      あらいの遊び場
+    </a>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+      <label for="q" class="skip">ゲームを検索</label>
+      <input id="q" type="search" placeholder="ゲームをさがす" autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<!-- ══ ヒーロー ══ -->
+<div class="hero">
+  <div class="inner">
+    <div>
+      <span class="eyebrow">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        アカウント登録なし・名前を入れるだけ
+      </span>
+      <h1>大学祭で作ったボードゲームが、<br>そのまま遊べます。</h1>
+      <p class="lead">
+        紙とコマで作って、大学祭で実際に遊んでもらったゲームを、そのままオンラインにしました。
+        ダウンロードもインストールも要りません。リンクを開けば、その場ですぐ始められます。
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#games">
+          ゲームを見る
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#howto">はじめての方へ</a>
+      </div>
+    </div>
+    <div class="heroArt">
+      <a href="/quadcolor/" aria-label="クアドルカラーを遊ぶ">
+        <img src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22236%22%20y%3D%22110%22%20width%3D%22104%22%20height%3D%22104%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22246%22%20y%3D%22120%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Crect%20x%3D%22290%22%20y%3D%22120%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%2F%3E%20%3Crect%20x%3D%22246%22%20y%3D%22164%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%2F%3E%20%3Crect%20x%3D%22290%22%20y%3D%22164%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%2F%3E%20%3Crect%20x%3D%22236%22%20y%3D%22110%22%20width%3D%22104%22%20height%3D%22104%22%20rx%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2316181d%22%20stroke-width%3D%227%22%2F%3E%20%3C%2Fsvg%3E" alt="4色に塗り分けられた盤面と、そこから探し出した2×2のパターン" width="640" height="360">
+        <div class="cap">
+          <div class="k">いま おすすめ</div>
+          <h2>クアドルカラー</h2>
+          <p>1〜10人 ・ 3〜5分 ・ ひとりでもCPUと遊べます</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ はじめての方へ ══ -->
+<div class="steps" id="howto">
+  <div class="wrap">
+    <h2>はじめての方へ</h2>
+    <p>やることは3つだけです。</p>
+    <div class="stepgrid">
+      <div class="step">
+        <span class="n">1</span>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <h3>名前を入れる</h3>
+        <p>メールアドレスもパスワードも要りません。呼ばれたい名前を入れるだけです。</p>
+      </div>
+      <div class="step">
+        <span class="n">2</span>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg>
+        <h3>合言葉を送る</h3>
+        <p>画面に出る合言葉を、一緒に遊ぶ人へLINEなどで送ります。相手はそれを入れるだけ。</p>
+      </div>
+      <div class="step">
+        <span class="n">3</span>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5l14 8.5-14 8.5z"/></svg>
+        <h3>あそぶ</h3>
+        <p>ルールは画面が説明します。ひとりで試したいときは、CPUを相手に遊べます。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 遊び方から選ぶ ══ -->
+<section class="block">
+  <div class="wrap">
+    <div class="shead">
+      <h2>遊び方から選ぶ</h2>
+      <p>人数や場面が決まっているなら、こちらから。</p>
+    </div>
+    <div class="modes">
+      <a class="mode" href="/party/">
+        <img src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23eef2f8%22%2F%3E%20%3Crect%20x%3D%22168%22%20y%3D%2226%22%20width%3D%22304%22%20height%3D%22172%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%229%22%2F%3E%20%3Crect%20x%3D%22194%22%20y%3D%2252%22%20width%3D%22252%22%20height%3D%22120%22%20rx%3D%229%22%20fill%3D%22%23eef2f8%22%2F%3E%20%3Crect%20x%3D%22212%22%20y%3D%2270%22%20width%3D%22132%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Crect%20x%3D%22212%22%20y%3D%22102%22%20width%3D%22180%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%233f7fd6%22%2F%3E%20%3Crect%20x%3D%22212%22%20y%3D%22134%22%20width%3D%2298%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%233faa63%22%2F%3E%20%3Crect%20x%3D%22302%22%20y%3D%22204%22%20width%3D%2236%22%20height%3D%2214%22%20rx%3D%225%22%20fill%3D%22%231f2733%22%2F%3E%20%3Crect%20x%3D%22266%22%20y%3D%22214%22%20width%3D%22108%22%20height%3D%2215%22%20rx%3D%227%22%20fill%3D%22%231f2733%22%2F%3E%20%3Cpath%20d%3D%22M320%20232%20Q214.0%20250%20108%20268%22%20stroke%3D%22%239aa7bd%22%20stroke-width%3D%225%22%20fill%3D%22none%22%20stroke-dasharray%3D%224%2010%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M320%20232%20Q320.0%20250%20320%20268%22%20stroke%3D%22%239aa7bd%22%20stroke-width%3D%225%22%20fill%3D%22none%22%20stroke-dasharray%3D%224%2010%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M320%20232%20Q426.0%20250%20532%20268%22%20stroke%3D%22%239aa7bd%22%20stroke-width%3D%225%22%20fill%3D%22none%22%20stroke-dasharray%3D%224%2010%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Crect%20x%3D%2274%22%20y%3D%22268%22%20width%3D%2268%22%20height%3D%2286%22%20rx%3D%2213%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%228%22%2F%3E%20%3Crect%20x%3D%2286%22%20y%3D%22282%22%20width%3D%2244%22%20height%3D%2244%22%20rx%3D%228%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Crect%20x%3D%2294%22%20y%3D%22334%22%20width%3D%2228%22%20height%3D%228%22%20rx%3D%224%22%20fill%3D%22%23c8d0dd%22%2F%3E%20%3Crect%20x%3D%22286%22%20y%3D%22268%22%20width%3D%2268%22%20height%3D%2286%22%20rx%3D%2213%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%228%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22282%22%20width%3D%2244%22%20height%3D%2244%22%20rx%3D%228%22%20fill%3D%22%233f7fd6%22%2F%3E%20%3Crect%20x%3D%22306%22%20y%3D%22334%22%20width%3D%2228%22%20height%3D%228%22%20rx%3D%224%22%20fill%3D%22%23c8d0dd%22%2F%3E%20%3Crect%20x%3D%22498%22%20y%3D%22268%22%20width%3D%2268%22%20height%3D%2286%22%20rx%3D%2213%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%228%22%2F%3E%20%3Crect%20x%3D%22510%22%20y%3D%22282%22%20width%3D%2244%22%20height%3D%2244%22%20rx%3D%228%22%20fill%3D%22%233faa63%22%2F%3E%20%3Crect%20x%3D%22518%22%20y%3D%22334%22%20width%3D%2228%22%20height%3D%228%22%20rx%3D%224%22%20fill%3D%22%23c8d0dd%22%2F%3E%20%3C%2Fsvg%3E" alt="テレビに得点画面、3台のスマートフォンが線でつながっている図" width="640" height="360" loading="lazy">
+        <div class="body">
+          <h3>パーティープレイ</h3>
+          <div class="sub">テレビ＋スマホ ・ 大人数向け</div>
+          <p>テレビに全員の得点、手元のスマホがコントローラー。チームに分かれて通算点で競います。集まって遊ぶときはこれ。</p>
+          <span class="go">はじめる
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+      <a class="mode" href="#games">
+        <img src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23e9edfa%22%2F%3E%20%3Cg%20transform%3D%22translate%28180%2C210%29%20rotate%28-16%29%22%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%22184%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%227%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%2246%22%20rx%3D%2216%22%20fill%3D%22%23d94f4f%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-62%22%20width%3D%22124%22%20height%3D%2216%22%20fill%3D%22%23d94f4f%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%2220%22%20r%3D%2240%22%20fill%3D%22%23d94f4f%22%2F%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28320%2C190%29%20rotate%280%29%22%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%22184%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%227%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%2246%22%20rx%3D%2216%22%20fill%3D%22%233f7fd6%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-62%22%20width%3D%22124%22%20height%3D%2216%22%20fill%3D%22%233f7fd6%22%2F%3E%3Cpath%20d%3D%22M-32%20-14%20L0%2034%20L32%20-14%22%20stroke%3D%22%233f7fd6%22%20stroke-width%3D%2220%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28460%2C210%29%20rotate%2816%29%22%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%22184%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%227%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%2246%22%20rx%3D%2216%22%20fill%3D%22%233faa63%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-62%22%20width%3D%22124%22%20height%3D%2216%22%20fill%3D%22%233faa63%22%2F%3E%3Crect%20x%3D%22-36%22%20y%3D%22-16%22%20width%3D%2272%22%20height%3D%2272%22%20rx%3D%2212%22%20fill%3D%22none%22%20stroke%3D%22%233faa63%22%20stroke-width%3D%2218%22%2F%3E%3C%2Fg%3E%20%3Crect%20x%3D%22258%22%20y%3D%2256%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22260%22%20y%3D%2245%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22262%22%20y%3D%2234%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22264%22%20y%3D%2223%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22266%22%20y%3D%2212%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%233f7fd6%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3C%2Fsvg%3E" alt="3枚のカードが扇状に並び、グー・チョキ・パーの図形が描かれている" width="640" height="360" loading="lazy">
+        <div class="body">
+          <h3>ひとつ選んであそぶ</h3>
+          <div class="sub">1人 〜 10人</div>
+          <p>ゲームを1つ選んで遊びます。ひとりでCPU相手に練習することも、合言葉で友達を呼ぶこともできます。</p>
+          <span class="go">ゲーム一覧へ
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+      <a class="mode" href="/mystery/">
+        <img src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23fef6e0%22%2F%3E%20%3Ccircle%20cx%3D%22120%22%20cy%3D%22132%22%20r%3D%2240%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Cpath%20d%3D%22M62%20250%20a58%2068%200%200%201%20116%200%20z%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Ccircle%20cx%3D%22320%22%20cy%3D%22132%22%20r%3D%2240%22%20fill%3D%22%23f3cf95%22%2F%3E%20%3Cpath%20d%3D%22M262%20250%20a58%2068%200%200%201%20116%200%20z%22%20fill%3D%22%23f3cf95%22%2F%3E%20%3Ccircle%20cx%3D%22520%22%20cy%3D%22132%22%20r%3D%2240%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Cpath%20d%3D%22M462%20250%20a58%2068%200%200%201%20116%200%20z%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Cellipse%20cx%3D%22320%22%20cy%3D%22316%22%20rx%3D%22152%22%20ry%3D%2220%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Cg%20transform%3D%22translate%28320%2C262%29%22%3E%20%3Cpath%20d%3D%22M-96%2044%20L0%20-56%20L96%2044%20Z%22%20fill%3D%22%23fff6e2%22%20stroke%3D%22%23c8804a%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M-64%206%20L0%20-56%20L64%206%20Z%22%20fill%3D%22%23ffe1e4%22%2F%3E%20%3Ccircle%20cx%3D%22-46%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Ccircle%20cx%3D%22-14%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Ccircle%20cx%3D%2218%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Ccircle%20cx%3D%2248%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3C%2Fg%3E%20%3Crect%20x%3D%22308%22%20y%3D%22112%22%20width%3D%2224%22%20height%3D%2286%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23c8804a%22%20stroke-width%3D%226%22%2F%3E%20%3Cpath%20d%3D%22M320%20106%20q-18%20-20%200%20-42%20q18%2022%200%2042%20z%22%20fill%3D%22%23e8b923%22%2F%3E%20%3C%2Fsvg%3E" alt="ろうそくの立ったケーキ一切れと、それを囲む3人の影" width="640" height="360" loading="lazy">
+        <div class="body">
+          <h3>マーダーミステリー</h3>
+          <div class="sub">通話推奨 ・ 3〜4人 ・ 2作品</div>
+          <p>キャラクターになりきって、事件の真相を探ります。進行役は不要で、画面が順番に案内します。初めてでも遊べます。</p>
+          <span class="go">シナリオを見る
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ゲーム一覧 ══ -->
+<section class="block" id="games">
+  <div class="wrap">
+    <div class="shead">
+      <h2>ぜんぶのゲーム</h2>
+      <p id="totalLabel"></p>
+    </div>
+    <div class="filters" id="filters" role="group" aria-label="絞り込み"></div>
+    <p class="count" id="count" role="status"></p>
+    <div class="grid" id="grid"></div>
+    <div class="empty hidden" id="empty">
+      <strong>みつかりませんでした</strong>
+      条件を変えるか、<button class="chip" id="reset" style="margin-left:4px">絞り込みをリセット</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fabout">
+      <h2>このサイトについて</h2>
+      <p>
+        大学祭で展示したボードゲームを、その場に来られなかった人とも遊べるようにデジタル化したものです。
+        紙で作ったときのルールをできるだけそのまま残しています。あわせて、オンラインだからできる新作も置いています。
+      </p>
+      <p>
+        アカウントは作りません。名前は遊んでいる間だけ使われ、部屋を閉じると消えます。
+      </p>
+    </div>
+    <div class="fmeta">
+      <span>&copy; arai</span>
+      <span>v0.5</span>
+      <span>ご意見・不具合の報告はお気軽に</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* ── ゲームデータ ────────────────────────────────────────
+   play  : 'solo'(1人用) / 'multi'(みんなで) / 'both'
+   soloUrl: CPUとすぐ試せる場合の入口(なければ null)          */
+const GAMES = [
+  { id:'quadcolor', url:'/quadcolor/', title:'クアドルカラー',
+    players:'1〜10人', time:'3〜5分', play:'both', cpu:true, isNew:true,
+    desc:'4色に塗られた共通の盤面から、手札の2×2パターンがぴったりはまる場所を探す早さ勝負。回転させてもOK。',
+    tags:['パズル','早探し','大人数OK'] },
+
+  { id:'whoami', url:'/whoami/', title:'ユーレイ?エイリアン?',
+    players:'4〜8人', time:'約12分', play:'multi', cpu:true, isNew:true,
+    desc:'わからないのは、自分の正体だけ。1回きりの能力と、ウソをついてもいい「そぶり」を頼りに自分の陣営を当てます。',
+    tags:['正体かくし','推理','心理戦','大人数OK'] },
+
+  { id:'monoku', url:'/monoku/', title:'モンオク!',
+    players:'2〜4人', time:'約15分', play:'multi', cpu:true, isNew:true,
+    desc:'コイン60枚でモンスターを競り落とし、アイテムを買い込んでトーナメントへ。毎試合、出す3体と順番を選び直せます。',
+    tags:['オークション','コンボ','トーナメント'] },
+
+  { id:'shuzomas', url:'/shuzomas/', title:'シュゾマス',
+    players:'2〜8人', time:'約20分', play:'multi', cpu:true,
+    desc:'度数が秘密の食材24種から3つ選び、合計ちょうど3.0%のお酒を最初に造った人の勝ち。毎回わかるのは順位だけ。',
+    tags:['推理','大人数OK','BGMつき'] },
+
+  { id:'jandekken', url:'/jandekken/', title:'ジャンデッキケン',
+    players:'1〜2人', time:'約10分', play:'both', cpu:true,
+    desc:'12枚のデッキを組んで戦う1対1のカードバトル。能力のコンボを決めて先に3勝すれば勝ち。あいこすら武器になります。',
+    tags:['カードバトル','デッキ構築'] },
+
+  { id:'countfruits', url:'/countfruits/', title:'カウントフルーツ',
+    players:'1〜2人', time:'約10分', play:'both', cpu:true,
+    desc:'降ってくるフルーツを数えて、落ちきってから出る問題に答えます。相手が数えまちがえる問題を作れたら勝ち。',
+    tags:['クイズ','作問バトル','心理戦'] },
+
+  { id:'dorobou', url:'/dorobou/', title:'ドロボウ市場',
+    players:'2〜4人', time:'約8分', play:'multi', cpu:true,
+    desc:'市場に並ぶコイン・宝石・ドロボウを、1〜5の値札の同時出しで奪い合います。わざとケンカを狙う読み合いが肝。',
+    tags:['心理戦','同時出し'] },
+
+  { id:'bombsort', url:'/bombsort/', title:'ボムわけ!',
+    players:'1人用', time:'エンドレス', play:'solo', cpu:false,
+    desc:'降ってくる爆弾を、線を引いてころがし、黒は左・赤は右の釜へ仕分けます。金の爆弾でライフが回復。',
+    tags:['アクション','スコアアタック','お絵かき'] },
+
+  { id:'fiveleague', url:'/nepleague/', title:'ファイブリーグ', thumb:'fiveleague',
+    players:'チーム戦', time:'約10分', play:'party', cpu:false, isNew:true,
+    desc:'テレビに5文字の答え、スマホで1人1文字ずつ入力。全部そろえば次の問題へ。難易度1から5まで勝ち上がります。',
+    tags:['クイズ','チーム戦','テレビ＋スマホ'] },
+
+  { id:'party', url:'/party/', title:'パーティモード',
+    players:'大人数', time:'自由', play:'party', cpu:false, isNew:true,
+    desc:'テレビをみんなで見て、スマホで操作するモード。チームを作って通算得点で競います。いまはファイブリーグを収録。',
+    tags:['パーティー','チーム戦','テレビ＋スマホ'] },
+
+  { id:'mystery', url:'/mystery/', title:'マーダーミステリー',
+    players:'3〜4人', time:'45〜60分', play:'multi', cpu:false, isNew:true,
+    desc:'通話しながら遊ぶ本格マダミス。進行役は不要で、ハンドアウトの配布から採点まで画面が案内します。2作品収録。',
+    tags:['推理','なりきり','通話推奨'] },
+];
+
+const FILTERS = [
+  { key:'all',   label:'すべて',        test:() => true },
+  { key:'solo',  label:'ひとりでも',    test:g => g.play === 'solo' || g.play === 'both' || g.cpu },
+  { key:'multi', label:'みんなで',      test:g => g.play === 'multi' || g.play === 'both' },
+  { key:'party', label:'テレビ＋スマホ', test:g => g.play === 'party' },
+];
+
+const THUMB = {"bombsort": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%232b2e36%22%2F%3E%20%3Cpath%20d%3D%22M20%20258%20h190%20l-26%2074%20h-138%20z%22%20fill%3D%22%231e2026%22%2F%3E%20%3Cpath%20d%3D%22M430%20258%20h190%20l-26%2074%20h-138%20z%22%20fill%3D%22%237d2020%22%2F%3E%20%3Crect%20x%3D%228%22%20y%3D%22242%22%20width%3D%22214%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%233a3d46%22%2F%3E%20%3Crect%20x%3D%22418%22%20y%3D%22242%22%20width%3D%22214%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%23a33636%22%2F%3E%20%3Cpath%20d%3D%22M96%20168%20q112%2066%20224%20-6%20q76%20-48%20194%2022%22%20stroke%3D%22%23f2f3f6%22%20stroke-width%3D%2211%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cg%3E%3Cpath%20d%3D%22M129.0%2063.32%20q11.4%20-19.0%2026.599999999999998%20-7.6000000000000005%22%20stroke%3D%22%23e8b923%22%20stroke-width%3D%228.36%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22110%22%20cy%3D%2296%22%20r%3D%2238%22%20fill%3D%22%2315171c%22%20stroke%3D%22%233a3d46%22%20stroke-width%3D%225%22%2F%3E%3Ccircle%20cx%3D%2297.08%22%20cy%3D%2283.08%22%20r%3D%226.460000000000001%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.55%22%2F%3E%3C%2Fg%3E%20%3Cg%3E%3Cpath%20d%3D%22M245.5%2032.78%20q8.1%20-13.5%2018.9%20-5.4%22%20stroke%3D%22%23e8b923%22%20stroke-width%3D%225.94%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22232%22%20cy%3D%2256%22%20r%3D%2227%22%20fill%3D%22%2315171c%22%20stroke%3D%22%233a3d46%22%20stroke-width%3D%225%22%2F%3E%3Ccircle%20cx%3D%22222.82%22%20cy%3D%2246.82%22%20r%3D%224.590000000000001%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.55%22%2F%3E%3C%2Fg%3E%20%3Cg%3E%3Cpath%20d%3D%22M423.0%2040.2%20q9.0%20-15.0%2021.0%20-6.0%22%20stroke%3D%22%23e8b923%22%20stroke-width%3D%226.6%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22408%22%20cy%3D%2266%22%20r%3D%2230%22%20fill%3D%22%23c93a3a%22%20stroke%3D%22%23e26a6a%22%20stroke-width%3D%225%22%2F%3E%3Ccircle%20cx%3D%22397.8%22%20cy%3D%2255.8%22%20r%3D%225.1000000000000005%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.55%22%2F%3E%3C%2Fg%3E%20%3Cg%3E%3Cpath%20d%3D%22M554.0%2073.6%20q12.0%20-20.0%2028.0%20-8.0%22%20stroke%3D%22%23e8b923%22%20stroke-width%3D%228.8%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22534%22%20cy%3D%22108%22%20r%3D%2240%22%20fill%3D%22%23c93a3a%22%20stroke%3D%22%23e26a6a%22%20stroke-width%3D%225%22%2F%3E%3Ccircle%20cx%3D%22520.4%22%20cy%3D%2294.4%22%20r%3D%226.800000000000001%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.55%22%2F%3E%3C%2Fg%3E%20%3Cg%3E%3Cpath%20d%3D%22M332.0%2097.36%20q7.199999999999999%20-12.0%2016.799999999999997%20-4.800000000000001%22%20stroke%3D%22%23e8b923%22%20stroke-width%3D%225.28%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22320%22%20cy%3D%22118%22%20r%3D%2224%22%20fill%3D%22%23e8b923%22%20stroke%3D%22%23f7dd72%22%20stroke-width%3D%225%22%2F%3E%3Ccircle%20cx%3D%22311.84%22%20cy%3D%22109.84%22%20r%3D%224.08%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.55%22%2F%3E%3C%2Fg%3E%20%3C%2Fsvg%3E", "countfruits": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23fdecef%22%2F%3E%20%3Ccircle%20cx%3D%22120%22%20cy%3D%2256.599999999999994%22%20r%3D%2223.0%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.12%22%2F%3E%20%3Ccircle%20cx%3D%22120%22%20cy%3D%2217.19999999999999%22%20r%3D%2217.9%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.05%22%2F%3E%20%3Ccircle%20cx%3D%22120%22%20cy%3D%2296%22%20r%3D%2228%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Cellipse%20cx%3D%22111%22%20cy%3D%2286%22%20rx%3D%227%22%20ry%3D%224%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.5%22%20transform%3D%22rotate%28-30%20111%2086%29%22%2F%3E%20%3Ccircle%20cx%3D%22232%22%20cy%3D%22116.8%22%20r%3D%2219.7%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.12%22%2F%3E%20%3Ccircle%20cx%3D%22232%22%20cy%3D%2281.6%22%20r%3D%2215.4%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.05%22%2F%3E%20%3Ccircle%20cx%3D%22232%22%20cy%3D%22152%22%20r%3D%2224%22%20fill%3D%22%23e8b923%22%2F%3E%20%3Cellipse%20cx%3D%22224%22%20cy%3D%22143%22%20rx%3D%226%22%20ry%3D%224%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.5%22%20transform%3D%22rotate%28-30%20224%20143%29%22%2F%3E%20%3Ccircle%20cx%3D%22330%22%20cy%3D%2230.4%22%20r%3D%2226.2%22%20fill%3D%22%23e0645f%22%20opacity%3D%220.12%22%2F%3E%20%3Ccircle%20cx%3D%22330%22%20cy%3D%22-13.200000000000003%22%20r%3D%2220.5%22%20fill%3D%22%23e0645f%22%20opacity%3D%220.05%22%2F%3E%20%3Ccircle%20cx%3D%22330%22%20cy%3D%2274%22%20r%3D%2232%22%20fill%3D%22%23e0645f%22%2F%3E%20%3Cellipse%20cx%3D%22320%22%20cy%3D%2262%22%20rx%3D%228%22%20ry%3D%225%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.5%22%20transform%3D%22rotate%28-30%20320%2062%29%22%2F%3E%20%3Ccircle%20cx%3D%22432%22%20cy%3D%22123.75%22%20r%3D%2220.5%22%20fill%3D%22%233faa63%22%20opacity%3D%220.12%22%2F%3E%20%3Ccircle%20cx%3D%22432%22%20cy%3D%2287.5%22%20r%3D%2216.0%22%20fill%3D%22%233faa63%22%20opacity%3D%220.05%22%2F%3E%20%3Ccircle%20cx%3D%22432%22%20cy%3D%22160%22%20r%3D%2225%22%20fill%3D%22%233faa63%22%2F%3E%20%3Cellipse%20cx%3D%22424%22%20cy%3D%22151%22%20rx%3D%226%22%20ry%3D%224%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.5%22%20transform%3D%22rotate%28-30%20424%20151%29%22%2F%3E%20%3Ccircle%20cx%3D%22536%22%20cy%3D%2265.65%22%20r%3D%2222.1%22%20fill%3D%22%23e8913a%22%20opacity%3D%220.12%22%2F%3E%20%3Ccircle%20cx%3D%22536%22%20cy%3D%2227.299999999999997%22%20r%3D%2217.3%22%20fill%3D%22%23e8913a%22%20opacity%3D%220.05%22%2F%3E%20%3Ccircle%20cx%3D%22536%22%20cy%3D%22104%22%20r%3D%2227%22%20fill%3D%22%23e8913a%22%2F%3E%20%3Cellipse%20cx%3D%22527%22%20cy%3D%2294%22%20rx%3D%226%22%20ry%3D%224%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.5%22%20transform%3D%22rotate%28-30%20527%2094%29%22%2F%3E%20%3Crect%20x%3D%22196%22%20y%3D%22264%22%20width%3D%22248%22%20height%3D%2266%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23c9414c%22%20stroke-width%3D%227%22%2F%3E%20%3Ctext%20x%3D%22280%22%20y%3D%22311%22%20font-family%3D%22Noto%20Sans%20CJK%20JP%2C%20Noto%20Sans%20JP%2C%20sans-serif%22%20font-size%3D%2244%22%20font-weight%3D%22900%22%20fill%3D%22%23c9414c%22%20text-anchor%3D%22middle%22%3E%3F%3C%2Ftext%3E%20%3Ctext%20x%3D%22360%22%20y%3D%22311%22%20font-family%3D%22Noto%20Sans%20CJK%20JP%2C%20Noto%20Sans%20JP%2C%20sans-serif%22%20font-size%3D%2244%22%20font-weight%3D%22900%22%20fill%3D%22%23c9414c%22%20text-anchor%3D%22middle%22%3E%3F%3C%2Ftext%3E%20%3C%2Fsvg%3E", "dorobou": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23fdefe0%22%2F%3E%20%3Cg%20transform%3D%22translate%28320%2C120%29%22%3E%20%3Cpath%20d%3D%22M-56%20-6%20L-30%20-46%20L30%20-46%20L56%20-6%20L0%2056%20Z%22%20fill%3D%22%233fa7c9%22%20stroke%3D%22%2322708a%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M-56%20-6%20H56%20M-30%20-46%20L0%20-6%20L30%20-46%20M0%20-6%20V56%22%20stroke%3D%22%2322708a%22%20stroke-width%3D%225%22%20fill%3D%22none%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28126%2C268%29%20rotate%28-8%29%22%3E%3Cpath%20d%3D%22M-58%20-44%20H30%20L58%200%20L30%2044%20H-58%20a10%2010%200%200%201%20-10%20-10%20V-34%20a10%2010%200%200%201%2010%20-10%20z%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23c9541a%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2234%22%20cy%3D%220%22%20r%3D%228%22%20fill%3D%22%23c9541a%22%2F%3E%3Ctext%20x%3D%22-16%22%20y%3D%2216%22%20font-family%3D%22Noto%20Sans%20CJK%20JP%2C%20Noto%20Sans%20JP%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22900%22%20fill%3D%22%23c9541a%22%20text-anchor%3D%22middle%22%3E1%3C%2Ftext%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28320%2C284%29%20rotate%280%29%22%3E%3Cpath%20d%3D%22M-58%20-44%20H30%20L58%200%20L30%2044%20H-58%20a10%2010%200%200%201%20-10%20-10%20V-34%20a10%2010%200%200%201%2010%20-10%20z%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%238e5bbf%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2234%22%20cy%3D%220%22%20r%3D%228%22%20fill%3D%22%238e5bbf%22%2F%3E%3Ctext%20x%3D%22-16%22%20y%3D%2216%22%20font-family%3D%22Noto%20Sans%20CJK%20JP%2C%20Noto%20Sans%20JP%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22900%22%20fill%3D%22%238e5bbf%22%20text-anchor%3D%22middle%22%3E3%3C%2Ftext%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28514%2C268%29%20rotate%288%29%22%3E%3Cpath%20d%3D%22M-58%20-44%20H30%20L58%200%20L30%2044%20H-58%20a10%2010%200%200%201%20-10%20-10%20V-34%20a10%2010%200%200%201%2010%20-10%20z%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%233f7fd6%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2234%22%20cy%3D%220%22%20r%3D%228%22%20fill%3D%22%233f7fd6%22%2F%3E%3Ctext%20x%3D%22-16%22%20y%3D%2216%22%20font-family%3D%22Noto%20Sans%20CJK%20JP%2C%20Noto%20Sans%20JP%2C%20sans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22900%22%20fill%3D%22%233f7fd6%22%20text-anchor%3D%22middle%22%3E5%3C%2Ftext%3E%3C%2Fg%3E%20%3C%2Fsvg%3E", "fiveleague": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23eaeef5%22%2F%3E%20%3Crect%20x%3D%2286%22%20y%3D%2246%22%20width%3D%22468%22%20height%3D%22238%22%20rx%3D%2222%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%2210%22%2F%3E%20%3Crect%20x%3D%22290%22%20y%3D%22292%22%20width%3D%2260%22%20height%3D%2220%22%20rx%3D%226%22%20fill%3D%22%231f2733%22%2F%3E%20%3Crect%20x%3D%22234%22%20y%3D%22306%22%20width%3D%22172%22%20height%3D%2218%22%20rx%3D%229%22%20fill%3D%22%231f2733%22%2F%3E%20%3Crect%20x%3D%22118%22%20y%3D%22112%22%20width%3D%2272%22%20height%3D%22106%22%20rx%3D%2212%22%20fill%3D%22%23d94f4f%22%20stroke%3D%22%23a82f2f%22%20stroke-width%3D%226%22%2F%3E%20%3Crect%20x%3D%22136%22%20y%3D%22150%22%20width%3D%2236%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22136%22%20y%3D%22172%22%20width%3D%2236%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22204%22%20y%3D%22112%22%20width%3D%2272%22%20height%3D%22106%22%20rx%3D%2212%22%20fill%3D%22%23d94f4f%22%20stroke%3D%22%23a82f2f%22%20stroke-width%3D%226%22%2F%3E%20%3Crect%20x%3D%22222%22%20y%3D%22150%22%20width%3D%2236%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22222%22%20y%3D%22172%22%20width%3D%2236%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22290%22%20y%3D%22112%22%20width%3D%2272%22%20height%3D%22106%22%20rx%3D%2212%22%20fill%3D%22%23d94f4f%22%20stroke%3D%22%23a82f2f%22%20stroke-width%3D%226%22%2F%3E%20%3Crect%20x%3D%22308%22%20y%3D%22150%22%20width%3D%2236%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22308%22%20y%3D%22172%22%20width%3D%2236%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22376%22%20y%3D%22112%22%20width%3D%2272%22%20height%3D%22106%22%20rx%3D%2212%22%20fill%3D%22%23eef1f6%22%20stroke%3D%22%23c8d0dd%22%20stroke-width%3D%226%22%2F%3E%20%3Crect%20x%3D%22462%22%20y%3D%22112%22%20width%3D%2272%22%20height%3D%22106%22%20rx%3D%2212%22%20fill%3D%22%23eef1f6%22%20stroke%3D%22%23c8d0dd%22%20stroke-width%3D%226%22%2F%3E%20%3C%2Fsvg%3E", "jandekken": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23e9edfa%22%2F%3E%20%3Cg%20transform%3D%22translate%28180%2C210%29%20rotate%28-16%29%22%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%22184%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%227%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%2246%22%20rx%3D%2216%22%20fill%3D%22%23d94f4f%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-62%22%20width%3D%22124%22%20height%3D%2216%22%20fill%3D%22%23d94f4f%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%2220%22%20r%3D%2240%22%20fill%3D%22%23d94f4f%22%2F%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28320%2C190%29%20rotate%280%29%22%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%22184%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%227%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%2246%22%20rx%3D%2216%22%20fill%3D%22%233f7fd6%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-62%22%20width%3D%22124%22%20height%3D%2216%22%20fill%3D%22%233f7fd6%22%2F%3E%3Cpath%20d%3D%22M-32%20-14%20L0%2034%20L32%20-14%22%20stroke%3D%22%233f7fd6%22%20stroke-width%3D%2220%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28460%2C210%29%20rotate%2816%29%22%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%22184%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%227%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-92%22%20width%3D%22124%22%20height%3D%2246%22%20rx%3D%2216%22%20fill%3D%22%233faa63%22%2F%3E%3Crect%20x%3D%22-62%22%20y%3D%22-62%22%20width%3D%22124%22%20height%3D%2216%22%20fill%3D%22%233faa63%22%2F%3E%3Crect%20x%3D%22-36%22%20y%3D%22-16%22%20width%3D%2272%22%20height%3D%2272%22%20rx%3D%2212%22%20fill%3D%22none%22%20stroke%3D%22%233faa63%22%20stroke-width%3D%2218%22%2F%3E%3C%2Fg%3E%20%3Crect%20x%3D%22258%22%20y%3D%2256%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22260%22%20y%3D%2245%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22262%22%20y%3D%2234%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22264%22%20y%3D%2223%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3Crect%20x%3D%22266%22%20y%3D%2212%22%20width%3D%22124%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22%233f7fd6%22%20stroke%3D%22%232a3550%22%20stroke-width%3D%224%22%2F%3E%20%3C%2Fsvg%3E", "monoku": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23e6f4f2%22%2F%3E%20%3Cg%3E%3Cpath%20d%3D%22M107.75999999999999%20227.4%20l-6.24%20-32.24%20l34.32%2015.6%20z%22%20fill%3D%22%23c4651a%22%2F%3E%3Cpath%20d%3D%22M172.24%20227.4%20l6.24%20-32.24%20l-34.32%2015.6%20z%22%20fill%3D%22%23c4651a%22%2F%3E%3Ccircle%20cx%3D%22140%22%20cy%3D%22256%22%20r%3D%2252%22%20fill%3D%22%23e07b28%22%2F%3E%3Ccircle%20cx%3D%22122.32%22%20cy%3D%22249.76%22%20r%3D%227.280000000000001%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%22157.68%22%20cy%3D%22249.76%22%20r%3D%227.280000000000001%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpath%20d%3D%22M125.44%20275.76%20q14.560000000000002%2012.48%2029.120000000000005%200%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%225.72%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%20%3Cg%3E%3Cpath%20d%3D%22M282.8%20241.0%20l-7.199999999999999%20-37.2%20l39.6%2018.0%20z%22%20fill%3D%22%231f8b84%22%2F%3E%3Cpath%20d%3D%22M357.2%20241.0%20l7.199999999999999%20-37.2%20l-39.6%2018.0%20z%22%20fill%3D%22%231f8b84%22%2F%3E%3Ccircle%20cx%3D%22320%22%20cy%3D%22274%22%20r%3D%2260%22%20fill%3D%22%232aa8a0%22%2F%3E%3Ccircle%20cx%3D%22299.6%22%20cy%3D%22266.8%22%20r%3D%228.4%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%22340.4%22%20cy%3D%22266.8%22%20r%3D%228.4%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpath%20d%3D%22M303.2%20296.8%20q16.8%2014.399999999999999%2033.6%200%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%226.6%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%20%3Cg%3E%3Cpath%20d%3D%22M467.76%20227.4%20l-6.24%20-32.24%20l34.32%2015.6%20z%22%20fill%3D%22%2375449f%22%2F%3E%3Cpath%20d%3D%22M532.24%20227.4%20l6.24%20-32.24%20l-34.32%2015.6%20z%22%20fill%3D%22%2375449f%22%2F%3E%3Ccircle%20cx%3D%22500%22%20cy%3D%22256%22%20r%3D%2252%22%20fill%3D%22%238e5bbf%22%2F%3E%3Ccircle%20cx%3D%22482.32%22%20cy%3D%22249.76%22%20r%3D%227.280000000000001%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%22517.68%22%20cy%3D%22249.76%22%20r%3D%227.280000000000001%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpath%20d%3D%22M485.44%20275.76%20q14.560000000000002%2012.48%2029.120000000000005%200%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%225.72%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22rotate%28-20%20320%2092%29%22%3E%20%3Crect%20x%3D%22238%22%20y%3D%2252%22%20width%3D%22164%22%20height%3D%2244%22%20rx%3D%2216%22%20fill%3D%22%236b4423%22%2F%3E%20%3Crect%20x%3D%22303%22%20y%3D%2288%22%20width%3D%2234%22%20height%3D%2286%22%20rx%3D%2212%22%20fill%3D%22%238a5c33%22%2F%3E%20%3C%2Fg%3E%20%3Crect%20x%3D%22240%22%20y%3D%22158%22%20width%3D%22160%22%20height%3D%2218%22%20rx%3D%229%22%20fill%3D%22%236b4423%22%2F%3E%20%3Ccircle%20cx%3D%2274%22%20cy%3D%22108%22%20r%3D%2230%22%20fill%3D%22%23e8b923%22%20stroke%3D%22%23c99a10%22%20stroke-width%3D%225%22%2F%3E%20%3Ccircle%20cx%3D%2274%22%20cy%3D%22108%22%20r%3D%2213%22%20fill%3D%22%23f7dd72%22%2F%3E%20%3Ccircle%20cx%3D%22124%22%20cy%3D%2266%22%20r%3D%2224%22%20fill%3D%22%23e8b923%22%20stroke%3D%22%23c99a10%22%20stroke-width%3D%225%22%2F%3E%20%3Ccircle%20cx%3D%22124%22%20cy%3D%2266%22%20r%3D%2210%22%20fill%3D%22%23f7dd72%22%2F%3E%20%3Ccircle%20cx%3D%22566%22%20cy%3D%22108%22%20r%3D%2230%22%20fill%3D%22%23e8b923%22%20stroke%3D%22%23c99a10%22%20stroke-width%3D%225%22%2F%3E%20%3Ccircle%20cx%3D%22566%22%20cy%3D%22108%22%20r%3D%2213%22%20fill%3D%22%23f7dd72%22%2F%3E%20%3Ccircle%20cx%3D%22516%22%20cy%3D%2266%22%20r%3D%2224%22%20fill%3D%22%23e8b923%22%20stroke%3D%22%23c99a10%22%20stroke-width%3D%225%22%2F%3E%20%3Ccircle%20cx%3D%22516%22%20cy%3D%2266%22%20r%3D%2210%22%20fill%3D%22%23f7dd72%22%2F%3E%20%3C%2Fsvg%3E", "mystery": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23fef6e0%22%2F%3E%20%3Ccircle%20cx%3D%22120%22%20cy%3D%22132%22%20r%3D%2240%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Cpath%20d%3D%22M62%20250%20a58%2068%200%200%201%20116%200%20z%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Ccircle%20cx%3D%22320%22%20cy%3D%22132%22%20r%3D%2240%22%20fill%3D%22%23f3cf95%22%2F%3E%20%3Cpath%20d%3D%22M262%20250%20a58%2068%200%200%201%20116%200%20z%22%20fill%3D%22%23f3cf95%22%2F%3E%20%3Ccircle%20cx%3D%22520%22%20cy%3D%22132%22%20r%3D%2240%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Cpath%20d%3D%22M462%20250%20a58%2068%200%200%201%20116%200%20z%22%20fill%3D%22%23f6d9a8%22%2F%3E%20%3Cellipse%20cx%3D%22320%22%20cy%3D%22316%22%20rx%3D%22152%22%20ry%3D%2220%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Cg%20transform%3D%22translate%28320%2C262%29%22%3E%20%3Cpath%20d%3D%22M-96%2044%20L0%20-56%20L96%2044%20Z%22%20fill%3D%22%23fff6e2%22%20stroke%3D%22%23c8804a%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M-64%206%20L0%20-56%20L64%206%20Z%22%20fill%3D%22%23ffe1e4%22%2F%3E%20%3Ccircle%20cx%3D%22-46%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Ccircle%20cx%3D%22-14%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Ccircle%20cx%3D%2218%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Ccircle%20cx%3D%2248%22%20cy%3D%2226%22%20r%3D%2213%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3C%2Fg%3E%20%3Crect%20x%3D%22308%22%20y%3D%22112%22%20width%3D%2224%22%20height%3D%2286%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23c8804a%22%20stroke-width%3D%226%22%2F%3E%20%3Cpath%20d%3D%22M320%20106%20q-18%20-20%200%20-42%20q18%2022%200%2042%20z%22%20fill%3D%22%23e8b923%22%2F%3E%20%3C%2Fsvg%3E", "party": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23eef2f8%22%2F%3E%20%3Crect%20x%3D%22168%22%20y%3D%2226%22%20width%3D%22304%22%20height%3D%22172%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%229%22%2F%3E%20%3Crect%20x%3D%22194%22%20y%3D%2252%22%20width%3D%22252%22%20height%3D%22120%22%20rx%3D%229%22%20fill%3D%22%23eef2f8%22%2F%3E%20%3Crect%20x%3D%22212%22%20y%3D%2270%22%20width%3D%22132%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Crect%20x%3D%22212%22%20y%3D%22102%22%20width%3D%22180%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%233f7fd6%22%2F%3E%20%3Crect%20x%3D%22212%22%20y%3D%22134%22%20width%3D%2298%22%20height%3D%2222%22%20rx%3D%2211%22%20fill%3D%22%233faa63%22%2F%3E%20%3Crect%20x%3D%22302%22%20y%3D%22204%22%20width%3D%2236%22%20height%3D%2214%22%20rx%3D%225%22%20fill%3D%22%231f2733%22%2F%3E%20%3Crect%20x%3D%22266%22%20y%3D%22214%22%20width%3D%22108%22%20height%3D%2215%22%20rx%3D%227%22%20fill%3D%22%231f2733%22%2F%3E%20%3Cpath%20d%3D%22M320%20232%20Q214.0%20250%20108%20268%22%20stroke%3D%22%239aa7bd%22%20stroke-width%3D%225%22%20fill%3D%22none%22%20stroke-dasharray%3D%224%2010%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M320%20232%20Q320.0%20250%20320%20268%22%20stroke%3D%22%239aa7bd%22%20stroke-width%3D%225%22%20fill%3D%22none%22%20stroke-dasharray%3D%224%2010%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cpath%20d%3D%22M320%20232%20Q426.0%20250%20532%20268%22%20stroke%3D%22%239aa7bd%22%20stroke-width%3D%225%22%20fill%3D%22none%22%20stroke-dasharray%3D%224%2010%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Crect%20x%3D%2274%22%20y%3D%22268%22%20width%3D%2268%22%20height%3D%2286%22%20rx%3D%2213%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%228%22%2F%3E%20%3Crect%20x%3D%2286%22%20y%3D%22282%22%20width%3D%2244%22%20height%3D%2244%22%20rx%3D%228%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Crect%20x%3D%2294%22%20y%3D%22334%22%20width%3D%2228%22%20height%3D%228%22%20rx%3D%224%22%20fill%3D%22%23c8d0dd%22%2F%3E%20%3Crect%20x%3D%22286%22%20y%3D%22268%22%20width%3D%2268%22%20height%3D%2286%22%20rx%3D%2213%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%228%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22282%22%20width%3D%2244%22%20height%3D%2244%22%20rx%3D%228%22%20fill%3D%22%233f7fd6%22%2F%3E%20%3Crect%20x%3D%22306%22%20y%3D%22334%22%20width%3D%2228%22%20height%3D%228%22%20rx%3D%224%22%20fill%3D%22%23c8d0dd%22%2F%3E%20%3Crect%20x%3D%22498%22%20y%3D%22268%22%20width%3D%2268%22%20height%3D%2286%22%20rx%3D%2213%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%231f2733%22%20stroke-width%3D%228%22%2F%3E%20%3Crect%20x%3D%22510%22%20y%3D%22282%22%20width%3D%2244%22%20height%3D%2244%22%20rx%3D%228%22%20fill%3D%22%233faa63%22%2F%3E%20%3Crect%20x%3D%22518%22%20y%3D%22334%22%20width%3D%2228%22%20height%3D%228%22%20rx%3D%224%22%20fill%3D%22%23c8d0dd%22%2F%3E%20%3C%2Fsvg%3E", "quadcolor": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%2240%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%2284%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22128%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22172%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22216%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22122%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22166%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22210%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22254%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22298%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22342%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22386%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22430%22%20y%3D%22260%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%20opacity%3D%220.32%22%2F%3E%20%3Crect%20x%3D%22236%22%20y%3D%22110%22%20width%3D%22104%22%20height%3D%22104%22%20rx%3D%2216%22%20fill%3D%22%23ffffff%22%2F%3E%20%3Crect%20x%3D%22246%22%20y%3D%22120%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23d94f4f%22%2F%3E%20%3Crect%20x%3D%22290%22%20y%3D%22120%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233f7fd6%22%2F%3E%20%3Crect%20x%3D%22246%22%20y%3D%22164%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%23e8b923%22%2F%3E%20%3Crect%20x%3D%22290%22%20y%3D%22164%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%226%22%20fill%3D%22%233faa63%22%2F%3E%20%3Crect%20x%3D%22236%22%20y%3D%22110%22%20width%3D%22104%22%20height%3D%22104%22%20rx%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2316181d%22%20stroke-width%3D%227%22%2F%3E%20%3C%2Fsvg%3E", "shuzomas": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23fdf3e0%22%2F%3E%20%3Cg%20opacity%3D%220.35%22%3E%20%3Crect%20x%3D%22-400%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-360%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-320%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-280%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-240%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-200%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-160%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-120%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-80%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22-40%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%220%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%2240%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%2280%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22120%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22160%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22200%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22240%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22280%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22320%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22360%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22400%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22440%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22480%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22520%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22560%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22600%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22640%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22680%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22720%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22760%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22800%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22840%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22880%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22920%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%22960%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3Crect%20x%3D%221000%22%20y%3D%22-100%22%20width%3D%2218%22%20height%3D%22560%22%20fill%3D%22%23f0dcb8%22%20transform%3D%22rotate%2820%20320%20180%29%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28248%2C44%29%22%3E%20%3Cpath%20d%3D%22M126%2084%20h30%20a34%2034%200%200%201%2034%2034%20v30%20a34%2034%200%200%201%20-34%2034%20h-30%22%20fill%3D%22%23fdf3e0%22%20stroke%3D%22%234a2f18%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Crect%20x%3D%220%22%20y%3D%2240%22%20width%3D%22130%22%20height%3D%22176%22%20rx%3D%2214%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%234a2f18%22%20stroke-width%3D%2210%22%2F%3E%20%3Crect%20x%3D%2214%22%20y%3D%22102%22%20width%3D%22102%22%20height%3D%22102%22%20rx%3D%228%22%20fill%3D%22%23e0912a%22%2F%3E%20%3Cpath%20d%3D%22M6%2086%20q16%20-34%2040%20-14%20q14%20-30%2042%20-12%20q26%20-18%2036%2012%20q10%2022%20-8%2022%20h-104%20q-16%200%20-6%20-8z%22%20fill%3D%22%23fff8e6%22%20stroke%3D%22%234a2f18%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22%2F%3E%20%3C%2Fg%3E%20%3Cpolygon%20points%3D%22258.0%2C276.0%20265.8%2C295.3%20286.5%2C296.7%20270.6%2C310.1%20275.6%2C330.3%20258.0%2C319.2%20240.4%2C330.3%20245.4%2C310.1%20229.5%2C296.7%20250.2%2C295.3%22%20fill%3D%22%23e8b923%22%2F%3E%20%3Cpolygon%20points%3D%22320.0%2C276.0%20327.8%2C295.3%20348.5%2C296.7%20332.6%2C310.1%20337.6%2C330.3%20320.0%2C319.2%20302.4%2C330.3%20307.4%2C310.1%20291.5%2C296.7%20312.2%2C295.3%22%20fill%3D%22%23e8b923%22%2F%3E%20%3Cpolygon%20points%3D%22382.0%2C276.0%20389.8%2C295.3%20410.5%2C296.7%20394.6%2C310.1%20399.6%2C330.3%20382.0%2C319.2%20364.4%2C330.3%20369.4%2C310.1%20353.5%2C296.7%20374.2%2C295.3%22%20fill%3D%22%23e8b923%22%2F%3E%20%3Crect%20x%3D%2252%22%20y%3D%2296%22%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%234a2f18%22%20stroke-width%3D%227%22%2F%3E%20%3Ccircle%20cx%3D%2284%22%20cy%3D%22128%22%20r%3D%2216%22%20fill%3D%22%238e5bbf%22%2F%3E%20%3Crect%20x%3D%2252%22%20y%3D%22190%22%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%234a2f18%22%20stroke-width%3D%227%22%2F%3E%20%3Ccircle%20cx%3D%2284%22%20cy%3D%22222%22%20r%3D%2216%22%20fill%3D%22%232aa8a0%22%2F%3E%20%3Crect%20x%3D%22524%22%20y%3D%2296%22%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%234a2f18%22%20stroke-width%3D%227%22%2F%3E%20%3Ccircle%20cx%3D%22556%22%20cy%3D%22128%22%20r%3D%2216%22%20fill%3D%22%23e07b28%22%2F%3E%20%3Crect%20x%3D%22524%22%20y%3D%22190%22%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%234a2f18%22%20stroke-width%3D%227%22%2F%3E%20%3Ccircle%20cx%3D%22556%22%20cy%3D%22222%22%20r%3D%2216%22%20fill%3D%22%23b04a4a%22%2F%3E%20%3C%2Fsvg%3E", "whoami": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20640%20360%22%20width%3D%22640%22%20height%3D%22360%22%3E%20%3Crect%20width%3D%22640%22%20height%3D%22360%22%20fill%3D%22%23ede9fb%22%2F%3E%20%3Cg%20transform%3D%22translate%28128%2C210%29%20scale%281.0%29%22%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-52%22%20r%3D%2232%22%20fill%3D%22%23b9a6e0%22%2F%3E%3Cpath%20d%3D%22M-46%2046%20a46%2056%200%200%201%2092%200%20z%22%20fill%3D%22%23b9a6e0%22%2F%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28512%2C210%29%20scale%281.0%29%22%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-52%22%20r%3D%2232%22%20fill%3D%22%23b9a6e0%22%2F%3E%3Cpath%20d%3D%22M-46%2046%20a46%2056%200%200%201%2092%200%20z%22%20fill%3D%22%23b9a6e0%22%2F%3E%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28320%2C206%29%20scale%281.3%29%22%3E%20%3Ccircle%20cx%3D%220%22%20cy%3D%22-52%22%20r%3D%2232%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%236d4fb0%22%20stroke-width%3D%228%22%20stroke-dasharray%3D%2211%209%22%2F%3E%20%3Cpath%20d%3D%22M-46%2046%20a46%2056%200%200%201%2092%200%20z%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%236d4fb0%22%20stroke-width%3D%228%22%20stroke-dasharray%3D%2211%209%22%2F%3E%20%3C%2Fg%3E%20%3Ctext%20x%3D%22320%22%20y%3D%22152%22%20font-family%3D%22Noto%20Sans%20CJK%20JP%2C%20Noto%20Sans%20JP%2C%20sans-serif%22%20font-size%3D%2272%22%20font-weight%3D%22900%22%20fill%3D%22%236d4fb0%22%20text-anchor%3D%22middle%22%3E%3F%3C%2Ftext%3E%20%3C%2Fsvg%3E"};
+const $ = id => document.getElementById(id);
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+const state = { filter:'all', q:'', tag:null };
+
+/* ── アイコン(インラインSVG・絵文字は使わない) ── */
+const ICON = {
+  people:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 5.5a3.2 3.2 0 0 1 0 5"/><path d="M18 14.6a6.5 6.5 0 0 1 3.5 5.4"/></svg>',
+  clock:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>',
+  arrow:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>',
+  bot:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg>',
+};
+
+function matches(g){
+  const f = FILTERS.find(x => x.key === state.filter);
+  if (f && !f.test(g)) return false;
+  if (state.tag && !g.tags.includes(state.tag)) return false;
+  if (state.q){
+    const hay = (g.title + ' ' + g.desc + ' ' + g.tags.join(' ') + ' ' + g.players).toLowerCase();
+    return state.q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+  }
+  return true;
+}
+
+function renderFilters(){
+  $('filters').innerHTML = FILTERS.map(f => {
+    const n = GAMES.filter(f.test).length;
+    return `<button class="chip" data-k="${f.key}" aria-pressed="${state.filter === f.key}">${f.label}<span style="opacity:.55;margin-left:6px">${n}</span></button>`;
+  }).join('') + (state.tag
+    ? `<button class="chip" id="tagChip" aria-pressed="true">#${esc(state.tag)} ×</button>` : '');
+
+  $('filters').querySelectorAll('[data-k]').forEach(b => {
+    b.onclick = () => { state.filter = b.dataset.k; render(); };
+  });
+  const tc = $('tagChip');
+  if (tc) tc.onclick = () => { state.tag = null; render(); };
+}
+
+function renderGrid(){
+  const shown = GAMES.filter(matches);
+  $('count').textContent = `${GAMES.length}本のうち ${shown.length}本を表示しています`;
+  $('empty').classList.toggle('hidden', shown.length > 0);
+
+  $('grid').innerHTML = shown.map(g => {
+    const thumb = g.thumb || g.id;
+    return `
+    <article class="card">
+      <a class="thumbwrap" href="${g.url}" tabindex="-1" aria-hidden="true">
+        <img src="${THUMB[thumb]}" alt="" width="640" height="360" loading="lazy">
+        ${g.isNew ? '<span class="badge">NEW</span>' : ''}
+      </a>
+      <div class="body">
+        <h3><a href="${g.url}">${esc(g.title)}</a></h3>
+        <div class="meta">
+          <span>${ICON.people}${esc(g.players)}</span>
+          <span>${ICON.clock}${esc(g.time)}</span>
+        </div>
+        <p class="desc">${esc(g.desc)}</p>
+        <div class="tags">${g.tags.map(t => `<button class="tag" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+        <div class="cardfoot">
+          <a class="btn btn-primary" href="${g.url}">あそぶ ${ICON.arrow}</a>
+          ${g.cpu ? `<a class="btn btn-ghost solo" href="${g.url}" title="CPUを相手にひとりで試せます">${ICON.bot} ひとりで試す</a>` : ''}
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+
+  $('grid').querySelectorAll('.tag').forEach(b => {
+    b.onclick = () => {
+      state.tag = b.dataset.t;
+      render();
+      $('games').scrollIntoView({ behavior:'smooth', block:'start' });
+    };
+  });
+}
+
+function render(){ renderFilters(); renderGrid(); }
+
+$('q').addEventListener('input', e => { state.q = e.target.value.trim(); render(); });
+$('reset').onclick = () => { state.filter = 'all'; state.tag = null; state.q = ''; $('q').value = ''; render(); };
+$('totalLabel').textContent = `全${GAMES.length}本 ・ うち${GAMES.filter(g => g.cpu).length}本はひとりでも遊べます`;
+
+render();
+</script>
+</body>
+</html>

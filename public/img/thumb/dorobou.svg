@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+<rect width="640" height="360" fill="#fdefe0"/>
+<g transform="translate(320,120)">
+<path d="M-56 -6 L-30 -46 L30 -46 L56 -6 L0 56 Z" fill="#3fa7c9" stroke="#22708a" stroke-width="7" stroke-linejoin="round"/>
+<path d="M-56 -6 H56 M-30 -46 L0 -6 L30 -46 M0 -6 V56" stroke="#22708a" stroke-width="5" fill="none"/>
+</g>
+<g transform="translate(126,268) rotate(-8)"><path d="M-58 -44 H30 L58 0 L30 44 H-58 a10 10 0 0 1 -10 -10 V-34 a10 10 0 0 1 10 -10 z" fill="#ffffff" stroke="#c9541a" stroke-width="7" stroke-linejoin="round"/><circle cx="34" cy="0" r="8" fill="#c9541a"/><text x="-16" y="16" font-family="Noto Sans CJK JP, Noto Sans JP, sans-serif" font-size="46" font-weight="900" fill="#c9541a" text-anchor="middle">1</text></g>
+<g transform="translate(320,284) rotate(0)"><path d="M-58 -44 H30 L58 0 L30 44 H-58 a10 10 0 0 1 -10 -10 V-34 a10 10 0 0 1 10 -10 z" fill="#ffffff" stroke="#8e5bbf" stroke-width="7" stroke-linejoin="round"/><circle cx="34" cy="0" r="8" fill="#8e5bbf"/><text x="-16" y="16" font-family="Noto Sans CJK JP, Noto Sans JP, sans-serif" font-size="46" font-weight="900" fill="#8e5bbf" text-anchor="middle">3</text></g>
+<g transform="translate(514,268) rotate(8)"><path d="M-58 -44 H30 L58 0 L30 44 H-58 a10 10 0 0 1 -10 -10 V-34 a10 10 0 0 1 10 -10 z" fill="#ffffff" stroke="#3f7fd6" stroke-width="7" stroke-linejoin="round"/><circle cx="34" cy="0" r="8" fill="#3f7fd6"/><text x="-16" y="16" font-family="Noto Sans CJK JP, Noto Sans JP, sans-serif" font-size="46" font-weight="900" fill="#3f7fd6" text-anchor="middle">5</text></g>
+</svg>
