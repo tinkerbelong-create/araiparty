@@ -194,9 +194,13 @@ module.exports = function attach(io, opts = {}) {
       if (members.length === 0) { g.question = null; g.slots = []; g.message = 'この手番に参加者がいません'; return broadcast(room); }
       if (!solo && members.length < 3) { g.question = null; g.slots = []; g.message = 'ネプリーグは1人1文字ずつのチーム戦です。3人以上のチームで挑戦してください（個人戦ではクイズになります）'; return broadcast(room); }
       g.difficulty = Math.min(5, Math.max(1, Number(difficulty) || 2)); g.genre = NP.GENRES.includes(genre) ? genre : NP.GENRES[0];
-      const length = solo ? (3 + Math.floor(Math.random() * 3)) : Math.min(members.length, 5);
-      const q = NP.pickQuestion(g.difficulty, g.genre, length);
-      g.question = { text: q.text, answer: q.answer, genre: q.genre, difficulty: q.difficulty }; g.length = NP.chars(q.answer).length;
+      /* pickQuestion の第3引数は「もう出した問題文の配列」。
+         数値を渡すと落ちるので、部屋ごとの出題履歴を渡す。
+         問題オブジェクトのキーは t(問題文) / a(答え) / g(傾向) / d(難易度)。 */
+      g.used = Array.isArray(g.used) ? g.used : [];
+      const q = NP.pickQuestion(g.difficulty, g.genre, g.used);
+      g.used.push(q.t); if (g.used.length > 40) g.used.shift();
+      g.question = { text: q.t, answer: q.a, genre: q.g, difficulty: q.d }; g.length = NP.chars(q.a).length;
       g.slots = []; for (let i = 0; i < g.length; i++) { const owner = members[i % members.length]; g.slots.push({ index: i, playerId: owner.id, playerName: owner.name, char: '', locked: false }); }
       g.solo = solo;
       g.revealed = false; g.results = null; g.correctAll = false;
