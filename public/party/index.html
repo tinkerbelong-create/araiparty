@@ -3,124 +3,301 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>パーティモード 🎉</title>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<title>パーティモード — あらいの遊び場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
-:root{--bg:#eaf3ff;--bg2:#f6f9ff;--card:#fff;--soft:#eef3fb;--line:#dbe6f5;--ink:#28324a;--muted:#8a96b0;
-  --blue:#3a9bff;--blued:#2b74c4;--pink:#ff5a8a;--pinkd:#d63e6e;--green:#37c86b;--greend:#28a355;--gold:#ffb23e;--goldd:#e0912a;--warn:#ff7a3e;--warnd:#e0561e;--red:#ff4d5e;--rblue:#2f7bff;}
-*{box-sizing:border-box}html,body{margin:0;height:100%}
-body{font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;
-  background:radial-gradient(1200px 700px at 50% -5%,#dcefff 0%,var(--bg) 55%,var(--bg2) 100%)}
-.wrap{max-width:1080px;margin:0 auto;padding:20px}
-.phone{max-width:470px;margin:0 auto;padding:18px;min-height:100vh;display:flex;flex-direction:column;gap:16px;justify-content:center}
-.center{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px}
-h1{font-size:clamp(28px,5vw,46px);margin:0;font-weight:900;letter-spacing:.02em}h2{font-size:clamp(20px,3vw,27px);margin:0 0 12px;font-weight:900}h3{margin:0 0 6px}
-.sub{color:var(--muted);font-size:15px;font-weight:700}
-.card{background:var(--card);border:3px solid #fff;border-radius:24px;padding:20px;box-shadow:0 10px 0 #d7e3f4,0 18px 34px rgba(40,50,74,.10);margin-bottom:16px}
-.row{display:flex;gap:12px;flex-wrap:wrap}.grow{flex:1 1 auto}
-button{font:inherit;font-weight:900;color:#fff;background:var(--blue);border:none;padding:13px 22px;border-radius:16px;cursor:pointer;
-  box-shadow:0 5px 0 var(--blued),0 8px 14px rgba(40,50,74,.14);transition:transform .08s,box-shadow .08s}
-button:active{transform:translateY(4px);box-shadow:0 1px 0 var(--blued)}
-button.secondary{background:var(--gold);box-shadow:0 5px 0 var(--goldd),0 8px 14px rgba(40,50,74,.14)}
-button.green{background:var(--green);box-shadow:0 5px 0 var(--greend)}
-button.pink{background:var(--pink);box-shadow:0 5px 0 var(--pinkd)}
-button.warn{background:var(--warn);box-shadow:0 5px 0 var(--warnd)}
-button.ghost{background:#fff;color:#6a7488;box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
-button.big{font-size:22px;padding:18px 40px;border-radius:20px}
-button:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:grayscale(.3)}
-input,select{font:inherit;font-weight:700;padding:12px 13px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);width:100%}
-input:focus,select:focus{outline:none;border-color:var(--blue)}
-label{display:block;text-align:left;color:var(--muted);font-size:13px;font-weight:700;margin:0 0 6px}
-.pill{display:inline-block;background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 15px;color:#5c6a86;font-size:14px;font-weight:900}
-.hidden{display:none!important}
-.code-badge{font-weight:900;letter-spacing:.28em;font-size:clamp(40px,8vw,82px);color:var(--blue);text-shadow:0 3px 0 #cfe2fb}
-.join-box{display:flex;gap:24px;align-items:center;justify-content:center;flex-wrap:wrap}
-.qr{background:#fff;padding:10px;border-radius:16px;border:3px solid #fff;box-shadow:0 6px 0 #d7e3f4}.qr img{display:block;width:180px;height:180px}
-.players{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.chip{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 14px;font-weight:900;text-align:center;position:relative}
-.chip .rm{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;font-size:13px;font-weight:900;line-height:20px;text-align:center;cursor:pointer;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2)}
-.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:12px}
-.team{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px}
-.team .members{min-height:22px;color:var(--muted);font-size:14px;font-weight:700;margin-top:8px}
-.seg{display:inline-flex;background:var(--soft);border-radius:14px;padding:4px;gap:4px}
-.seg button{background:transparent;color:#6a7488;box-shadow:none;padding:8px 16px;border-radius:11px}
-.seg button.on{background:#fff;color:var(--ink);box-shadow:0 3px 0 var(--line)}
-.cfgrow{display:flex;gap:10px;align-items:center;background:var(--soft);border-radius:14px;padding:10px;margin-top:8px;flex-wrap:wrap}
-.cfgrow .no{font-weight:900;color:var(--blue);min-width:52px}
-.cfgrow select{width:auto;min-width:130px;background:#fff}
-/* アイキャッチ(Wiiパーティ風) */
-.eye{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px 16px}
-.eye .stage{font-weight:900;color:var(--blue);font-size:clamp(18px,3vw,26px)}
-.eye .big{font-size:clamp(64px,15vw,150px);line-height:1;filter:drop-shadow(0 8px 0 #cfe2fb)}
-.eye .gname{font-size:clamp(30px,6vw,58px);font-weight:900}
-.eye .fmt{display:inline-block;font-size:clamp(15px,3vw,20px);font-weight:900;color:#fff;border-radius:999px;padding:6px 18px}
-.eye .fmt.cap{background:var(--warn);box-shadow:0 4px 0 var(--warnd)} .eye .fmt.all{background:var(--green);box-shadow:0 4px 0 var(--greend)}
-.dots{display:flex;gap:8px;justify-content:center}
-.dots i{width:14px;height:14px;border-radius:50%;background:#c6d6ee}.dots i.on{background:var(--blue)}.dots i.done{background:var(--green)}
-.vs{display:flex;gap:14px;align-items:stretch;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.tpanel{background:#fff;border-radius:20px;min-width:210px;max-width:280px;flex:1;overflow:hidden;border:3px solid #fff;box-shadow:0 8px 0 #d7e3f4,0 14px 24px rgba(40,50,74,.12);position:relative}
-.tpanel.lead{transform:translateY(-4px)}
-.tpanel .bar{color:#fff;font-weight:900;font-size:20px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
-.tpanel .crown{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:30px;filter:drop-shadow(0 3px 0 rgba(0,0,0,.15))}
-.tpanel .score{font-size:40px;font-weight:900;text-align:center;padding:8px 0 2px}
-.tpanel .mem{padding:6px 12px 14px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.tpanel .m{background:var(--soft);border-radius:999px;padding:4px 12px;font-weight:900;font-size:13px}
-.tpanel .m.rep{color:#fff}
-.tpanel .rep-pick{padding:0 12px 14px}
-.vsmid{display:flex;align-items:center;font-size:30px;font-weight:900;color:var(--muted)}
-/* ネプリーグ盤面 */
-.board{display:flex;flex-direction:column;align-items:center;gap:18px}
-.qtext{font-size:clamp(22px,3.4vw,36px);font-weight:900;text-align:center;line-height:1.4}
-.slots{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.slot{width:clamp(78px,12vw,128px)}
-.slot .box{height:clamp(88px,13vw,138px);border-radius:18px;border:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:clamp(42px,7vw,82px);font-weight:900;background:#fff;color:var(--ink);box-shadow:0 6px 0 #e6eefa}
-.slot .box.locked{border-color:var(--blue)}
-.slot.correct .box{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 6px 0 #d63a4a}
-.slot.wrong .box{background:var(--rblue);border-color:var(--rblue);color:#fff;box-shadow:0 6px 0 #245fd0}
-.slot .name{margin-top:8px;text-align:center;font-weight:900}
-.slot .name small{display:block;color:var(--muted);font-weight:700;font-size:12px}
-.result-line{font-size:clamp(22px,3vw,32px);font-weight:900}.result-line.ok{color:var(--green)}.result-line.ng{color:var(--pink)}
-.scoreboard{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
-.score{background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 16px;font-weight:900;display:flex;align-items:center;gap:8px}
-.score .dot{width:14px;height:14px;border-radius:50%}.score small{color:var(--muted);font-weight:700}
-.waiting{color:var(--muted);text-align:center;font-weight:700}
-.big-input{font-size:54px;text-align:center;letter-spacing:.1em;padding:16px}
-.my-slot{font-size:19px;color:var(--muted);text-align:center;font-weight:700}
-.status{text-align:center;color:var(--muted);font-weight:700}
-/* グラフ */
-.gbar-row{display:flex;align-items:center;gap:10px;margin-top:12px}
-.gbar-name{width:120px;font-weight:900;text-align:right;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:5px;align-items:center;justify-content:flex-end}
-.gbar-track{flex:1;background:var(--soft);border-radius:999px;height:30px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.06)}
-.gbar-fill{height:100%;border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1);display:flex;align-items:center;justify-content:flex-end;color:#fff;font-weight:900;font-size:14px;padding-right:10px;min-width:40px}
+/* ══════════════════════════════════════════════════════════════
+   パーティモード — 縁日・お祭り
 
-/* シュゾマス(パーティ内) */
-.sz-hud{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-.sz-seat{flex:1;min-width:150px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 10px}
-.sz-seat.sub{border-color:var(--green)}
+   使っているもの
+     紅白幕(画面の上端)/ 提灯(チームの得点板)/ 木札(名前と合言葉)
+     木の看板(ゲーム名)/ 射的の的(正解のマス)/ 生成りの布(地色)
+
+   色は染料と塗料から:
+     朱 #cf3a2f ・ 藍 #1f4270 ・ 金 #bf9b2f ・ 若葉 #5f8f3c ・ 墨 #1c1a17
+
+   書体は2つだけ。見出しは太明朝(祭りの提灯と看板の文字)、
+   本文は角ゴシック(離れたテレビからでも読めるように)。
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --kinari:#f6efdf; --nuno:#efe5d0; --shiro:#fffdf7;
+  --sumi:#1c1a17; --sumi-2:#57503f; --sumi-3:#8d8471;
+  --aka:#cf3a2f;  --aka-d:#9c2119;
+  --ai:#1f4270;   --ai-d:#132c4d;
+  --kin:#bf9b2f;  --kin-d:#8d7017;
+  --wakaba:#5f8f3c; --wakaba-d:#416825;
+  --ki:#d9b886;   --ki-d:#a37f4f;
+  --rule:#1c1a17; --rule-l:#c8b995;
+  /* JS が触る旧変数名は残す */
+  --bg:var(--kinari); --bg2:var(--kinari); --card:var(--shiro); --soft:var(--nuno);
+  --line:var(--rule-l); --muted:var(--sumi-3); --ink:var(--sumi);
+  --blue:var(--ai); --blued:var(--ai-d);
+  --pink:var(--aka); --pinkd:var(--aka-d);
+  --green:var(--wakaba); --greend:var(--wakaba-d);
+  --gold:var(--kin); --goldd:var(--kin-d);
+  --warn:var(--aka); --warnd:var(--aka-d);
+  --red:var(--aka); --rblue:var(--ai); --accent:var(--ai);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--sumi);font-weight:500;-webkit-font-smoothing:antialiased;
+  background-color:var(--kinari);padding-top:52px;
+  /* 布の織り目 */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+}
+h1,h2,h3,.pill,.code-badge,.eye .gname,.eye .stage,.qtext,.result-line,.tpanel .score,button.big{
+  font-family:'Shippori Mincho B1','Yu Mincho','Hiragino Mincho ProN',serif;font-weight:800;
+}
+
+/* ── 紅白幕。画面の上端にずっと張っておく ── */
+body::before{
+  content:"";position:fixed;top:0;left:0;right:0;height:52px;z-index:60;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22128%22%20height%3D%2252%22%20viewBox%3D%220%200%20128%2052%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Crect%20x%3D%2232%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23fffdf7%22%2F%3E%3Cellipse%20cx%3D%2248%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23fffdf7%22%2F%3E%3Crect%20x%3D%2264%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Cellipse%20cx%3D%2280%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Crect%20x%3D%2296%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23fffdf7%22%2F%3E%3Cellipse%20cx%3D%22112%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23fffdf7%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22128%22%20height%3D%223%22%20fill%3D%22%231c1a17%22%2F%3E%3C%2Fsvg%3E") repeat-x 0 0/128px 52px;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.22));
+}
+
+.wrap{max-width:1120px;margin:0 auto;padding:20px}
+.phone{max-width:480px;margin:0 auto;padding:16px;min-height:calc(100vh - 52px);display:flex;flex-direction:column;gap:14px;justify-content:center}
+.center{min-height:calc(100vh - 52px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px}
+
+h1{font-size:clamp(32px,5vw,54px);margin:0;letter-spacing:.1em}
+h2{font-size:clamp(21px,3vw,29px);margin:0 0 12px;letter-spacing:.08em}
+h3{margin:0 0 6px;letter-spacing:.06em;font-size:17px}
+.sub{color:var(--sumi-2);font-size:14px;font-weight:500;letter-spacing:.02em}
+
+/* ── 紙。朱色の版ズレで浮かせる ── */
+.card{
+  background:var(--shiro);border:2px solid var(--rule);border-radius:2px;
+  padding:20px;margin-bottom:16px;box-shadow:6px 6px 0 rgba(28,26,23,.13);
+}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.grow{flex:1 1 auto}
+
+/* ── ボタンは屋台の木札。押すと沈む ── */
+button{
+  font:inherit;font-weight:900;letter-spacing:.08em;color:var(--shiro);
+  background:var(--ai);border:2px solid var(--rule);border-radius:2px;
+  padding:12px 22px;cursor:pointer;box-shadow:4px 4px 0 var(--sumi);
+  transition:transform .07s,box-shadow .07s;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+button:hover{box-shadow:2px 2px 0 var(--sumi);transform:translate(2px,2px)}
+button:active{box-shadow:0 0 0 var(--sumi);transform:translate(4px,4px)}
+button.secondary{background:var(--kin);color:var(--sumi)}
+button.green{background:var(--wakaba)}
+button.pink,button.warn{background:var(--aka)}
+button.ghost{background:var(--ki);color:var(--sumi)}
+button.big{font-size:23px;padding:17px 40px;letter-spacing:.14em;background:var(--aka)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 var(--rule-l)}
+button svg{width:1.05em;height:1.05em;flex:0 0 auto}
+
+input,select{
+  font:inherit;font-weight:700;padding:11px 12px;border-radius:2px;
+  border:2px solid var(--rule);background:var(--shiro);color:var(--sumi);width:100%;
+}
+input:focus,select:focus{outline:3px solid var(--kin);outline-offset:1px}
+label{display:block;text-align:left;color:var(--sumi-2);font-size:12px;font-weight:700;margin:0 0 6px;letter-spacing:.1em}
+
+/* ── 見出しの札 ── */
+.pill{
+  display:inline-block;background:var(--sumi);color:var(--kinari);border-radius:1px;
+  padding:6px 18px;font-size:14px;letter-spacing:.22em;
+}
+.hidden{display:none!important}
+
+/* ── 合言葉は千社札。白地に墨の大書き、朱の二重枠 ── */
+.code-badge{
+  display:inline-block;font-size:clamp(46px,8vw,92px);color:var(--sumi);
+  letter-spacing:.3em;background:var(--shiro);
+  border:3px solid var(--sumi);border-radius:1px;padding:10px 14px 10px 30px;
+  box-shadow:0 0 0 4px var(--shiro), 0 0 0 7px var(--aka), 7px 7px 0 rgba(28,26,23,.2);
+}
+.join-box{display:flex;gap:28px;align-items:center;justify-content:center;flex-wrap:wrap}
+/* QRは木の額に入れる */
+.qr{background:var(--shiro);padding:12px;border-radius:2px;border:7px solid var(--ki);
+  box-shadow:0 0 0 2px var(--sumi), 6px 6px 0 rgba(28,26,23,.18)}
+.qr img{display:block;width:190px;height:190px}
+
+/* ── 参加者は木札(千社札)。上に紐の穴 ── */
+.players{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding-top:8px}
+.chip{
+  background:var(--ki);border:2px solid var(--rule);border-radius:2px;
+  padding:12px 16px 10px;font-weight:700;text-align:center;position:relative;color:var(--sumi);
+  box-shadow:3px 3px 0 rgba(28,26,23,.18);
+}
+.chip::before{content:"";position:absolute;top:5px;left:50%;transform:translateX(-50%);
+  width:7px;height:7px;border-radius:50%;background:var(--kinari);border:1.5px solid var(--sumi)}
+.chip{padding-top:18px}
+.chip .rm{
+  position:absolute;top:-9px;right:-9px;width:21px;height:21px;border-radius:50%;
+  background:var(--aka);color:var(--shiro);font-size:12px;font-weight:900;
+  line-height:19px;text-align:center;cursor:pointer;border:2px solid var(--sumi);
+}
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
+.team{background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:13px}
+.team .members{min-height:22px;color:var(--sumi-2);font-size:13px;font-weight:500;margin-top:8px}
+
+/* ── 選び札 ── */
+.seg{display:inline-flex;border:2px solid var(--rule);border-radius:2px;overflow:hidden}
+.seg button{background:var(--shiro);color:var(--sumi-2);box-shadow:none;border:none;border-radius:0;padding:10px 20px;letter-spacing:.1em}
+.seg button:hover,.seg button:active{transform:none;box-shadow:none;background:var(--nuno)}
+.seg button + button{border-left:2px solid var(--rule)}
+.seg button.on{background:var(--aka);color:var(--shiro)}
+
+.cfgrow{display:flex;gap:10px;align-items:center;background:var(--nuno);
+  border:2px solid var(--rule-l);border-radius:2px;padding:10px;margin-top:8px;flex-wrap:wrap}
+.cfgrow .no{font-weight:900;color:var(--aka);min-width:56px;letter-spacing:.08em}
+.cfgrow select{width:auto;min-width:140px}
+
+/* ── 次の演目 ── */
+.eye{min-height:calc(100vh - 52px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px 16px}
+.eye .stage{color:var(--aka);font-size:clamp(18px,3vw,26px);letter-spacing:.3em}
+.eye .big{width:clamp(110px,17vw,168px);height:auto;margin:0 auto;color:var(--sumi)}
+.eye .big svg{width:100%;height:auto;display:block}
+/* ゲーム名は屋台の木看板 */
+.eye .gname{
+  font-size:clamp(34px,6vw,64px);letter-spacing:.14em;color:var(--sumi);
+  background:var(--ki);border:4px solid var(--sumi);border-radius:2px;
+  padding:12px 34px;box-shadow:8px 8px 0 rgba(28,26,23,.22);
+}
+.eye .fmt{display:inline-flex;align-items:center;gap:8px;font-size:clamp(14px,3vw,19px);
+  font-weight:900;color:var(--shiro);border:2px solid var(--sumi);border-radius:2px;padding:8px 20px;letter-spacing:.12em}
+.eye .fmt.cap{background:var(--aka)}
+.eye .fmt.all{background:var(--wakaba)}
+/* 進行は提灯の連なり */
+.dots{display:flex;gap:14px;justify-content:center;padding-top:6px}
+.dots i{width:15px;height:19px;border-radius:46% 46% 42% 42%;background:var(--shiro);
+  border:2px solid var(--sumi);position:relative}
+.dots i::after{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  width:2px;height:6px;background:var(--sumi)}
+.dots i.on{background:var(--aka)}
+.dots i.done{background:var(--sumi)}
+
+/* ── チームの得点板は提灯 ── */
+.vs{display:flex;gap:20px;align-items:stretch;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.tpanel{
+  background:var(--shiro);border:3px solid var(--sumi);
+  border-radius:34px 34px 30px 30px/16px 16px 14px 14px;
+  min-width:212px;max-width:290px;flex:1;overflow:hidden;position:relative;
+  box-shadow:5px 6px 0 rgba(28,26,23,.18);
+  /* 提灯の骨 */
+  background-image:repeating-linear-gradient(to bottom, transparent 0 13px, rgba(28,26,23,.11) 13px 14px);
+}
+.tpanel.lead{box-shadow:5px 6px 0 var(--kin)}
+.tpanel .bar{color:var(--shiro);font-weight:900;font-size:19px;padding:9px 16px;
+  display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--sumi);letter-spacing:.06em}
+.tpanel .crown{position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:34px;height:26px;color:var(--kin)}
+.tpanel .crown svg{width:100%;height:100%;display:block}
+.tpanel .score{font-size:46px;text-align:center;padding:10px 0 2px;letter-spacing:.02em}
+.tpanel .mem{padding:6px 12px 16px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tpanel .m{background:var(--ki);border:1px solid var(--sumi);border-radius:1px;padding:3px 11px;font-weight:700;font-size:12.5px;color:var(--sumi)}
+.tpanel .m.rep{color:var(--shiro);border-color:var(--sumi)}
+.tpanel .rep-pick{padding:0 12px 16px}
+.vsmid{display:flex;align-items:center;font-size:26px;font-weight:900;color:var(--aka);letter-spacing:.1em}
+
+/* ── ファイブリーグの盤面 ── */
+.board{display:flex;flex-direction:column;align-items:center;gap:20px}
+.qtext{font-size:clamp(24px,3.6vw,42px);text-align:center;line-height:1.55;letter-spacing:.04em}
+.slots{display:flex;gap:13px;justify-content:center;flex-wrap:wrap}
+.slot{width:clamp(78px,12vw,132px)}
+.slot .box{
+  height:clamp(90px,13vw,142px);border-radius:2px;border:3px solid var(--sumi);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(44px,7vw,86px);font-weight:900;background:var(--shiro);color:var(--sumi);
+}
+.slot .box.locked{box-shadow:inset 0 0 0 4px var(--kin)}
+/* 正解のマスは射的の的 */
+.slot.correct .box{
+  color:var(--shiro);border-color:var(--sumi);
+  background:radial-gradient(circle at 50% 50%, var(--aka) 0 34%, var(--shiro) 34% 42%, var(--aka) 42% 60%, var(--shiro) 60% 68%, var(--aka) 68%);
+  text-shadow:0 2px 0 var(--aka-d),0 0 10px var(--aka-d);
+}
+.slot.wrong .box{background:var(--nuno);color:var(--sumi-3)}
+.slot .name{margin-top:8px;text-align:center;font-weight:700;font-size:14px}
+.slot .name small{display:block;color:var(--sumi-3);font-weight:500;font-size:11.5px}
+.result-line{font-size:clamp(24px,3vw,36px);letter-spacing:.12em;display:flex;align-items:center;gap:12px;justify-content:center}
+.result-line.ok{color:var(--aka)}
+.result-line.ng{color:var(--ai)}
+.result-line svg{width:1em;height:1em}
+.scoreboard{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.score{background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:7px 15px;font-weight:900;display:flex;align-items:center;gap:8px}
+.score .dot{width:13px;height:13px;border-radius:50%;border:1px solid var(--sumi)}
+.score small{color:var(--sumi-3);font-weight:500}
+.waiting{color:var(--sumi-2);text-align:center;font-weight:500}
+.big-input{font-size:58px;text-align:center;letter-spacing:.14em;padding:16px;border-width:3px;
+  font-family:'Shippori Mincho B1',serif;font-weight:800}
+.my-slot{font-size:18px;color:var(--sumi-2);text-align:center;font-weight:700}
+.status{text-align:center;color:var(--sumi-2);font-weight:500;display:flex;align-items:center;gap:7px;justify-content:center;flex-wrap:wrap}
+.status svg{width:1.15em;height:1.15em;flex:0 0 auto}
+
+/* ── 得点は提灯の紐に並ぶ ── */
+.gbar-row{display:flex;align-items:center;gap:10px;margin-top:11px}
+.gbar-name{width:130px;font-weight:900;text-align:right;font-size:14px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;display:flex;gap:5px;align-items:center;justify-content:flex-end}
+.gbar-name svg{width:15px;height:15px;flex:0 0 auto;color:var(--kin)}
+.gbar-track{flex:1;background:var(--nuno);border:2px solid var(--sumi);border-radius:2px;height:34px;overflow:hidden}
+.gbar-fill{height:100%;transition:width .7s cubic-bezier(.2,.8,.2,1);display:flex;align-items:center;
+  justify-content:flex-end;color:var(--shiro);font-weight:900;font-size:15px;padding-right:10px;min-width:38px;
+  border-right:2px solid var(--sumi)}
+
+/* ── シュゾマス(パーティ内) ── */
+.sz-hud{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0}
+.sz-seat{flex:1;min-width:152px;background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:8px 10px}
+.sz-seat.sub{border-color:var(--wakaba);border-width:3px}
 .sz-seat .nm{font-weight:900}
-.sz-seat .stt{display:flex;gap:8px;margin-top:4px;font-weight:700;color:#6a7488;font-size:13px}
+.sz-seat .stt{display:flex;gap:9px;margin-top:4px;font-weight:500;color:var(--sumi-2);font-size:12.5px;align-items:center;flex-wrap:wrap}
+.sz-seat .stt svg{width:13px;height:13px;flex:0 0 auto}
 .sz-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
 @media(max-width:560px){.sz-grid{grid-template-columns:repeat(4,1fr)}}
-.sz-ing{background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 2px 10px;text-align:center;cursor:pointer;position:relative;user-select:none}
-.sz-ing.sel{border-color:var(--accent);background:#eef1ff;box-shadow:0 0 0 2px var(--accent)}
-.sz-ing.sel2{border-color:#3d4ed6;background:#e0e5ff;box-shadow:0 0 0 3px #3d4ed6}
-.sz-ing.dim{opacity:.4;cursor:not-allowed}
-.sz-ing .emo{font-size:24px}.sz-ing .no{font-size:10px;color:#8a94a8;font-weight:700}.sz-ing .pr{font-size:11px;font-weight:900;color:var(--green)}
-.sz-ing .at{position:absolute;top:-6px;right:-4px;width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:900;line-height:20px;border:2px solid #fff}
-.sz-ing .kd{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);background:var(--ink);color:#ffd23f;font-size:10px;font-weight:900;border-radius:7px;padding:0 6px;white-space:nowrap}
-.a-A{background:#8e5bbf}.a-B{background:#2aa8a0}.a-C{background:#e07b28}.a-D{background:#b04a4a}
+.sz-ing{background:var(--shiro);border:2px solid var(--rule);border-radius:2px;
+  padding:8px 2px 10px;text-align:center;cursor:pointer;position:relative;user-select:none}
+.sz-ing.sel{border-color:var(--ai);border-width:3px;background:#eaeff7}
+.sz-ing.sel2{border-color:var(--ai-d);border-width:4px;background:#dde6f2}
+.sz-ing.dim{opacity:.35;cursor:not-allowed}
+.sz-ing .emo{font-size:23px;font-weight:900;line-height:1.3}
+.sz-ing .emo img.fruit{width:46px;height:46px;object-fit:cover;border-radius:2px;display:block;margin:0 auto;border:1px solid var(--sumi)}
+.sz-slot .emo img.fruit{width:52px;height:52px;object-fit:cover;border-radius:2px;display:block}
+.sz-ing .no{font-size:10px;color:var(--sumi-3);font-weight:500}
+.sz-ing .pr{font-size:11px;font-weight:900;color:var(--wakaba)}
+.sz-ing .at{position:absolute;top:-2px;left:-2px;width:18px;height:18px;border-radius:0 0 3px 0;
+  color:var(--shiro);font-size:10px;font-weight:900;line-height:18px;border:2px solid var(--sumi);border-top:0;border-left:0}
+.sz-ing .kd{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  background:var(--sumi);color:var(--kinari);font-size:10px;font-weight:900;border-radius:1px;padding:1px 7px;white-space:nowrap}
+.a-A{background:var(--ai)}.a-B{background:var(--wakaba)}.a-C{background:var(--kin)}.a-D{background:var(--aka)}
 .sz-bench{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
-.sz-slot{width:64px;height:64px;border:2px dashed var(--line);border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative}
-.sz-slot.filled{border-style:solid;background:#fff}
-.sz-slot .x{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;font-weight:900;line-height:18px;text-align:center;cursor:pointer;border:2px solid #fff}
-.sz-info{font-weight:900}.sz-info .over{color:var(--red)}.sz-info .ok{color:var(--green)}
+.sz-slot{width:66px;height:66px;border:2px dashed var(--rule-l);border-radius:2px;background:var(--nuno);
+  display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;position:relative}
+.sz-slot.filled{border-style:solid;border-color:var(--sumi);background:var(--shiro)}
+.sz-slot .x{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;
+  background:var(--aka);color:var(--shiro);font-size:11px;font-weight:900;line-height:18px;
+  text-align:center;cursor:pointer;border:2px solid var(--sumi)}
+.sz-info{font-weight:900}
+.sz-info .over{color:var(--aka)}
+.sz-info .ok{color:var(--wakaba)}
 .sz-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
-.sz-chip{background:#fff;border:2px solid var(--line);border-radius:7px;font-size:12px;font-weight:900;padding:2px 8px;color:#6a7488}
-.sz-rrow{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 12px;margin-top:8px}
-.sz-rrow.me{outline:3px solid var(--accent)}
-.sz-rrow .md{font-size:24px;width:34px;text-align:center}.sz-rrow .rn{flex:1;font-weight:900}.sz-rrow .dl{font-weight:900;font-size:13px;text-align:right}
-.sz-rrow .plus{color:var(--green)}.sz-rrow .minus{color:var(--red)}
-.sakechip{display:inline-block;background:var(--ink);color:#ffd23f;border-radius:7px;padding:0 8px;font-size:12px;font-weight:900}
+.sz-chip{background:var(--shiro);border:1px solid var(--sumi);border-radius:1px;font-size:12px;font-weight:700;padding:2px 8px;color:var(--sumi-2)}
+.sz-rrow{display:flex;align-items:center;gap:10px;background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:8px 12px;margin-top:8px}
+.sz-rrow.me{border-color:var(--ai);border-width:3px}
+.sz-rrow .md{width:38px;text-align:center;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center}
+.sz-rrow .md svg{width:26px;height:26px}
+.sz-rrow .rn{flex:1;font-weight:900}
+.sz-rrow .dl{font-weight:900;font-size:13px;text-align:right}
+.sz-rrow .plus{color:var(--wakaba)}
+.sz-rrow .minus{color:var(--aka)}
+.sakechip{display:inline-block;background:var(--sumi);color:var(--kinari);border-radius:1px;padding:1px 8px;font-size:12px;font-weight:900}
+
+/* ピクトグラム */
+.pic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.14em;flex:0 0 auto}
+.pic path,.pic circle,.pic rect,.pic line,.pic polyline,.pic polygon{
+  fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.pic.fill path,.pic.fill circle,.pic.fill rect,.pic.fill polygon{fill:currentColor;stroke:none}
+.pic-m{display:inline-block;width:1.2em;height:1.2em;vertical-align:-.2em;flex:0 0 auto}
+
 </style>
 </head>
 <body>
@@ -173,9 +350,11 @@ let state=null, priv=null, ui={difficulty:2,genre:GENRES[0]}, lastPlayerSig='', 
 const qs = new URLSearchParams(location.search);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const chars = s => Array.from(s||'');
+const ICN={tv:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="4.5" width="19.6" height="13" rx="1.2"/><path d="M8 21h8M12 17.5V21"/></svg>',phone:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.8" y="2.2" width="10.4" height="19.6" rx="1.4"/><path d="M10.8 18.6h2.4"/></svg>',people:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.2 20a5.8 5.8 0 0 1 11.6 0"/><path d="M16.2 5.6a3 3 0 0 1 0 4.8"/><path d="M17.6 14.4A5.8 5.8 0 0 1 20.8 20"/></svg>',person:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.6 20a6.4 6.4 0 0 1 12.8 0"/></svg>',crown:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg>',crownF:'<svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg>',sword:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg>',dice:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01" stroke-width="2.8"/></svg>',chart:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20.5h20"/><path d="M5.5 20.5V12M11 20.5V4.5M16.5 20.5v-6"/></svg>',trophy:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v5.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.4v1.9A3.5 3.5 0 0 0 7.9 10.6"/><path d="M17 5.2h2.6v1.9a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13.8v3.4M8.4 20.4h7.2"/></svg>',lock:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="10.2" width="15.6" height="9.8" rx="1.5"/><path d="M8 10.2V7a4 4 0 0 1 8 0v3.2"/></svg>',unlock:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="10.2" width="15.6" height="9.8" rx="1.5"/><path d="M8 10.2V7a4 4 0 0 1 7.4-2.1"/></svg>',ok:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" stroke-width="2.6"/></svg>',ng:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke-width="2.6"/></svg>',check:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.6l5.2 5.2L20 6.4"/></svg>',trash:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 6.6h16.4M9 6.6V4.2h6v2.4M6.4 6.6l.9 13.2h9.4l.9-13.2"/></svg>',refresh:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 12a8.2 8.2 0 1 1-2.4-5.8"/><path d="M20.4 3.6v5.2h-5.2"/></svg>',search:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8l4.6 4.6"/></svg>',money:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.2v9.6M9.4 10.2h5.2M9.4 13.4h5.2"/></svg>',star:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.9l6.1-.9z"/></svg>',sleep:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.6 8.6 0 1 1 9.4 3.8a7.1 7.1 0 0 0 10.8 10.8z"/></svg>',beer:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h9.2v14H6z"/><path d="M15.2 9.6h2.3a2.5 2.5 0 0 1 0 5h-2.3"/><path d="M6 10.4h9.2"/></svg>',burst:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.1 4.9 5-1.6-1.6 5 4.9 2.1-4.9 2.1 1.6 5-5-1.6-2.1 4.9-2.1-4.9-5 1.6 1.6-5L1.6 13l4.9-2.1-1.6-5 5 1.6z"/></svg>',thermo:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14.2V5.2a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/></svg>',warn:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.8l9.2 16.4H2.8z"/><path d="M12 10v4.2M12 17.4h.01" stroke-width="2.6"/></svg>',quiz:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.8"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3 2.5v1.4M12 17h.01" stroke-width="2.4"/></svg>',grid5:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="7.6" width="19.6" height="8.8" rx="1"/><path d="M8.1 7.6v8.8M15.9 7.6v8.8"/></svg>',quad:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="0.8"/><rect x="13" y="3" width="8" height="8" rx="0.8"/><rect x="3" y="13" width="8" height="8" rx="0.8"/><rect x="13" y="13" width="8" height="8" rx="0.8"/></svg>',fruit:'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14.4" r="6.6"/><path d="M12 7.8V4.2M12 4.2c2.2 0 3.4-1 3.4-1"/></svg>',m1:'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#e8bd4a" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">1</text></svg>',m2:'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#cdd0d6" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">2</text></svg>',m3:'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#d29a63" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">3</text></svg>'};
+const GAMEICON={nepleague:ICN.grid5,shuzomas:ICN.beer,quadcolor:ICN.quad,countfruits:ICN.fruit};
 const el = id => document.getElementById(id);
 const curName=()=> (state&&state.curGame==='nepleague'&&state.mode==='individual')?'クイズ':(state?state['curGameName']:null);
-const curIcon=()=> (state&&state.curGame==='nepleague'&&state.mode==='individual')?'🧠':(state?state['curGameIcon']:null);
+const curIcon=()=> (state&&state.curGame==='nepleague'&&state.mode==='individual')?ICN.quiz:GAMEICON[state&&state.curGame]||ICN.dice;
 
 socket.on('connect', () => {
   const h=sessionStorage.getItem('pt_host'), p=sessionStorage.getItem('pt_player');
@@ -189,9 +368,9 @@ socket.on('pt:sz:reveal', rv=>{ szReveal=rv; szPicks=[]; if(szFrame&&szFrameRead
 function renderHome(err){
   state=null; const code=(qs.get('code')||'').toUpperCase();
   root.innerHTML=`<div class="center">
-    <div><div class="pill">🎉 パーティー大会</div><h1>パーティモード</h1><p class="sub">テレビにホスト画面、スマホで参加。チーム対抗で通しで遊ぼう</p></div>
-    ${code?'':`<div class="card" style="width:min(520px,92vw)"><h2>📺 ホスト（テレビ・PC担当）</h2><p class="sub" style="margin-bottom:12px">ここで合言葉を表示します</p><button id="host" class="green">ホスト画面をひらく</button></div>`}
-    <div class="card" style="width:min(520px,92vw)"><h2>📱 参加する（スマホ）</h2>
+    <div><div class="pill">パーティー大会</div><h1>パーティモード</h1><p class="sub">テレビにホスト画面、スマホで参加。チーム対抗で通しで遊ぼう</p></div>
+    ${code?'':`<div class="card" style="width:min(520px,92vw)"><h2><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="4.5" width="19.6" height="13" rx="1.2"/><path d="M8 21h8M12 17.5V21"/></svg> ホスト（テレビ・PC担当）</h2><p class="sub" style="margin-bottom:12px">ここで合言葉を表示します</p><button id="host" class="green">ホスト画面をひらく</button></div>`}
+    <div class="card" style="width:min(520px,92vw)"><h2><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.8" y="2.2" width="10.4" height="19.6" rx="1.4"/><path d="M10.8 18.6h2.4"/></svg> 参加する（スマホ）</h2>
       <label>あいことば</label><input id="code" maxlength="5" style="text-transform:uppercase;text-align:center;letter-spacing:.3em;font-size:26px" value="${esc(code)}">
       <div style="height:10px"></div><label>なまえ</label><input id="name" maxlength="12" placeholder="なまえ">
       <div style="height:14px"></div><button id="join" class="secondary" style="width:100%">参加する</button>
@@ -215,7 +394,7 @@ function scoreEntries(){
   return arr.slice().sort((a,b)=>b.score-a.score);
 }
 function scoreboardHTML(){ const e=scoreEntries(); if(!e.length) return '';
-  return '<div class="scoreboard">'+e.map(x=>`<div class="score"><span class="dot" style="background:${x.color}"></span>${x.leader?'👑 ':''}${esc(x.name)}<small>${x.score}pt</small></div>`).join('')+'</div>'; }
+  return '<div class="scoreboard">'+e.map(x=>`<div class="score"><span class="dot" style="background:${x.color}"></span>${x.leader?'<svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg> ':''}${esc(x.name)}<small>${x.score}pt</small></div>`).join('')+'</div>'; }
 
 /* ════ ホスト ════ */
 function renderHost(){
@@ -237,24 +416,24 @@ function renderHostSetup(){
       <div class="qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(joinUrl)}"></div></div>
     </div>
     <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">② 参加者・チーム <span class="pill">${players.length}人</span></h2>
-      <button class="ghost" id="clr">🗑 初期化（全消去）</button></div>
-      <div class="row" style="margin-top:8px"><div class="seg"><button id="mTeam" class="${state.mode==='team'?'on':''}">👥 チーム戦</button><button id="mIndiv" class="${state.mode==='individual'?'on':''}">🙋 個人戦</button></div></div>
+      <button class="ghost" id="clr"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 6.6h16.4M9 6.6V4.2h6v2.4M6.4 6.6l.9 13.2h9.4l.9-13.2"/></svg> 初期化（全消去）</button></div>
+      <div class="row" style="margin-top:8px"><div class="seg"><button id="mTeam" class="${state.mode==='team'?'on':''}"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.2 20a5.8 5.8 0 0 1 11.6 0"/><path d="M16.2 5.6a3 3 0 0 1 0 4.8"/><path d="M17.6 14.4A5.8 5.8 0 0 1 20.8 20"/></svg> チーム戦</button><button id="mIndiv" class="${state.mode==='individual'?'on':''}"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.6 20a6.4 6.4 0 0 1 12.8 0"/></svg> 個人戦</button></div></div>
       <div class="players" style="margin-top:12px">${players.length?players.map(p=>{
         let ctrl='';
         if(state.mode==='team'){ const o=['<option value="">未所属</option>'].concat(teams.map(t=>`<option value="${t.id}" ${t.id===p.teamId?'selected':''}>${esc(t.name)}</option>`)).join('');
           ctrl=`<div style="margin-top:6px"><select data-assign="${p.id}" style="padding:6px">${o}</select></div>`; }
-        return `<div class="chip">${esc(p.name)}${ctrl}<span class="rm" data-rm="${p.id}">✕</span></div>`;
+        return `<div class="chip">${esc(p.name)}${ctrl}<span class="rm" data-rm="${p.id}">×</span></div>`;
       }).join(''):'<span class="sub">まだ誰もいません</span>'}</div>
       ${state.mode==='team'?`<div style="margin-top:14px"><div class="row" style="max-width:420px"><input id="tName" class="grow" placeholder="チーム名（例：赤チーム）"><button id="addT" class="green">チーム追加</button></div>
         <div class="teams">${teams.map(t=>{const m=teamPlayers(t.id).map(p=>esc(p.name)).join('、')||'（0人）';
-          return `<div class="team" style="border-color:${teamColor(t)}"><div class="row" style="gap:8px"><input class="grow" data-rename="${t.id}" value="${esc(t.name)}"><button class="ghost" data-remove="${t.id}">✕</button></div><div class="members">${m}</div></div>`;}).join('')}</div></div>`:''}
+          return `<div class="team" style="border-color:${teamColor(t)}"><div class="row" style="gap:8px"><input class="grow" data-rename="${t.id}" value="${esc(t.name)}"><button class="ghost" data-remove="${t.id}">×</button></div><div class="members">${m}</div></div>`;}).join('')}</div></div>`:''}
     </div>
     <div class="card"><h2>③ マッチ設定</h2>
       <label>何本あそぶ？</label><div class="seg" id="mc">${[3,5].map(n=>`<button data-mc="${n}" class="${cfg.matchCount===n?'on':''}">${n}マッチ</button>`).join('')}</div>
       <div style="margin-top:12px">${cfg.slots.map((sl,i)=>`
         <div class="cfgrow"><span class="no">第${i+1}戦</span>
-          <select data-game="${i}"><option value="random" ${sl.game==='random'?'selected':''}>🎲 ランダム</option>${state.games.filter(g=>g.ready).map(g=>`<option value="${g.id}" ${sl.game===g.id?'selected':''}>${g.icon} ${esc(g.name)}</option>`).join('')}</select>
-          <div class="seg"><button data-fmt="${i}" data-v="all" class="${sl.format==='all'?'on':''}">全員参加</button><button data-fmt="${i}" data-v="captain" class="${sl.format==='captain'?'on':''}" ${sl.game==='nepleague'?'disabled':''} title="${sl.game==='nepleague'?'ネプリーグは大将戦できません':''}">⚔ 大将戦</button></div>
+          <select data-game="${i}"><option value="random" ${sl.game==='random'?'selected':''}>ランダム</option>${state.games.filter(g=>g.ready).map(g=>`<option value="${g.id}" ${sl.game===g.id?'selected':''}>${g.icon} ${esc(g.name)}</option>`).join('')}</select>
+          <div class="seg"><button data-fmt="${i}" data-v="all" class="${sl.format==='all'?'on':''}">全員参加</button><button data-fmt="${i}" data-v="captain" class="${sl.format==='captain'?'on':''}" ${sl.game==='nepleague'?'disabled':''} title="${sl.game==='nepleague'?'ネプリーグは大将戦できません':''}"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg> 大将戦</button></div>
         </div>`).join('')}</div>
       <p class="sub" style="margin-top:8px">※参加者は自分のスマホでもチームを選べます。大将戦の代表は「試合の直前」に決めます。</p>
     </div>
@@ -287,25 +466,25 @@ function renderHostEyecatch(){
     panels='<div class="vs">'+teams.map((t,idx)=>{
       const lead=t.score===max&&max>0; const col=teamColor(t); const mem=teamPlayers(t.id);
       const repId=state.matchRep[t.id]; 
-      const memHTML=mem.length?mem.map(p=>`<span class="m ${cap&&repId===p.id?'rep':''}" style="${cap&&repId===p.id?`background:${col}`:''}">${cap&&repId===p.id?'⚔ ':''}${esc(p.name)}</span>`).join(''):'<span class="m">（0人）</span>';
+      const memHTML=mem.length?mem.map(p=>`<span class="m ${cap&&repId===p.id?'rep':''}" style="${cap&&repId===p.id?`background:${col}`:''}">${cap&&repId===p.id?'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg> ':''}${esc(p.name)}</span>`).join(''):'<span class="m">（0人）</span>';
       let pick='';
       if(cap){ const o=['<option value="">代表を選ぶ…</option>'].concat(mem.map(p=>`<option value="${p.id}" ${repId===p.id?'selected':''}>${esc(p.name)}</option>`)).join('');
         pick=`<div class="rep-pick"><select data-rep="${t.id}" style="padding:6px">${o}</select></div>`; }
-      return `<div class="tpanel ${lead?'lead':''}">${lead?'<div class="crown">👑</div>':''}
+      return `<div class="tpanel ${lead?'lead':''}">${lead?'<div class="crown"><svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg></div>':''}
         <div class="bar" style="background:${col}"><span>${esc(t.name)}</span><span>${mem.length}人</span></div>
         <div class="score" style="color:${col}">${t.score}<span style="font-size:16px;color:var(--muted)">pt</span></div>
-        <div style="text-align:center;font-weight:900;color:var(--muted);font-size:13px;margin-top:-2px">${_rank[t.id]}位・${_lead-t.score>0?'トップと −'+(_lead-t.score)+'pt':'トップ🔥'}</div>
+        <div style="text-align:center;font-weight:900;color:var(--muted);font-size:13px;margin-top:-2px">${_rank[t.id]}位・${_lead-t.score>0?'トップと −'+(_lead-t.score)+'pt':'トップ'}</div>
         <div class="mem">${memHTML}</div>${pick}</div>`;
     }).join('<div class="vsmid">VS</div>')+'</div>';
   } else { panels=scoreboardHTML(); }
   root.innerHTML=`<div class="eye">
     <div class="stage">第 ${state.session.index+1} 戦 / 全 ${state.config.matchCount} 戦</div>${dotsHTML()}
-    <div class="big">${curIcon()||'🎲'}</div><div class="sub">つぎのゲームは…</div>
+    <div class="big">${curIcon()||ICN.dice}</div><div class="sub">つぎのゲームは…</div>
     <div class="gname">${esc(curName()||'')}</div>
-    <div class="fmt ${cap?'cap':'all'}">${cap?'⚔ 大将戦（各チーム代表1人）':'👥 全員参加'}</div>
+    <div class="fmt ${cap?'cap':'all'}">${cap?'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg> 大将戦（各チーム代表1人）':'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.2 20a5.8 5.8 0 0 1 11.6 0"/><path d="M16.2 5.6a3 3 0 0 1 0 4.8"/><path d="M17.6 14.4A5.8 5.8 0 0 1 20.8 20"/></svg> 全員参加'}</div>
     ${state.curGameExternal?'<div class="pill">※このゲームは別画面であそびます</div>':''}
     ${cap?'<div class="pill">▼ 各チームの代表（大将）を決めてください</div>':''}
-    <div style="width:min(560px,92vw);background:#fff;border-radius:20px;padding:12px 18px;box-shadow:0 8px 0 #d7e3f4;text-align:left"><div class="sub" style="margin-bottom:4px">📊 現在のポイント${_leader?` — 👑 ${esc(_leader)} がリード`:'（まだ全員0）'}</div>${graphHTML()}</div>
+    <div style="width:min(560px,92vw);background:#fff;border-radius:20px;padding:12px 18px;box-shadow:0 8px 0 #d7e3f4;text-align:left"><div class="sub" style="margin-bottom:4px"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20.5h20"/><path d="M5.5 20.5V12M11 20.5V4.5M16.5 20.5v-6"/></svg> 現在のポイント${_leader?` — <svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg> ${esc(_leader)} がリード`:'（まだ全員0）'}</div>${graphHTML()}</div>
     ${panels}
     <button id="begin" style="margin-top:14px;background:var(--gold);box-shadow:0 5px 0 var(--goldd);color:#4a2f10">▶ この試合をはじめる</button>
   </div>`;
@@ -317,7 +496,7 @@ function renderHostNep(){
   const g=state.game; if(!g) return;
   const units=state.mode==='team'?orderedTeams().map(t=>({id:t.id,name:t.name})):Object.values(state.players).sort((a,b)=>a.order-b.order).map(p=>({id:p.id,name:p.name}));
   let h=`<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center">
-    <h2 style="margin:0">${curIcon()} ${esc(curName())} <span class="pill">第${state.session.index+1}戦・${state.curFormat==='captain'?'⚔大将戦':'全員参加'}</span></h2>
+    <h2 style="margin:0">${curIcon()} ${esc(curName())} <span class="pill">第${state.session.index+1}戦・${state.curFormat==='captain'?'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg>大将戦':'全員参加'}</span></h2>
     <button class="warn" id="endm">この試合を終える ▶ 次へ</button></div>${scoreboardHTML()}<div style="height:10px"></div>`;
   h+=`<div class="card"><label>手番を選ぶ（他は待機）</label><div class="row">`;
   h+= units.length?units.map(u=>`<button data-unit="${u.id}" class="${g.activeUnitId===u.id?'':'ghost'}">${esc(u.name)}${g.activeUnitId===u.id?' ▶':''}</button>`).join(''):'<span class="sub">参加者がいません</span>';
@@ -334,7 +513,7 @@ function renderHostNep(){
     h+=g.slots.map(s=>{const cls=g.revealed&&g.results?g.results[s.index]:''; const shown=g.revealed?(chars(g.question.answer)[s.index]||''):(s.filled?'●':''); const bc='box'+(s.locked&&!g.revealed?' locked':'');
       return `<div class="slot ${cls}"><div class="${bc}">${esc(shown)}</div><div class="name">${esc(s.playerName)}<small>${g.revealed?'':(s.locked?'ロック済':'入力中…')}</small></div></div>`;}).join('');
     h+=`</div>`;
-    if(g.revealed){ h+=`<div class="result-line ${g.correctAll?'ok':'ng'}">${g.correctAll?'⭕ 正解！':'❌ ざんねん'}</div><div class="row"><button id="next" class="green">次の問題へ</button></div>`; }
+    if(g.revealed){ h+=`<div class="result-line ${g.correctAll?'ok':'ng'}">${g.correctAll?ICN.ok+' 正解！':ICN.ng+' ざんねん'}</div><div class="row"><button id="next" class="green">次の問題へ</button></div>`; }
     else{ const allLocked=g.slots.length&&g.slots.every(s=>s.locked); h+=`<div class="waiting">${esc(g.message)}</div><div class="row"><button id="open" ${allLocked?'':'disabled'}>オープン（判定）</button><button id="redeal" class="ghost">問題を変える</button></div>`; }
     h+=`</div></div>`;
   }else{ h+=`<div class="card"><p class="waiting">${esc(g.message)}</p></div>`; }
@@ -351,15 +530,15 @@ function renderHostNep(){
 }
 
 function graphHTML(){ const e=scoreEntries(); const max=Math.max(10,...e.map(x=>x.score));
-  return e.map(x=>`<div class="gbar-row"><div class="gbar-name">${x.leader?'👑':''}${esc(x.name)}</div>
+  return e.map(x=>`<div class="gbar-row"><div class="gbar-name">${x.leader?'<svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg>':''}${esc(x.name)}</div>
     <div class="gbar-track"><div class="gbar-fill" style="width:${Math.max(7,x.score/max*100)}%;background:${x.color}">${x.score}pt</div></div></div>`).join(''); }
 function renderHostResult(){
   root.className=''; const e=scoreEntries(); const top=e[0];
-  root.innerHTML=`<div class="wrap"><div class="center" style="min-height:auto;gap:6px"><div style="font-size:64px">🏆</div>
-    <h1>最終結果</h1>${top&&top.score>0?`<div class="gname" style="font-size:34px;color:${top.color}">👑 ${esc(top.name)} の勝ち！</div>`:'<div class="sub">引き分け</div>'}</div>
+  root.innerHTML=`<div class="wrap"><div class="center" style="min-height:auto;gap:6px"><div style="font-size:64px"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v5.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.4v1.9A3.5 3.5 0 0 0 7.9 10.6"/><path d="M17 5.2h2.6v1.9a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13.8v3.4M8.4 20.4h7.2"/></svg></div>
+    <h1>最終結果</h1>${top&&top.score>0?`<div class="gname" style="font-size:34px;color:${top.color}"><svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg> ${esc(top.name)} の勝ち！</div>`:'<div class="sub">引き分け</div>'}</div>
     <div class="card"><h2>成績グラフ</h2>${graphHTML()}</div>
     <div class="card"><h2>順位</h2>${e.map((x,i)=>`<div class="row" style="justify-content:space-between;padding:10px 4px;border-bottom:2px solid var(--soft)"><b><span style="color:${x.color}">●</span> ${i+1}位　${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
-    <div class="center" style="min-height:auto"><button class="big" id="again">🔄 もう一度（得点リセット）</button></div></div>`;
+    <div class="center" style="min-height:auto"><button class="big" id="again"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 12a8.2 8.2 0 1 1-2.4-5.8"/><path d="M20.4 3.6v5.2h-5.2"/></svg> もう一度（得点リセット）</button></div></div>`;
   el('again').onclick=()=>socket.emit('pt:reset');
 }
 
@@ -377,27 +556,27 @@ function renderPlayer(){
     if(state.mode==='team'){ const teams=orderedTeams();
       h+=`<div class="card"><label>チームを選ぼう</label>`+ (teams.length?teams.map(t=>`<button class="${t.id===me.teamId?'':'ghost'}" style="width:100%;margin:6px 0;${t.id===me.teamId?`background:${teamColor(t)};box-shadow:0 5px 0 ${teamColorD(t)}`:''}" data-team="${t.id}">${esc(t.name)}${t.id===me.teamId?' ✓':''}</button>`).join(''):'<p class="sub">ホストがチームを作るのを待っています…</p>')+`</div>`;
     } else h+=`<div class="card"><p class="status">個人戦です。ホストの開始を待っています…</p></div>`;
-    h+=`<p class="status">ホストの画面（テレビ）を見ててね📺</p></div>`;
+    h+=`<p class="status">ホストの画面（テレビ）を見ててね<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="4.5" width="19.6" height="13" rx="1.2"/><path d="M8 21h8M12 17.5V21"/></svg></p></div>`;
     root.innerHTML=h; root.querySelectorAll('button[data-team]').forEach(b=>b.onclick=()=>socket.emit('pt:pickTeam',{teamId:b.dataset.team})); return;
   }
   if(state.phase==='eyecatch'){
     const cap=state.curFormat==='captain'; const myTeam=me.teamId?state.teams[me.teamId]:null;
     const isRep=myTeam&&state.matchRep[me.teamId]===me.id;
     let capUI='';
-    if(cap&&myTeam){ capUI=`<div class="card"><p class="status">${isRep?'⚔ あなたが大将です！':'この試合は大将戦。代表になれる人は立候補できます'}</p>
-      ${isRep?'':`<button class="warn" style="width:100%" id="vol">⚔ 大将に立候補する</button>`}</div>`; }
+    if(cap&&myTeam){ capUI=`<div class="card"><p class="status">${isRep?'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg> あなたが大将です！':'この試合は大将戦。代表になれる人は立候補できます'}</p>
+      ${isRep?'':`<button class="warn" style="width:100%" id="vol"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg> 大将に立候補する</button>`}</div>`; }
     root.innerHTML=`<div class="phone"><div style="text-align:center"><div class="pill">第${state.session.index+1}戦 / 全${state.config.matchCount}戦</div>
       <div style="font-size:76px;margin:8px 0">${curIcon()}</div><h1 style="font-size:28px">${esc(curName())}</h1>
-      <div class="pill" style="margin-top:8px;color:#fff;background:${cap?'var(--warn)':'var(--green)'};border:none">${cap?'⚔ 大将戦':'👥 全員参加'}</div>
+      <div class="pill" style="margin-top:8px;color:#fff;background:${cap?'var(--warn)':'var(--green)'};border:none">${cap?'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5"/><path d="M13.5 13.5L20 20M10.5 13.5L4 20"/></svg> 大将戦':'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.2 20a5.8 5.8 0 0 1 11.6 0"/><path d="M16.2 5.6a3 3 0 0 1 0 4.8"/><path d="M17.6 14.4A5.8 5.8 0 0 1 20.8 20"/></svg> 全員参加'}</div>
       ${myTeam?`<div class="pill" style="margin-top:8px;border-color:${teamColor(myTeam)};color:${teamColor(myTeam)}">あなたのチーム: ${esc(myTeam.name)}</div>`:''}</div>
-      <div class="card"><div class="sub" style="margin-bottom:4px">📊 現在のポイント</div>${scoreEntries().map((x,i)=>`<div class="row" style="justify-content:space-between;padding:5px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'👑 ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
-      ${capUI}<p class="status">ホストが始めるのを待ってね📺</p></div>`;
+      <div class="card"><div class="sub" style="margin-bottom:4px"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20.5h20"/><path d="M5.5 20.5V12M11 20.5V4.5M16.5 20.5v-6"/></svg> 現在のポイント</div>${scoreEntries().map((x,i)=>`<div class="row" style="justify-content:space-between;padding:5px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'<svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg> ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
+      ${capUI}<p class="status">ホストが始めるのを待ってね<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="4.5" width="19.6" height="13" rx="1.2"/><path d="M8 21h8M12 17.5V21"/></svg></p></div>`;
     if(el('vol')) el('vol').onclick=()=>socket.emit('pt:volunteerRep'); return;
   }
   if(state.phase==='result'){ const e=scoreEntries();
-    root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:56px">🏆</div><h1 style="font-size:26px">おつかれさま！</h1></div>
-      <div class="card">${e.map((x,i)=>`<div class="row" style="justify-content:space-between;padding:8px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'👑 ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
-      <p class="status">ホスト画面を見てね📺</p></div>`; return;
+    root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:56px"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v5.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.4v1.9A3.5 3.5 0 0 0 7.9 10.6"/><path d="M17 5.2h2.6v1.9a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13.8v3.4M8.4 20.4h7.2"/></svg></div><h1 style="font-size:26px">おつかれさま！</h1></div>
+      <div class="card">${e.map((x,i)=>`<div class="row" style="justify-content:space-between;padding:8px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'<svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg> ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
+      <p class="status">ホスト画面を見てね<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="4.5" width="19.6" height="13" rx="1.2"/><path d="M8 21h8M12 17.5V21"/></svg></p></div>`; return;
   }
   root.innerHTML=`<div class="phone"><p class="status">まっててね…</p></div>`;
 }
@@ -410,7 +589,7 @@ function renderPlayerNep(){
   const me=state.players[priv.youId]; if(!me){ sessionStorage.removeItem('pt_player'); renderHome('部屋から外れました'); return; }
   root.className=''; const g=state.game, slots=nepMySlots();
   if(g&&g.revealed){
-    root.innerHTML=`<div class="phone"><div style="text-align:center"><h1 style="font-size:30px">${g.correctAll?'⭕ 正解！':'結果'}</h1>
+    root.innerHTML=`<div class="phone"><div style="text-align:center"><h1 style="font-size:30px">${g.correctAll?ICN.ok+' 正解！':'結果'}</h1>
       ${slots.map(s=>`<div class="my-slot">あなたのマス：<b style="font-size:34px;color:${g.results[s.index]==='correct'?'var(--red)':'var(--rblue)'}">${esc(chars(g.question.answer)[s.index]||'')}</b>（${g.results[s.index]==='correct'?'正解=赤':'不正解=青'}）</div>`).join('')||'<p class="status">あなたのマスはありませんでした</p>'}
       <p class="status">${esc(g.message)}</p></div></div>`; return;
   }
@@ -419,14 +598,14 @@ function renderPlayerNep(){
     root.innerHTML=`<div class="phone"><div style="text-align:center"><div class="pill" style="background:var(--gold);color:#4a2f10;border:none">あなたの番！</div><p class="my-slot">問題：${esc(g.question.text)}</p></div>`
       +slots.map(s=>`<div class="card"><div class="my-slot">${g.length}文字のうち <b>${s.index+1}文字目</b> を担当</div>
         <input class="big-input" data-idx="${s.index}" maxlength="2" ${s.locked?'disabled':''} value="${esc(s.char||'')}" placeholder="？">
-        <div style="height:10px"></div><button data-lock="${s.index}" style="width:100%" class="${s.locked?'pink':'green'}">${s.locked?'🔓 ロック解除':'🔒 これで決定（ロック）'}</button></div>`).join('')
+        <div style="height:10px"></div><button data-lock="${s.index}" style="width:100%" class="${s.locked?'pink':'green'}">${s.locked?'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="10.2" width="15.6" height="9.8" rx="1.5"/><path d="M8 10.2V7a4 4 0 0 1 7.4-2.1"/></svg> ロック解除':'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="10.2" width="15.6" height="9.8" rx="1.5"/><path d="M8 10.2V7a4 4 0 0 1 8 0v3.2"/></svg> これで決定（ロック）'}</button></div>`).join('')
       +`<p class="status">カタカナ／ひらがなどちらでもOK</p></div>`;
     root.querySelectorAll('input[data-idx]').forEach(inp=>inp.oninput=()=>socket.emit('pt:np:input',{index:parseInt(inp.dataset.idx,10),char:Array.from(inp.value)[0]||''}));
     root.querySelectorAll('button[data-lock]').forEach(b=>{const idx=parseInt(b.dataset.lock,10);b.onclick=()=>socket.emit('pt:np:lock',{index:idx,locked:!state.game.slots[idx].locked});});
     return;
   }
   root.innerHTML=`<div class="phone"><div style="text-align:center"><h1 style="font-size:26px">${curIcon()} ${esc(curName())}</h1>
-    <div class="card"><p class="status">今は <b>${esc(g?g.activeUnitName:'')||'ほかのチーム'}</b> の番です。<br>あなたは待機中…📺</p></div></div>`;
+    <div class="card"><p class="status">今は <b>${esc(g?g.activeUnitName:'')||'ほかのチーム'}</b> の番です。<br>あなたは待機中…<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="4.5" width="19.6" height="13" rx="1.2"/><path d="M8 21h8M12 17.5V21"/></svg></p></div></div>`;
 }
 
 /* ════ 外部ゲーム(既存単体版で遊び、ホストが順位入力→加点) ════ */
@@ -439,7 +618,7 @@ function renderHostExternal(){
   root.className='';
   if(g.ranked){
     root.innerHTML=`<div class="wrap"><div class="center" style="min-height:auto;gap:6px"><div style="font-size:54px">${curIcon()}</div><h1>${esc(curName())} 結果</h1></div>
-      <div class="card">${(g.ranking||[]).map(r=>`<div class="row" style="justify-content:space-between;padding:10px 4px;border-bottom:2px solid var(--soft)"><b>${r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':r.rank+'位'} ${esc(r.name)}</b><b style="color:var(--green)">+${r.gained}pt</b></div>`).join('')}</div>
+      <div class="card">${(g.ranking||[]).map(r=>`<div class="row" style="justify-content:space-between;padding:10px 4px;border-bottom:2px solid var(--soft)"><b>${r.rank===1?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#e8bd4a" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">1</text></svg>':r.rank===2?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#cdd0d6" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">2</text></svg>':r.rank===3?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#d29a63" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">3</text></svg>':r.rank+'位'} ${esc(r.name)}</b><b style="color:var(--green)">+${r.gained}pt</b></div>`).join('')}</div>
       ${scoreboardHTML()}
       <div class="center" style="min-height:auto"><button id="nextm" class="green">▶ 次の試合へ</button></div></div>`;
     el('nextm').onclick=()=>socket.emit('pt:endMatch'); return;
@@ -450,7 +629,7 @@ function renderHostExternal(){
       <button class="secondary" id="openg" style="margin-top:8px">▶ ${esc(curName())}を開く</button></div>
     <div class="card"><h3>遊び終わったら「順位」を入力（1位から順にタップ）</h3>
       <div class="row" style="margin-top:6px">${remaining.length?remaining.map(u=>`<button class="ghost" data-u="${u.id}" style="border-color:${u.color}">${esc(u.name)}</button>`).join(''):'<span class="sub">全員入力しました</span>'}</div>
-      <div style="margin-top:10px">${extOrder.map((id,i)=>{const u=units.find(x=>x.id===id);return `<div class="row" style="justify-content:space-between;padding:6px 4px"><b>${i+1===1?'🥇':i+1===2?'🥈':i+1===3?'🥉':(i+1)+'位'} ${esc(u?u.name:'')} <small class="sub">(+${rankPtsClient(i+1)}pt)</small></b></div>`;}).join('')}</div>
+      <div style="margin-top:10px">${extOrder.map((id,i)=>{const u=units.find(x=>x.id===id);return `<div class="row" style="justify-content:space-between;padding:6px 4px"><b>${i+1===1?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#e8bd4a" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">1</text></svg>':i+1===2?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#cdd0d6" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">2</text></svg>':i+1===3?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#d29a63" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">3</text></svg>':(i+1)+'位'} ${esc(u?u.name:'')} <small class="sub">(+${rankPtsClient(i+1)}pt)</small></b></div>`;}).join('')}</div>
       <div class="row" style="margin-top:8px"><button class="ghost" id="undo" ${extOrder.length?'':'disabled'}>やり直し</button><button class="green" id="confirm" ${extOrder.length?'':'disabled'}>確定して加点</button></div></div></div>`;
   el('openg').onclick=()=>window.open(state.curGameUrl||'/','_blank');
   root.querySelectorAll('button[data-u]').forEach(b=>b.onclick=()=>{ extOrder.push(b.dataset.u); render(); });
@@ -462,8 +641,8 @@ function renderPlayerExternal(){
   root.className='';
   if(g.ranked){ const e=scoreEntries();
     root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:52px">${curIcon()}</div><h1 style="font-size:24px">結果が入りました！</h1></div>
-      <div class="card">${e.map((x,i)=>`<div class="row" style="justify-content:space-between;padding:6px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'👑 ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
-      <p class="status">ホストが次に進むのを待ってね📺</p></div>`; return;
+      <div class="card">${e.map((x,i)=>`<div class="row" style="justify-content:space-between;padding:6px 2px"><b><span style="color:${x.color}">●</span> ${i+1}位 ${x.leader?'<svg class="pic fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.5V6.5l5 4 4-6 4 6 5-4v12z"/></svg> ':''}${esc(x.name)}</b><b>${x.score}pt</b></div>`).join('')}</div>
+      <p class="status">ホストが次に進むのを待ってね<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.2" y="4.5" width="19.6" height="13" rx="1.2"/><path d="M8 21h8M12 17.5V21"/></svg></p></div>`; return;
   }
   root.innerHTML=`<div class="phone"><div style="text-align:center"><div style="font-size:72px">${curIcon()}</div><h1 style="font-size:26px">${esc(curName())}</h1><p class="my-slot">このゲームは別画面であそびます</p></div>
     <div class="card" style="text-align:center"><button class="secondary" style="width:100%" id="openg">▶ ${esc(curName())}を開く</button>
@@ -481,14 +660,16 @@ function renderSoloQuiz(g, slots){
     <div class="card"><label>答え（${g.length}文字）</label>
       <input class="big-input" id="soloans" maxlength="${g.length}" ${locked?'disabled':''} value="${esc(cur)}" placeholder="こたえ">
       <div style="height:10px"></div>
-      <button id="sololock" style="width:100%" class="${locked?'pink':'green'}">${locked?'🔓 ロック解除':'🔒 これで決定（ロック）'}</button></div>
+      <button id="sololock" style="width:100%" class="${locked?'pink':'green'}">${locked?'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="10.2" width="15.6" height="9.8" rx="1.5"/><path d="M8 10.2V7a4 4 0 0 1 7.4-2.1"/></svg> ロック解除':'<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="10.2" width="15.6" height="9.8" rx="1.5"/><path d="M8 10.2V7a4 4 0 0 1 8 0v3.2"/></svg> これで決定（ロック）'}</button></div>
     <p class="status">カタカナ／ひらがなどちらでもOK</p></div>`;
   el('soloans').oninput=()=>{ const v=Array.from(el('soloans').value); for(let i=0;i<g.length;i++) socket.emit('pt:np:input',{index:i,char:v[i]||''}); };
   el('sololock').onclick=()=>{ const willLock=!locked; ordered.forEach(s=>socket.emit('pt:np:lock',{index:s.index,locked:willLock})); };
 }
 
 /* ══════════ シュゾマス(パーティ内) ══════════ */
-const SZ_EMOJI=['🍇','🍈','🍉','🍊','🍋','🍌','🍍','🥭','🍎','🍏','🍐','🍑','🍒','🍓','🫐','🥝','🍅','🥥','🌰','🫒','🍆','🥕','🌽','🫑'];
+/* 食材は本家シュゾマスと同じ画像を使う。読めなかったら番号に落とす */
+const FRUIT_DIR='/shuzomas/%E7%B4%A0%E6%9D%90%E3%80%80%E6%9E%9C%E5%AE%9F/';
+const SZ_EMOJI=Array.from({length:24},(_,i)=>'<img class="fruit" src="'+FRUIT_DIR+(i+1)+'.png" alt="食材No.'+(i+1)+'" loading="lazy" onerror="this.outerHTML='+(i+1)+'">');
 const SZ_ATTR={A:'薫',B:'爽',C:'醇',D:'熟'}; const SZ_SPECIAL={D:'花',C:'鳥',B:'風',A:'月'};
 const SZ_STARS={1:'楽勝',2:'簡単',3:'普通',4:'難しい',5:'激ムズ'};
 const dosStr=d=>(d/10).toFixed(1)+'%';
@@ -500,7 +681,7 @@ function szAttr(id){const g=state.game.ingredients.find(x=>x.id===id);return g?g
 function szKnownDos(id){const sz=priv.sz;if(sz&&sz.myId===id)return sz.myDos;for(const s of state.game.seats)if(s.openMyId===id)return s.openMyDos;return null;}
 function szBuildGrid(make){const box=document.createElement('div');box.className='sz-grid';state.game.ingredients.slice().sort((a,b)=>a.id-b.id).forEach(g=>box.appendChild(make(g)));return box;}
 function szHeaderHost(){ return `<div class="wrap"><div class="row" style="justify-content:space-between;align-items:center">
-  <h2 style="margin:0">🍺 シュゾマス <span class="pill">第${state.session.index+1}戦</span></h2>
+  <h2 style="margin:0"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h9.2v14H6z"/><path d="M15.2 9.6h2.3a2.5 2.5 0 0 1 0 5h-2.3"/><path d="M6 10.4h9.2"/></svg> シュゾマス <span class="pill">第${state.session.index+1}戦</span></h2>
   <button class="warn" id="endm">この試合を終える ▶ 次へ</button></div>${scoreboardHTML()}<div style="height:10px"></div>`; }
 function szWireEnd(){ if(el('endm')) el('endm').onclick=()=>{ if(confirm('この試合を終えて次へ進みますか？（途中の場合は加点なし）')) socket.emit('pt:endMatch'); }; }
 
@@ -510,10 +691,10 @@ function renderHostShuzomas(){
   if(g.sub==='ended'){ root.innerHTML=szHeaderHost()+szEndedHTML(true)+`</div>`; szWireEnd(); if(el('szNextM')) el('szNextM').onclick=()=>socket.emit('pt:endMatch'); return; }
   let h=szHeaderHost();
   h+=`<div class="card"><div class="row" style="justify-content:space-between"><div class="pill">${g.sub==='myselect'?'マイ食材えらび':'第 '+(g.round+1)+' ラウンド'}</div><div class="pill">難易度 ${esc(szStar(g.stars))}</div></div>`;
-  h+=`<div class="sz-hud">`+g.seats.map(sm=>`<div class="sz-seat ${sm.submitted?'sub':''}"><div class="nm">${esc(sm.name)}${!sm.connected?' ⚠':''}</div>
-      <div class="stt"><span>💰 $${sm.money}</span><span>⭐ ${sm.eval}</span><span>${g.sub==='myselect'?(sm.chosen?'✔選択':'選択中'):(sm.submitted?'✔提出':'考え中')}</span></div>
-      ${sm.revealed?`<div class="stt">🔍 No.${sm.openMyId}=${dosStr(sm.openMyDos)}</div>`:''}</div>`).join('')+`</div>`;
-  h+=`<div style="margin-top:6px"><b style="font-size:13px;color:#6a7488">🌡 今回の24食材の度数(昇順・どれがどれかは秘密)</b><div class="sz-chips">`+g.dosSet.map(d=>`<span class="sz-chip">${dosStr(d)}</span>`).join('')+`</div></div>`;
+  h+=`<div class="sz-hud">`+g.seats.map(sm=>`<div class="sz-seat ${sm.submitted?'sub':''}"><div class="nm">${esc(sm.name)}${!sm.connected?' <svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.8l9.2 16.4H2.8z"/><path d="M12 10v4.2M12 17.4h.01" stroke-width="2.6"/></svg>':''}</div>
+      <div class="stt"><span><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.2v9.6M9.4 10.2h5.2M9.4 13.4h5.2"/></svg> $${sm.money}</span><span><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.9l6.1-.9z"/></svg> ${sm.eval}</span><span>${g.sub==='myselect'?(sm.chosen?'✓選択':'選択中'):(sm.submitted?'✓提出':'考え中')}</span></div>
+      ${sm.revealed?`<div class="stt"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8l4.6 4.6"/></svg> No.${sm.openMyId}=${dosStr(sm.openMyDos)}</div>`:''}</div>`).join('')+`</div>`;
+  h+=`<div style="margin-top:6px"><b style="font-size:13px;color:#6a7488"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14.2V5.2a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/></svg> 今回の24食材の度数(昇順・どれがどれかは秘密)</b><div class="sz-chips">`+g.dosSet.map(d=>`<span class="sz-chip">${dosStr(d)}</span>`).join('')+`</div></div>`;
   h+=`<p class="waiting" style="margin-top:10px">${g.sub==='myselect'?'各自スマホでマイ食材を選んでいます…':'各自スマホで醸造中…（全員そろうと結果が出ます）'}</p></div></div>`;
   root.innerHTML=h; szWireEnd();
 }
@@ -534,53 +715,53 @@ function renderPlayerShuzomas(){
     root.innerHTML=''; root.appendChild(wrap); return;
   }
   const me=g.seats[sz.myIdx]; const wrap=document.createElement('div'); wrap.className='phone';
-  wrap.innerHTML=`<div style="text-align:center"><div class="pill">第 ${g.round+1} ラウンド</div><p class="my-slot">マイ食材 No.${sz.myId} = <b>${dosStr(sz.myDos)}</b> ｜ 💰$${me.money} ⭐${me.eval}</p></div>`;
-  if(sz.submitted){ const w=g.seats.filter(x=>x.connected&&!x.submitted).map(x=>x.name); wrap.innerHTML+=`<div class="card"><p class="status">✔ 提出しました。他のプレイヤーを待っています…<br>${w.length?'待ち: '+esc(w.join('・')):''}</p></div>`; root.innerHTML=''; root.appendChild(wrap); return; }
+  wrap.innerHTML=`<div style="text-align:center"><div class="pill">第 ${g.round+1} ラウンド</div><p class="my-slot">マイ食材 No.${sz.myId} = <b>${dosStr(sz.myDos)}</b> ｜ <svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.2v9.6M9.4 10.2h5.2M9.4 13.4h5.2"/></svg>$${me.money} <svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.9l6.1-.9z"/></svg>${me.eval}</p></div>`;
+  if(sz.submitted){ const w=g.seats.filter(x=>x.connected&&!x.submitted).map(x=>x.name); wrap.innerHTML+=`<div class="card"><p class="status">✓ 提出しました。他のプレイヤーを待っています…<br>${w.length?'待ち: '+esc(w.join('・')):''}</p></div>`; root.innerHTML=''; root.appendChild(wrap); return; }
   const card=document.createElement('div'); card.className='card';
-  card.innerHTML=`<h3 style="margin:0 0 4px">🍶 食材を3つえらぶ</h3><div class="sub">同じ食材は2つまで／値札はあなた専用価格</div>`;
+  card.innerHTML=`<h3 style="margin:0 0 4px"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h9.2v14H6z"/><path d="M15.2 9.6h2.3a2.5 2.5 0 0 1 0 5h-2.3"/><path d="M6 10.4h9.2"/></svg> 食材を3つえらぶ</h3><div class="sub">同じ食材は2つまで／値札はあなた専用価格</div>`;
   card.appendChild(szBuildGrid(ing=>{ const cnt=szPicks.filter(x=>x===ing.id).length; const d=document.createElement('div');
     d.className='sz-ing'+(cnt===1?' sel':cnt===2?' sel2':'')+((cnt>=2&&szPicks.length<3)?' dim':'');
     const price=(sz.buyCount[ing.id]||0)+cnt+1; const kd=szKnownDos(ing.id);
     d.innerHTML=`<span class="at a-${ing.attr}">${SZ_ATTR[ing.attr]}</span>${sz.myId===ing.id?'<span class="kd" style="top:-7px;bottom:auto;background:#5b6cff">マイ</span>':''}<div class="emo">${SZ_EMOJI[ing.id-1]}</div><div class="no">No.${ing.id}</div><div class="pr">$${price}</div>`+(kd!==null?`<span class="kd">${dosStr(kd)}</span>`:'');
     d.onclick=()=>{ const c=szPicks.filter(x=>x===ing.id).length; if(szPicks.length<3&&c<2)szPicks.push(ing.id); else if(c>0)szPicks.splice(szPicks.indexOf(ing.id),1); render(); }; return d; }));
   const bench=document.createElement('div'); bench.className='sz-bench';
-  for(let i=0;i<3;i++){ const id=szPicks[i]; const sl=document.createElement('div'); sl.className='sz-slot'+(id?' filled':''); if(id){ sl.innerHTML=`<div class="emo">${SZ_EMOJI[id-1]}</div><span class="x">✕</span>`; sl.querySelector('.x').onclick=()=>{szPicks.splice(i,1);render();}; } else sl.textContent='＋'; bench.appendChild(sl); }
+  for(let i=0;i<3;i++){ const id=szPicks[i]; const sl=document.createElement('div'); sl.className='sz-slot'+(id?' filled':''); if(id){ sl.innerHTML=`<div class="emo">${SZ_EMOJI[id-1]}</div><span class="x">×</span>`; sl.querySelector('.x').onclick=()=>{szPicks.splice(i,1);render();}; } else sl.textContent='＋'; bench.appendChild(sl); }
   card.appendChild(bench);
   const info=document.createElement('div'); info.className='sz-info'; info.style.marginTop='8px';
   if(szPicks.length===3){ const cst=szCostC(sz.buyCount,szPicks); const ok=szValidC(szPicks)&&cst<=me.money; info.innerHTML=`使用料 <span class="${cst>me.money?'over':'ok'}">$${cst}</span> / 所持金 $${me.money} → ${szSake(szPicks.map(szAttr))}`; card._ok=ok; }
   else { info.textContent=szPicks.length===0?'食材をタップして選ぼう':`あと${3-szPicks.length}つ`; card._ok=false; }
   card.appendChild(info);
   const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='10px';
-  const brew=document.createElement('button'); brew.className='green'; brew.textContent='🍺 醸造する'; brew.disabled=!card._ok; brew.onclick=()=>socket.emit('pt:sz:submit',{type:'brew',picks:[...szPicks]});
-  const rest=document.createElement('button'); rest.className='ghost'; rest.textContent='😴 休憩(+$6/評価−1)'; rest.disabled=!sz.canRest; rest.onclick=()=>socket.emit('pt:sz:submit',{type:'rest'});
+  const brew=document.createElement('button'); brew.className='green'; brew.textContent='<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h9.2v14H6z"/><path d="M15.2 9.6h2.3a2.5 2.5 0 0 1 0 5h-2.3"/><path d="M6 10.4h9.2"/></svg> 醸造する'; brew.disabled=!card._ok; brew.onclick=()=>socket.emit('pt:sz:submit',{type:'brew',picks:[...szPicks]});
+  const rest=document.createElement('button'); rest.className='ghost'; rest.textContent='<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.6 8.6 0 1 1 9.4 3.8a7.1 7.1 0 0 0 10.8 10.8z"/></svg> 休憩(+$6/評価−1)'; rest.disabled=!sz.canRest; rest.onclick=()=>socket.emit('pt:sz:submit',{type:'rest'});
   btns.appendChild(brew); btns.appendChild(rest); card.appendChild(btns); wrap.appendChild(card);
   root.innerHTML=''; root.appendChild(wrap);
 }
 
 function szRevealPanel(isHost){
-  const rv=szReveal, g=state.game, seats=g.seats; const medals={1:'🥇',2:'🥈',3:'🥉'};
+  const rv=szReveal, g=state.game, seats=g.seats; const medals={1:'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#e8bd4a" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">1</text></svg>',2:'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#cdd0d6" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">2</text></svg>',3:'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#d29a63" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">3</text></svg>'};
   const order=[...rv.results].sort((a,b)=>(a.rank??9)-(b.rank??9)||(a.failed?1:0)-(b.failed?1:0));
   const rows=order.map(res=>{ const sm=seats[res.idx]; let md,note='';
-    if(res.type==='rest'){md='😴';note='休憩';} else if(res.type==='timeout'){md='⏰';note='時間切れ';}
-    else if(res.winner){md='🏆';note='ちょうど3.0%!';} else if(res.failed){md='💥';note='失敗(3.1%以上)';}
-    else if(res.rank){md=medals[res.rank]||(res.rank+'位');} else md='🍺';
+    if(res.type==='rest'){md='<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.6 8.6 0 1 1 9.4 3.8a7.1 7.1 0 0 0 10.8 10.8z"/></svg>';note='休憩';} else if(res.type==='timeout'){md='⏰';note='時間切れ';}
+    else if(res.winner){md='<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v5.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.4v1.9A3.5 3.5 0 0 0 7.9 10.6"/><path d="M17 5.2h2.6v1.9a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13.8v3.4M8.4 20.4h7.2"/></svg>';note='ちょうど3.0%!';} else if(res.failed){md='<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.1 4.9 5-1.6-1.6 5 4.9 2.1-4.9 2.1 1.6 5-5-1.6-2.1 4.9-2.1-4.9-5 1.6 1.6-5L1.6 13l4.9-2.1-1.6-5 5 1.6z"/></svg>';note='失敗(3.1%以上)';}
+    else if(res.rank){md=medals[res.rank]||(res.rank+'位');} else md='<svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h9.2v14H6z"/><path d="M15.2 9.6h2.3a2.5 2.5 0 0 1 0 5h-2.3"/><path d="M6 10.4h9.2"/></svg>';
     const isMe=!isHost&&priv.sz&&res.idx===priv.sz.myIdx;
     let money=res.winner?'':res.type==='rest'?`<span class="plus">+$${res.moneyDelta}</span>`:res.type==='timeout'?`<span class="minus">賞金なし</span>`:res.failed?`<span class="minus">−$${Math.abs(res.moneyDelta)}</span>`:`<span class="plus">賞金+$${res.pay||0}</span>`;
-    const ev=res.evalDelta?`<span class="${res.evalDelta>0?'plus':'minus'}">⭐${res.evalDelta>0?'+':''}${res.evalDelta}</span>`:'';
-    const lab=res.label?`<span class="sakechip">${res.label}</span>`:''; const od=res.openDos!==null?` <small>🔍${dosStr(res.openDos)}</small>`:'';
+    const ev=res.evalDelta?`<span class="${res.evalDelta>0?'plus':'minus'}"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.9l6.1-.9z"/></svg>${res.evalDelta>0?'+':''}${res.evalDelta}</span>`:'';
+    const lab=res.label?`<span class="sakechip">${res.label}</span>`:''; const od=res.openDos!==null?` <small><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8l4.6 4.6"/></svg>${dosStr(res.openDos)}</small>`:'';
     return `<div class="sz-rrow ${isMe?'me':''}"><div class="md">${md}</div><div class="rn">${esc(sm.name)} ${lab} <small style="color:#8a94a8">${note}</small>${od}</div><div class="dl">${money} ${ev}</div></div>`;}).join('');
   let mine='';
   if(!isHost&&rv.mine){ if(rv.mine.type==='brew') mine=`<div class="card" style="text-align:center">あなたのお酒(あなただけ): <b style="color:#5b6cff">${rv.mine.label} ${dosStr(rv.mine.dos)}</b></div>`; else if(rv.mine.type==='rest') mine=`<div class="card" style="text-align:center">あなたは休憩(+$6/評価−1)</div>`; }
-  const cont=`<div class="row" style="justify-content:center;margin-top:12px"><button id="szNext" class="green">${rv.ended?'結果を見る 🏆':'つぎのラウンドへ ▶'}</button></div>`;
-  const inner=`<div style="text-align:center"><h2>🍻 第${rv.roundNo}ラウンド 公開!</h2></div>${rows}${mine}${cont}`;
+  const cont=`<div class="row" style="justify-content:center;margin-top:12px"><button id="szNext" class="green">${rv.ended?'結果を見る <svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v5.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.4v1.9A3.5 3.5 0 0 0 7.9 10.6"/><path d="M17 5.2h2.6v1.9a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13.8v3.4M8.4 20.4h7.2"/></svg>':'つぎのラウンドへ ▶'}</button></div>`;
+  const inner=`<div style="text-align:center"><h2><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h9.2v14H6z"/><path d="M15.2 9.6h2.3a2.5 2.5 0 0 1 0 5h-2.3"/><path d="M6 10.4h9.2"/></svg> 第${rv.roundNo}ラウンド 公開!</h2></div>${rows}${mine}${cont}`;
   root.className=''; root.innerHTML=isHost?`<div class="wrap"><div class="card">${inner}</div></div>`:`<div class="phone"><div class="card">${inner}</div></div>`;
   el('szNext').onclick=()=>{ szReveal=null; render(); };
 }
 function szEndedHTML(isHost){
   const g=state.game, e=g.endInfo; if(!e) return '<div class="card"><p class="waiting">集計中…</p></div>';
   const winTxt=e.reason==='draw'?'引き分け':(e.winners&&e.winners.length? e.winners.map(wi=>{const f=e.final.find(x=>x.idx===wi);return f?f.name:'';}).join('・')+' の勝ち!':'終了');
-  const rows=e.final.map(f=>`<div class="sz-rrow"><div class="md">${f.rank===1?'🥇':f.rank===2?'🥈':f.rank===3?'🥉':f.rank+'位'}</div><div class="rn">${esc(f.name)}${f.team?` <small style="color:#8a94a8">(${esc(f.team)})</small>`:''} <small style="color:#8a94a8">💰$${f.money} ⭐${f.eval} / マイNo.${f.myId}=${dosStr(f.myDos)}</small></div><div class="dl"><span class="plus">+${f.gained}pt</span></div></div>`).join('');
-  return `<div class="card"><div style="text-align:center"><div style="font-size:34px">🏆🍻</div><h2>${esc(winTxt)}</h2>
+  const rows=e.final.map(f=>`<div class="sz-rrow"><div class="md">${f.rank===1?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#e8bd4a" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">1</text></svg>':f.rank===2?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#cdd0d6" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">2</text></svg>':f.rank===3?'<svg class="pic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 2.6l3 5.4M15.6 2.6l-3 5.4" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="6.4" fill="#d29a63" stroke="#221d18" stroke-width="2"/><text x="12" y="18.2" text-anchor="middle" font-size="8.4" font-weight="900" font-family="Zen Kaku Gothic New, sans-serif" fill="#221d18" stroke="none">3</text></svg>':f.rank+'位'}</div><div class="rn">${esc(f.name)}${f.team?` <small style="color:#8a94a8">(${esc(f.team)})</small>`:''} <small style="color:#8a94a8"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.2v9.6M9.4 10.2h5.2M9.4 13.4h5.2"/></svg>$${f.money} <svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.9l6.1-.9z"/></svg>${f.eval} / マイNo.${f.myId}=${dosStr(f.myDos)}</small></div><div class="dl"><span class="plus">+${f.gained}pt</span></div></div>`).join('');
+  return `<div class="card"><div style="text-align:center"><div style="font-size:34px"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v5.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.4v1.9A3.5 3.5 0 0 0 7.9 10.6"/><path d="M17 5.2h2.6v1.9a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13.8v3.4M8.4 20.4h7.2"/></svg><svg class="pic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h9.2v14H6z"/><path d="M15.2 9.6h2.3a2.5 2.5 0 0 1 0 5h-2.3"/><path d="M6 10.4h9.2"/></svg></div><h2>${esc(winTxt)}</h2>
     <p class="sub">正解(3.0%になる組み合わせ)は ${e.patterns} 通り／難易度 ${esc(szStar(e.stars))}</p></div>${rows}
     <p class="sub" style="text-align:center;margin-top:10px">順位に応じてチームに加点しました（1位+30 / 2位+20 / 3位+10）</p>
     ${isHost?`<div class="row" style="justify-content:center;margin-top:10px"><button id="szNextM" class="green">▶ 次の試合へ</button></div>`:`<p class="status">ホストの操作を待っています…</p>`}</div>`;
