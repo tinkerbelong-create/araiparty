@@ -6,262 +6,296 @@
 <title>パーティモード — あらいの遊び場</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
 /* ══════════════════════════════════════════════════════════════
-   パーティモード — 見た目の設計
-   参照元: ボードゲームの箱と説明書(印刷物)
+   パーティモード — 縁日・お祭り
 
-   やめたこと(ここがAIっぽさの正体だった)
-     ・丸ゴシック体      → 角ゴシックへ。丸ゴは「やさしさ」の記号として使われすぎている
-     ・角丸24px          → 0〜3px。紙を裁断した箱や説明書に丸みはない
-     ・立体ボタンの影    → 版ズレ(印刷でインクがずれた跡)の表現へ
-     ・グラデーション背景 → 紙の地色と繊維のノイズへ
-     ・原色4色          → 印刷インク3色(朱・藍・山吹)。彩度を落とす
-     ・絵文字            → 説明書のピクトグラム(線画)へ
+   使っているもの
+     紅白幕(画面の上端)/ 提灯(チームの得点板)/ 木札(名前と合言葉)
+     木の看板(ゲーム名)/ 射的の的(正解のマス)/ 生成りの布(地色)
 
-   構造は罫線でつくる。影ではなく枠線で面を区切る。
+   色は染料と塗料から:
+     朱 #cf3a2f ・ 藍 #1f4270 ・ 金 #bf9b2f ・ 若葉 #5f8f3c ・ 墨 #1c1a17
+
+   書体は2つだけ。見出しは太明朝(祭りの提灯と看板の文字)、
+   本文は角ゴシック(離れたテレビからでも読めるように)。
    ══════════════════════════════════════════════════════════════ */
 :root{
-  --paper:#efe8da; --paper-2:#fbf7ee; --paper-3:#e5dcc9;
-  --ink:#221d18; --ink-2:#5f5648; --ink-3:#948a78;
-  --rule:#221d18; --rule-l:#c7bca7;
-  --vermilion:#c33f2c; --vermilion-d:#962d1e;
-  --indigo:#2b5a8f;    --indigo-d:#1d3f68;
-  --ochre:#c2891a;     --ochre-d:#946209;
-  --moss:#4f7a3c;      --moss-d:#385a29;
-  /* 旧変数名は JS 側から参照されるので残す(色だけ差し替え) */
-  --bg:var(--paper); --bg2:var(--paper); --card:var(--paper-2); --soft:var(--paper-3);
-  --line:var(--rule-l); --muted:var(--ink-3);
-  --blue:var(--indigo); --blued:var(--indigo-d);
-  --pink:var(--vermilion); --pinkd:var(--vermilion-d);
-  --green:var(--moss); --greend:var(--moss-d);
-  --gold:var(--ochre); --goldd:var(--ochre-d);
-  --warn:var(--vermilion); --warnd:var(--vermilion-d);
-  --red:var(--vermilion); --rblue:var(--indigo);
-  --accent:var(--indigo);
+  --kinari:#f6efdf; --nuno:#efe5d0; --shiro:#fffdf7;
+  --sumi:#1c1a17; --sumi-2:#57503f; --sumi-3:#8d8471;
+  --aka:#cf3a2f;  --aka-d:#9c2119;
+  --ai:#1f4270;   --ai-d:#132c4d;
+  --kin:#bf9b2f;  --kin-d:#8d7017;
+  --wakaba:#5f8f3c; --wakaba-d:#416825;
+  --ki:#d9b886;   --ki-d:#a37f4f;
+  --rule:#1c1a17; --rule-l:#c8b995;
+  /* JS が触る旧変数名は残す */
+  --bg:var(--kinari); --bg2:var(--kinari); --card:var(--shiro); --soft:var(--nuno);
+  --line:var(--rule-l); --muted:var(--sumi-3); --ink:var(--sumi);
+  --blue:var(--ai); --blued:var(--ai-d);
+  --pink:var(--aka); --pinkd:var(--aka-d);
+  --green:var(--wakaba); --greend:var(--wakaba-d);
+  --gold:var(--kin); --goldd:var(--kin-d);
+  --warn:var(--aka); --warnd:var(--aka-d);
+  --red:var(--aka); --rblue:var(--ai); --accent:var(--ai);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{
   font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
-  color:var(--ink);font-weight:500;-webkit-font-smoothing:antialiased;
-  background-color:var(--paper);
-  /* 紙の繊維(feTurbulence を焼いたノイズ) */
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  color:var(--sumi);font-weight:500;-webkit-font-smoothing:antialiased;
+  background-color:var(--kinari);padding-top:52px;
+  /* 布の織り目 */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
 }
+h1,h2,h3,.pill,.code-badge,.eye .gname,.eye .stage,.qtext,.result-line,.tpanel .score,button.big{
+  font-family:'Shippori Mincho B1','Yu Mincho','Hiragino Mincho ProN',serif;font-weight:800;
+}
+
+/* ── 紅白幕。画面の上端にずっと張っておく ── */
+body::before{
+  content:"";position:fixed;top:0;left:0;right:0;height:52px;z-index:60;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22128%22%20height%3D%2252%22%20viewBox%3D%220%200%20128%2052%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Crect%20x%3D%2232%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23fffdf7%22%2F%3E%3Cellipse%20cx%3D%2248%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23fffdf7%22%2F%3E%3Crect%20x%3D%2264%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Cellipse%20cx%3D%2280%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23cf3a2f%22%2F%3E%3Crect%20x%3D%2296%22%20y%3D%220%22%20width%3D%2232%22%20height%3D%2240%22%20fill%3D%22%23fffdf7%22%2F%3E%3Cellipse%20cx%3D%22112%22%20cy%3D%2240%22%20rx%3D%2216%22%20ry%3D%2212%22%20fill%3D%22%23fffdf7%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22128%22%20height%3D%223%22%20fill%3D%22%231c1a17%22%2F%3E%3C%2Fsvg%3E") repeat-x 0 0/128px 52px;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.22));
+}
+
 .wrap{max-width:1120px;margin:0 auto;padding:20px}
-.phone{max-width:480px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;gap:14px;justify-content:center}
-.center{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px}
+.phone{max-width:480px;margin:0 auto;padding:16px;min-height:calc(100vh - 52px);display:flex;flex-direction:column;gap:14px;justify-content:center}
+.center{min-height:calc(100vh - 52px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px}
 
-h1{font-size:clamp(30px,5vw,52px);margin:0;font-weight:900;letter-spacing:.06em}
-h2{font-size:clamp(20px,3vw,28px);margin:0 0 12px;font-weight:900;letter-spacing:.04em}
-h3{margin:0 0 6px;font-weight:900;letter-spacing:.03em}
-.sub{color:var(--ink-2);font-size:14px;font-weight:500;letter-spacing:.02em}
+h1{font-size:clamp(32px,5vw,54px);margin:0;letter-spacing:.1em}
+h2{font-size:clamp(21px,3vw,29px);margin:0 0 12px;letter-spacing:.08em}
+h3{margin:0 0 6px;letter-spacing:.06em;font-size:17px}
+.sub{color:var(--sumi-2);font-size:14px;font-weight:500;letter-spacing:.02em}
 
-/* 紙を1枚置く。影ではなく、版ズレの実線で浮かせる */
+/* ── 紙。朱色の版ズレで浮かせる ── */
 .card{
-  background:var(--paper-2);border:2px solid var(--rule);border-radius:3px;
-  padding:20px;margin-bottom:16px;box-shadow:5px 5px 0 var(--paper-3);
+  background:var(--shiro);border:2px solid var(--rule);border-radius:2px;
+  padding:20px;margin-bottom:16px;box-shadow:6px 6px 0 rgba(28,26,23,.13);
 }
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .grow{flex:1 1 auto}
 
-/* ボタン: 塗り + 墨の枠 + 版ズレ。押すとズレが詰まる */
+/* ── ボタンは屋台の木札。押すと沈む ── */
 button{
-  font:inherit;font-weight:900;letter-spacing:.05em;color:var(--paper-2);
-  background:var(--indigo);border:2px solid var(--rule);border-radius:2px;
-  padding:12px 22px;cursor:pointer;box-shadow:4px 4px 0 var(--ink);
+  font:inherit;font-weight:900;letter-spacing:.08em;color:var(--shiro);
+  background:var(--ai);border:2px solid var(--rule);border-radius:2px;
+  padding:12px 22px;cursor:pointer;box-shadow:4px 4px 0 var(--sumi);
   transition:transform .07s,box-shadow .07s;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
 }
-button:hover{box-shadow:2px 2px 0 var(--ink);transform:translate(2px,2px)}
-button:active{box-shadow:0 0 0 var(--ink);transform:translate(4px,4px)}
-button.secondary{background:var(--ochre)}
-button.green{background:var(--moss)}
-button.pink{background:var(--vermilion)}
-button.warn{background:var(--vermilion)}
-button.ghost{background:var(--paper-2);color:var(--ink)}
-button.big{font-size:21px;padding:17px 38px}
+button:hover{box-shadow:2px 2px 0 var(--sumi);transform:translate(2px,2px)}
+button:active{box-shadow:0 0 0 var(--sumi);transform:translate(4px,4px)}
+button.secondary{background:var(--kin);color:var(--sumi)}
+button.green{background:var(--wakaba)}
+button.pink,button.warn{background:var(--aka)}
+button.ghost{background:var(--ki);color:var(--sumi)}
+button.big{font-size:23px;padding:17px 40px;letter-spacing:.14em;background:var(--aka)}
 button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 var(--rule-l)}
 button svg{width:1.05em;height:1.05em;flex:0 0 auto}
 
 input,select{
   font:inherit;font-weight:700;padding:11px 12px;border-radius:2px;
-  border:2px solid var(--rule);background:var(--paper-2);color:var(--ink);width:100%;
+  border:2px solid var(--rule);background:var(--shiro);color:var(--sumi);width:100%;
 }
-input:focus,select:focus{outline:3px solid var(--ochre);outline-offset:1px}
-label{display:block;text-align:left;color:var(--ink-2);font-size:12px;font-weight:700;margin:0 0 6px;letter-spacing:.08em}
+input:focus,select:focus{outline:3px solid var(--kin);outline-offset:1px}
+label{display:block;text-align:left;color:var(--sumi-2);font-size:12px;font-weight:700;margin:0 0 6px;letter-spacing:.1em}
 
-/* 見出しラベル: ピル型をやめて、箱の側面の帯にする */
+/* ── 見出しの札 ── */
 .pill{
-  display:inline-block;background:var(--ink);color:var(--paper);border-radius:1px;
-  padding:5px 14px;font-size:12.5px;font-weight:900;letter-spacing:.14em;
+  display:inline-block;background:var(--sumi);color:var(--kinari);border-radius:1px;
+  padding:6px 18px;font-size:14px;letter-spacing:.22em;
 }
-
 .hidden{display:none!important}
 
-/* 合言葉: 説明書の大書き。罫線で囲って、字間を大きく開ける */
+/* ── 合言葉は千社札。白地に墨の大書き、朱の二重枠 ── */
 .code-badge{
-  display:inline-block;font-weight:900;letter-spacing:.3em;
-  font-size:clamp(44px,8vw,88px);color:var(--ink);
-  border:3px solid var(--ink);border-radius:2px;padding:6px 10px 6px 26px;
-  background:var(--paper-2);box-shadow:6px 6px 0 var(--vermilion);
+  display:inline-block;font-size:clamp(46px,8vw,92px);color:var(--sumi);
+  letter-spacing:.3em;background:var(--shiro);
+  border:3px solid var(--sumi);border-radius:1px;padding:10px 14px 10px 30px;
+  box-shadow:0 0 0 4px var(--shiro), 0 0 0 7px var(--aka), 7px 7px 0 rgba(28,26,23,.2);
 }
-.join-box{display:flex;gap:26px;align-items:center;justify-content:center;flex-wrap:wrap}
-.qr{background:#fff;padding:12px;border-radius:2px;border:2px solid var(--ink);box-shadow:5px 5px 0 var(--paper-3)}
+.join-box{display:flex;gap:28px;align-items:center;justify-content:center;flex-wrap:wrap}
+/* QRは木の額に入れる */
+.qr{background:var(--shiro);padding:12px;border-radius:2px;border:7px solid var(--ki);
+  box-shadow:0 0 0 2px var(--sumi), 6px 6px 0 rgba(28,26,23,.18)}
 .qr img{display:block;width:190px;height:190px}
 
-.players{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+/* ── 参加者は木札(千社札)。上に紐の穴 ── */
+.players{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding-top:8px}
 .chip{
-  background:var(--paper-2);border:2px solid var(--rule);border-radius:2px;
-  padding:9px 14px;font-weight:700;text-align:center;position:relative;
+  background:var(--ki);border:2px solid var(--rule);border-radius:2px;
+  padding:12px 16px 10px;font-weight:700;text-align:center;position:relative;color:var(--sumi);
+  box-shadow:3px 3px 0 rgba(28,26,23,.18);
 }
+.chip::before{content:"";position:absolute;top:5px;left:50%;transform:translateX(-50%);
+  width:7px;height:7px;border-radius:50%;background:var(--kinari);border:1.5px solid var(--sumi)}
+.chip{padding-top:18px}
 .chip .rm{
   position:absolute;top:-9px;right:-9px;width:21px;height:21px;border-radius:50%;
-  background:var(--vermilion);color:var(--paper-2);font-size:12px;font-weight:900;
-  line-height:19px;text-align:center;cursor:pointer;border:2px solid var(--ink);
+  background:var(--aka);color:var(--shiro);font-size:12px;font-weight:900;
+  line-height:19px;text-align:center;cursor:pointer;border:2px solid var(--sumi);
 }
 .teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
-.team{background:var(--paper-2);border:2px solid var(--rule);border-radius:2px;padding:13px}
-.team .members{min-height:22px;color:var(--ink-2);font-size:13px;font-weight:500;margin-top:8px}
+.team{background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:13px}
+.team .members{min-height:22px;color:var(--sumi-2);font-size:13px;font-weight:500;margin-top:8px}
 
-/* 選択肢は罫線のタブで */
+/* ── 選び札 ── */
 .seg{display:inline-flex;border:2px solid var(--rule);border-radius:2px;overflow:hidden}
-.seg button{background:var(--paper-2);color:var(--ink-2);box-shadow:none;border:none;border-radius:0;padding:9px 18px}
-.seg button:hover,.seg button:active{transform:none;box-shadow:none;background:var(--paper-3)}
+.seg button{background:var(--shiro);color:var(--sumi-2);box-shadow:none;border:none;border-radius:0;padding:10px 20px;letter-spacing:.1em}
+.seg button:hover,.seg button:active{transform:none;box-shadow:none;background:var(--nuno)}
 .seg button + button{border-left:2px solid var(--rule)}
-.seg button.on{background:var(--ink);color:var(--paper)}
+.seg button.on{background:var(--aka);color:var(--shiro)}
 
-.cfgrow{display:flex;gap:10px;align-items:center;background:var(--paper-2);
+.cfgrow{display:flex;gap:10px;align-items:center;background:var(--nuno);
   border:2px solid var(--rule-l);border-radius:2px;padding:10px;margin-top:8px;flex-wrap:wrap}
-.cfgrow .no{font-weight:900;color:var(--ink);min-width:56px;letter-spacing:.06em}
+.cfgrow .no{font-weight:900;color:var(--aka);min-width:56px;letter-spacing:.08em}
 .cfgrow select{width:auto;min-width:140px}
 
-/* ── 次の試合の予告 ── */
-.eye{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px 16px}
-.eye .stage{font-weight:900;color:var(--vermilion);font-size:clamp(17px,3vw,24px);letter-spacing:.2em}
-.eye .big{width:clamp(120px,20vw,190px);height:auto;margin:0 auto}
+/* ── 次の演目 ── */
+.eye{min-height:calc(100vh - 52px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px 16px}
+.eye .stage{color:var(--aka);font-size:clamp(18px,3vw,26px);letter-spacing:.3em}
+.eye .big{width:clamp(110px,17vw,168px);height:auto;margin:0 auto;color:var(--sumi)}
 .eye .big svg{width:100%;height:auto;display:block}
-.eye .gname{font-size:clamp(32px,6vw,62px);font-weight:900;letter-spacing:.05em;
-  border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);padding:8px 24px}
+/* ゲーム名は屋台の木看板 */
+.eye .gname{
+  font-size:clamp(34px,6vw,64px);letter-spacing:.14em;color:var(--sumi);
+  background:var(--ki);border:4px solid var(--sumi);border-radius:2px;
+  padding:12px 34px;box-shadow:8px 8px 0 rgba(28,26,23,.22);
+}
 .eye .fmt{display:inline-flex;align-items:center;gap:8px;font-size:clamp(14px,3vw,19px);
-  font-weight:900;color:var(--paper-2);border:2px solid var(--ink);border-radius:2px;padding:7px 18px;letter-spacing:.08em}
-.eye .fmt.cap{background:var(--vermilion)}
-.eye .fmt.all{background:var(--moss)}
-.dots{display:flex;gap:9px;justify-content:center}
-.dots i{width:13px;height:13px;border-radius:50%;background:transparent;border:2px solid var(--ink)}
-.dots i.on{background:var(--vermilion);border-color:var(--vermilion)}
-.dots i.done{background:var(--ink)}
+  font-weight:900;color:var(--shiro);border:2px solid var(--sumi);border-radius:2px;padding:8px 20px;letter-spacing:.12em}
+.eye .fmt.cap{background:var(--aka)}
+.eye .fmt.all{background:var(--wakaba)}
+/* 進行は提灯の連なり */
+.dots{display:flex;gap:14px;justify-content:center;padding-top:6px}
+.dots i{width:15px;height:19px;border-radius:46% 46% 42% 42%;background:var(--shiro);
+  border:2px solid var(--sumi);position:relative}
+.dots i::after{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  width:2px;height:6px;background:var(--sumi)}
+.dots i.on{background:var(--aka)}
+.dots i.done{background:var(--sumi)}
 
-/* ── チームの得点板 ── */
-.vs{display:flex;gap:14px;align-items:stretch;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.tpanel{background:var(--paper-2);border:2px solid var(--ink);border-radius:2px;
-  min-width:210px;max-width:290px;flex:1;overflow:hidden;position:relative;box-shadow:5px 5px 0 var(--paper-3)}
-.tpanel.lead{box-shadow:5px 5px 0 var(--ochre)}
-.tpanel .bar{color:var(--paper-2);font-weight:900;font-size:19px;padding:9px 14px;
-  display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--ink);letter-spacing:.04em}
-.tpanel .crown{position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:34px;height:26px}
+/* ── チームの得点板は提灯 ── */
+.vs{display:flex;gap:20px;align-items:stretch;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.tpanel{
+  background:var(--shiro);border:3px solid var(--sumi);
+  border-radius:34px 34px 30px 30px/16px 16px 14px 14px;
+  min-width:212px;max-width:290px;flex:1;overflow:hidden;position:relative;
+  box-shadow:5px 6px 0 rgba(28,26,23,.18);
+  /* 提灯の骨 */
+  background-image:repeating-linear-gradient(to bottom, transparent 0 13px, rgba(28,26,23,.11) 13px 14px);
+}
+.tpanel.lead{box-shadow:5px 6px 0 var(--kin)}
+.tpanel .bar{color:var(--shiro);font-weight:900;font-size:19px;padding:9px 16px;
+  display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--sumi);letter-spacing:.06em}
+.tpanel .crown{position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:34px;height:26px;color:var(--kin)}
 .tpanel .crown svg{width:100%;height:100%;display:block}
-.tpanel .score{font-size:44px;font-weight:900;text-align:center;padding:10px 0 2px;letter-spacing:.02em}
-.tpanel .mem{padding:6px 12px 14px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.tpanel .m{background:var(--paper-3);border:1px solid var(--rule-l);border-radius:2px;padding:3px 11px;font-weight:700;font-size:12.5px}
-.tpanel .m.rep{color:var(--paper-2);border-color:var(--ink)}
-.tpanel .rep-pick{padding:0 12px 14px}
-.vsmid{display:flex;align-items:center;font-size:26px;font-weight:900;color:var(--ink-3);letter-spacing:.1em}
+.tpanel .score{font-size:46px;text-align:center;padding:10px 0 2px;letter-spacing:.02em}
+.tpanel .mem{padding:6px 12px 16px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tpanel .m{background:var(--ki);border:1px solid var(--sumi);border-radius:1px;padding:3px 11px;font-weight:700;font-size:12.5px;color:var(--sumi)}
+.tpanel .m.rep{color:var(--shiro);border-color:var(--sumi)}
+.tpanel .rep-pick{padding:0 12px 16px}
+.vsmid{display:flex;align-items:center;font-size:26px;font-weight:900;color:var(--aka);letter-spacing:.1em}
 
 /* ── ファイブリーグの盤面 ── */
-.board{display:flex;flex-direction:column;align-items:center;gap:18px}
-.qtext{font-size:clamp(23px,3.6vw,40px);font-weight:900;text-align:center;line-height:1.5;letter-spacing:.02em}
-.slots{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.board{display:flex;flex-direction:column;align-items:center;gap:20px}
+.qtext{font-size:clamp(24px,3.6vw,42px);text-align:center;line-height:1.55;letter-spacing:.04em}
+.slots{display:flex;gap:13px;justify-content:center;flex-wrap:wrap}
 .slot{width:clamp(78px,12vw,132px)}
 .slot .box{
-  height:clamp(90px,13vw,142px);border-radius:2px;border:3px solid var(--ink);
+  height:clamp(90px,13vw,142px);border-radius:2px;border:3px solid var(--sumi);
   display:flex;align-items:center;justify-content:center;
-  font-size:clamp(44px,7vw,86px);font-weight:900;background:var(--paper-2);color:var(--ink);
+  font-size:clamp(44px,7vw,86px);font-weight:900;background:var(--shiro);color:var(--sumi);
 }
-.slot .box.locked{border-width:5px}
-.slot.correct .box{background:var(--vermilion);color:var(--paper-2)}
-.slot.wrong .box{background:var(--paper-3);color:var(--ink-3)}
+.slot .box.locked{box-shadow:inset 0 0 0 4px var(--kin)}
+/* 正解のマスは射的の的 */
+.slot.correct .box{
+  color:var(--shiro);border-color:var(--sumi);
+  background:radial-gradient(circle at 50% 50%, var(--aka) 0 34%, var(--shiro) 34% 42%, var(--aka) 42% 60%, var(--shiro) 60% 68%, var(--aka) 68%);
+  text-shadow:0 2px 0 var(--aka-d),0 0 10px var(--aka-d);
+}
+.slot.wrong .box{background:var(--nuno);color:var(--sumi-3)}
 .slot .name{margin-top:8px;text-align:center;font-weight:700;font-size:14px}
-.slot .name small{display:block;color:var(--ink-3);font-weight:500;font-size:11.5px}
-.result-line{font-size:clamp(23px,3vw,34px);font-weight:900;letter-spacing:.06em;display:flex;align-items:center;gap:10px;justify-content:center}
-.result-line.ok{color:var(--moss)}
-.result-line.ng{color:var(--vermilion)}
+.slot .name small{display:block;color:var(--sumi-3);font-weight:500;font-size:11.5px}
+.result-line{font-size:clamp(24px,3vw,36px);letter-spacing:.12em;display:flex;align-items:center;gap:12px;justify-content:center}
+.result-line.ok{color:var(--aka)}
+.result-line.ng{color:var(--ai)}
 .result-line svg{width:1em;height:1em}
 .scoreboard{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
-.score{background:var(--paper-2);border:2px solid var(--rule);border-radius:2px;padding:7px 15px;font-weight:900;display:flex;align-items:center;gap:8px}
-.score .dot{width:13px;height:13px;border-radius:50%;border:1px solid var(--ink)}
-.score small{color:var(--ink-3);font-weight:500}
-.waiting{color:var(--ink-2);text-align:center;font-weight:500}
-.big-input{font-size:56px;text-align:center;letter-spacing:.12em;padding:16px;border-width:3px}
-.my-slot{font-size:18px;color:var(--ink-2);text-align:center;font-weight:700}
-.status{text-align:center;color:var(--ink-2);font-weight:500;display:flex;align-items:center;gap:7px;justify-content:center;flex-wrap:wrap}
+.score{background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:7px 15px;font-weight:900;display:flex;align-items:center;gap:8px}
+.score .dot{width:13px;height:13px;border-radius:50%;border:1px solid var(--sumi)}
+.score small{color:var(--sumi-3);font-weight:500}
+.waiting{color:var(--sumi-2);text-align:center;font-weight:500}
+.big-input{font-size:58px;text-align:center;letter-spacing:.14em;padding:16px;border-width:3px;
+  font-family:'Shippori Mincho B1',serif;font-weight:800}
+.my-slot{font-size:18px;color:var(--sumi-2);text-align:center;font-weight:700}
+.status{text-align:center;color:var(--sumi-2);font-weight:500;display:flex;align-items:center;gap:7px;justify-content:center;flex-wrap:wrap}
 .status svg{width:1.15em;height:1.15em;flex:0 0 auto}
 
-/* ── 得点グラフ ── */
+/* ── 得点は提灯の紐に並ぶ ── */
 .gbar-row{display:flex;align-items:center;gap:10px;margin-top:11px}
 .gbar-name{width:130px;font-weight:900;text-align:right;font-size:14px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;display:flex;gap:5px;align-items:center;justify-content:flex-end}
-.gbar-name svg{width:15px;height:15px;flex:0 0 auto}
-.gbar-track{flex:1;background:var(--paper-3);border:2px solid var(--ink);border-radius:2px;height:32px;overflow:hidden}
+.gbar-name svg{width:15px;height:15px;flex:0 0 auto;color:var(--kin)}
+.gbar-track{flex:1;background:var(--nuno);border:2px solid var(--sumi);border-radius:2px;height:34px;overflow:hidden}
 .gbar-fill{height:100%;transition:width .7s cubic-bezier(.2,.8,.2,1);display:flex;align-items:center;
-  justify-content:flex-end;color:var(--paper-2);font-weight:900;font-size:14px;padding-right:9px;min-width:38px}
+  justify-content:flex-end;color:var(--shiro);font-weight:900;font-size:15px;padding-right:10px;min-width:38px;
+  border-right:2px solid var(--sumi)}
 
 /* ── シュゾマス(パーティ内) ── */
 .sz-hud{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0}
-.sz-seat{flex:1;min-width:152px;background:var(--paper-2);border:2px solid var(--rule);border-radius:2px;padding:8px 10px}
-.sz-seat.sub{border-color:var(--moss);border-width:3px}
+.sz-seat{flex:1;min-width:152px;background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:8px 10px}
+.sz-seat.sub{border-color:var(--wakaba);border-width:3px}
 .sz-seat .nm{font-weight:900}
-.sz-seat .stt{display:flex;gap:9px;margin-top:4px;font-weight:500;color:var(--ink-2);font-size:12.5px;align-items:center;flex-wrap:wrap}
+.sz-seat .stt{display:flex;gap:9px;margin-top:4px;font-weight:500;color:var(--sumi-2);font-size:12.5px;align-items:center;flex-wrap:wrap}
 .sz-seat .stt svg{width:13px;height:13px;flex:0 0 auto}
 .sz-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
 @media(max-width:560px){.sz-grid{grid-template-columns:repeat(4,1fr)}}
-.sz-ing{background:var(--paper-2);border:2px solid var(--rule);border-radius:2px;
+.sz-ing{background:var(--shiro);border:2px solid var(--rule);border-radius:2px;
   padding:8px 2px 10px;text-align:center;cursor:pointer;position:relative;user-select:none}
-.sz-ing.sel{border-color:var(--indigo);border-width:3px;background:#e9eff7}
-.sz-ing.sel2{border-color:var(--indigo-d);border-width:4px;background:#dde7f3}
+.sz-ing.sel{border-color:var(--ai);border-width:3px;background:#eaeff7}
+.sz-ing.sel2{border-color:var(--ai-d);border-width:4px;background:#dde6f2}
 .sz-ing.dim{opacity:.35;cursor:not-allowed}
-/* 食材は絵ではなく番号タイル。属性は左肩の色帯で示す */
-.sz-ing .emo{font-size:23px;font-weight:900;letter-spacing:.02em;line-height:1.3}
-.sz-ing .emo img.fruit{width:46px;height:46px;object-fit:cover;border-radius:2px;display:block;margin:0 auto;border:1px solid var(--rule)}
+.sz-ing .emo{font-size:23px;font-weight:900;line-height:1.3}
+.sz-ing .emo img.fruit{width:46px;height:46px;object-fit:cover;border-radius:2px;display:block;margin:0 auto;border:1px solid var(--sumi)}
 .sz-slot .emo img.fruit{width:52px;height:52px;object-fit:cover;border-radius:2px;display:block}
-.sz-ing .no{font-size:10px;color:var(--ink-3);font-weight:500}
-.sz-ing .pr{font-size:11px;font-weight:900;color:var(--moss)}
+.sz-ing .no{font-size:10px;color:var(--sumi-3);font-weight:500}
+.sz-ing .pr{font-size:11px;font-weight:900;color:var(--wakaba)}
 .sz-ing .at{position:absolute;top:-2px;left:-2px;width:18px;height:18px;border-radius:0 0 3px 0;
-  color:var(--paper-2);font-size:10px;font-weight:900;line-height:18px;border:2px solid var(--ink);border-top:0;border-left:0}
+  color:var(--shiro);font-size:10px;font-weight:900;line-height:18px;border:2px solid var(--sumi);border-top:0;border-left:0}
 .sz-ing .kd{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
-  background:var(--ink);color:var(--paper);font-size:10px;font-weight:900;border-radius:1px;padding:1px 7px;white-space:nowrap}
-.a-A{background:var(--indigo)}.a-B{background:var(--moss)}.a-C{background:var(--ochre)}.a-D{background:var(--vermilion)}
+  background:var(--sumi);color:var(--kinari);font-size:10px;font-weight:900;border-radius:1px;padding:1px 7px;white-space:nowrap}
+.a-A{background:var(--ai)}.a-B{background:var(--wakaba)}.a-C{background:var(--kin)}.a-D{background:var(--aka)}
 .sz-bench{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
-.sz-slot{width:66px;height:66px;border:2px dashed var(--rule-l);border-radius:2px;background:var(--paper-3);
+.sz-slot{width:66px;height:66px;border:2px dashed var(--rule-l);border-radius:2px;background:var(--nuno);
   display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;position:relative}
-.sz-slot.filled{border-style:solid;border-color:var(--ink);background:var(--paper-2)}
+.sz-slot.filled{border-style:solid;border-color:var(--sumi);background:var(--shiro)}
 .sz-slot .x{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;
-  background:var(--vermilion);color:var(--paper-2);font-size:11px;font-weight:900;line-height:18px;
-  text-align:center;cursor:pointer;border:2px solid var(--ink)}
+  background:var(--aka);color:var(--shiro);font-size:11px;font-weight:900;line-height:18px;
+  text-align:center;cursor:pointer;border:2px solid var(--sumi)}
 .sz-info{font-weight:900}
-.sz-info .over{color:var(--vermilion)}
-.sz-info .ok{color:var(--moss)}
+.sz-info .over{color:var(--aka)}
+.sz-info .ok{color:var(--wakaba)}
 .sz-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
-.sz-chip{background:var(--paper-2);border:1px solid var(--rule);border-radius:1px;font-size:12px;font-weight:700;padding:2px 8px;color:var(--ink-2)}
-.sz-rrow{display:flex;align-items:center;gap:10px;background:var(--paper-2);border:2px solid var(--rule);border-radius:2px;padding:8px 12px;margin-top:8px}
-.sz-rrow.me{border-color:var(--indigo);border-width:3px}
+.sz-chip{background:var(--shiro);border:1px solid var(--sumi);border-radius:1px;font-size:12px;font-weight:700;padding:2px 8px;color:var(--sumi-2)}
+.sz-rrow{display:flex;align-items:center;gap:10px;background:var(--shiro);border:2px solid var(--rule);border-radius:2px;padding:8px 12px;margin-top:8px}
+.sz-rrow.me{border-color:var(--ai);border-width:3px}
 .sz-rrow .md{width:38px;text-align:center;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center}
 .sz-rrow .md svg{width:26px;height:26px}
 .sz-rrow .rn{flex:1;font-weight:900}
 .sz-rrow .dl{font-weight:900;font-size:13px;text-align:right}
-.sz-rrow .plus{color:var(--moss)}
-.sz-rrow .minus{color:var(--vermilion)}
-.sakechip{display:inline-block;background:var(--ink);color:var(--paper);border-radius:1px;padding:1px 8px;font-size:12px;font-weight:900}
+.sz-rrow .plus{color:var(--wakaba)}
+.sz-rrow .minus{color:var(--aka)}
+.sakechip{display:inline-block;background:var(--sumi);color:var(--kinari);border-radius:1px;padding:1px 8px;font-size:12px;font-weight:900}
 
-/* ピクトグラム共通(文中に置くもの) */
+/* ピクトグラム */
 .pic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.14em;flex:0 0 auto}
 .pic path,.pic circle,.pic rect,.pic line,.pic polyline,.pic polygon{
   fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
 .pic.fill path,.pic.fill circle,.pic.fill rect,.pic.fill polygon{fill:currentColor;stroke:none}
-/* メダルだけは色を持つので .pic の指定を当てない */
 .pic-m{display:inline-block;width:1.2em;height:1.2em;vertical-align:-.2em;flex:0 0 auto}
 
 </style>
